@@ -1,0 +1,7 @@
+[package]
+name = "pong_game_bevy"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.11"
