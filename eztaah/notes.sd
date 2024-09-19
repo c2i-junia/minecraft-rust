@@ -1,0 +1,17 @@
+What is an Entity Component System ? 
+Entity : A unique ID we attach components to. 
+Component : Data in our game (for ex: health)
+System : A function that acts on our data (for ex: take_damage())
+
+Bevy ECS 
+Entity: Rust u32
+Component: Rust Structs
+System: Rust Fucntions
+
+
+
+quand on ecrit #[derive(Component)]
+cela indique le que struct suivant est un componement et pas juste un simple struct
+
+
+add_startup_system only run once at the begining of our app, contrairement à add_system
