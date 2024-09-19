@@ -23,8 +23,10 @@ struct CameraController {
     mouse_sensitivity: f32,
 }
 
-impl Default for CameraController {
-    fn default() -> Self {
+impl Default for CameraController 
+{
+    fn default() -> Self 
+    {
         Self {
             distance: 10.0,
             angle_x: 0.0,
@@ -34,21 +36,9 @@ impl Default for CameraController {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // Add light to the scene
-    commands.spawn(DirectionalLightBundle {
-        transform: Transform::from_rotation(Quat::from_euler(
-            EulerRot::XYZ,
-            -std::f32::consts::FRAC_PI_4,
-            0.0,
-            0.0,
-        )),
-        ..Default::default()
-    });
+fn setup(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>, mut materials: ResMut<Assets<StandardMaterial>>) 
+{
+
 
     // Spawn the platform
     commands.spawn(PbrBundle {
@@ -79,22 +69,16 @@ fn setup(
 }
 
 // System to hide and lock the cursor
-fn cursor_grab_system(mut windows: Query<&mut Window, With<PrimaryWindow>>) {
+fn cursor_grab_system(mut windows: Query<&mut Window, With<PrimaryWindow>>) 
+{
     let mut window = windows.single_mut();
     window.cursor.visible = false;
     window.cursor.grab_mode = CursorGrabMode::Locked;
 }
 
 // System to control the camera based on mouse movement
-fn camera_control_system(
-    windows: Query<&Window, With<PrimaryWindow>>,
-    mut mouse_motion_events: EventReader<MouseMotion>,
-    mut camera_query: Query<
-        (&mut Transform, &mut CameraController),
-        (With<Camera>, Without<Player>),
-    >,
-    player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
-) {
+fn camera_control_system(windows: Query<&Window, With<PrimaryWindow>>, mut mouse_motion_events: EventReader<MouseMotion>, mut camera_query: Query<(&mut Transform, &mut CameraController), (With<Camera>, Without<Player>)>, player_query: Query<&Transform, (With<Player>, Without<Camera>)>) 
+{
     let window = windows.single();
 
     // Skip if the window is not focused
@@ -137,12 +121,8 @@ fn camera_control_system(
 }
 
 // System to move the player based on keyboard input
-fn player_movement_system(
-    time: Res<Time>,
-    keyboard_input: Res<Input<KeyCode>>,
-    camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
-    mut player_query: Query<&mut Transform, (With<Player>, Without<Camera>)>,
-) {
+fn player_movement_system(time: Res<Time>, keyboard_input: Res<Input<KeyCode>>, camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>, mut player_query: Query<&mut Transform, (With<Player>, Without<Camera>)>) 
+{
     let mut player_transform = player_query.single_mut();
     let camera_transform = camera_query.single();
 
@@ -179,3 +159,4 @@ fn player_movement_system(
         player_transform.translation += direction * speed * time.delta_seconds();
     }
 }
+
