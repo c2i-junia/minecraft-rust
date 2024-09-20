@@ -2,13 +2,15 @@ use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 use keyboard::*;
+use world::*;
 
 mod keyboard;
+mod world;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
+        .add_startup_system(setup_world)
         .add_startup_system(cursor_grab_system)
         .add_system(player_movement_system)
         .add_system(camera_control_system)
@@ -35,39 +37,6 @@ impl Default for CameraController {
             mouse_sensitivity: 0.003,
         }
     }
-}
-
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    // Spawn the platform
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(20.0, 1.0, 20.0))),
-        material: materials.add(Color::rgb(0.75, 0.75, 0.75).into()),
-        transform: Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)),
-        ..Default::default()
-    });
-
-    // Spawn the player
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.5, 0.0)),
-            ..Default::default()
-        })
-        .insert(Player);
-
-    // Spawn the camera with a controller
-    commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 5.0, 10.0))
-                .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
-            ..Default::default()
-        })
-        .insert(CameraController::default());
 }
 
 // System to hide and lock the cursor
