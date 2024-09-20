@@ -1,0 +1,24 @@
+---- MINECRAFT ----
+How Minecraft ACTUALLY Works 💎⛏️
+https://www.youtube.com/watch?v=YyVAaJqYAfE
+-> explique comment fonctionne la generation de monde minecraft
+
+Making Minecraft from scratch in 48 hours (NO GAME ENGINE) 
+https://www.youtube.com/watch?v=4O0_-1NaWnY
+-> Video d'un mec qui crée minecraft from scratch en C, sans moteur de jeu
+
+
+---- RUST ----
+Rust Book: 
+https://doc.rust-lang.org/book/
+
+Rust By example: 
+https://doc.rust-lang.org/rust-by-example/
+
+
+---- BEVY ----
+Tuto bases de bevy (création d'un jeu vue de haut 2d): 
+https://youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd&si=M3RiPJhjCbOV1dyq
+
+Tuto jeu 3d bevy : 
+https://youtube.com/playlist?list=PLp0sjyxOq4ATFgiJ4HL8ok9Yp2h7Hz1Fb&si=HWNnS40J_gulogjP
