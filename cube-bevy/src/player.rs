@@ -1,6 +1,9 @@
 use crate::keyboard::*;
-use crate::{CameraController, Player};
+use crate::CameraController;
 use bevy::prelude::*;
+
+#[derive(Component)]
+pub struct Player;
 
 // System to move the player based on keyboard input
 pub fn player_movement_system(

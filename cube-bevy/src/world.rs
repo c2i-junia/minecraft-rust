@@ -1,4 +1,5 @@
-use crate::{CameraController, Player};
+use crate::camera::CameraController;
+use crate::Player;
 use bevy::prelude::*;
 use bevy::prelude::{Commands, ResMut};
 
