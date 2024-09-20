@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.10"
+bevy = "0.11"
 lazy_static = "1.5.0"
