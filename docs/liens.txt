@@ -22,3 +22,9 @@ https://youtube.com/playlist?list=PLVnntJRoP85JHGX7rGDu6LaF3fmDDbqyd&si=M3RiPJhj
 
 Tuto jeu 3d bevy : 
 https://youtube.com/playlist?list=PLp0sjyxOq4ATFgiJ4HL8ok9Yp2h7Hz1Fb&si=HWNnS40J_gulogjP
+
+foxtrop (Jeu fait en bevy) : 
+https://github.com/janhohenheim/foxtrot
+
+bevy cheatbook : 
+https://bevy-cheatbook.github.io/introduction.html
