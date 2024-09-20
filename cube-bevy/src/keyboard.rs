@@ -11,6 +11,7 @@ pub enum GameAction {
     MoveBackward,
     MoveLeft,
     MoveRight,
+    Escape,
 }
 
 lazy_static! {
@@ -20,6 +21,7 @@ lazy_static! {
         map.insert(GameAction::MoveBackward, vec![KeyCode::S, KeyCode::Down]);
         map.insert(GameAction::MoveLeft, vec![KeyCode::A, KeyCode::Left]);
         map.insert(GameAction::MoveRight, vec![KeyCode::D, KeyCode::Right]);
+        map.insert(GameAction::Escape, vec![KeyCode::Escape]);
         map
     };
 }

@@ -12,6 +12,10 @@ pub fn player_movement_system(
     camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
     mut player_query: Query<&mut Transform, (With<Player>, Without<Camera>)>,
 ) {
+    if is_action_pressed(GameAction::Escape, &keyboard_input) {
+        std::process::exit(0);
+    }
+
     let mut player_transform = player_query.single_mut();
     let camera_transform = camera_query.single();
 
