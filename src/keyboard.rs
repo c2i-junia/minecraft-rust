@@ -12,6 +12,7 @@ pub enum GameAction {
     MoveLeft,
     MoveRight,
     Escape,
+    ToggleFps,
 }
 
 lazy_static! {
@@ -34,6 +35,7 @@ lazy_static! {
             vec![KeyCode::KeyD, KeyCode::ArrowRight],
         );
         map.insert(GameAction::Escape, vec![KeyCode::Escape]);
+        map.insert(GameAction::ToggleFps, vec![KeyCode::F3]);
         map
     };
 }
@@ -47,4 +49,8 @@ pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<ButtonInput<Ke
         }
     }
     false
+}
+
+pub fn get_action_keys(action: GameAction) -> Vec<KeyCode> {
+    KEY_MAP.get(&action).unwrap().to_vec()
 }
