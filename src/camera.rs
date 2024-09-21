@@ -49,7 +49,7 @@ pub fn camera_control_system(
     let mut delta = Vec2::ZERO;
 
     // Accumulate mouse motion events
-    for event in mouse_motion_events.iter() {
+    for event in mouse_motion_events.read() {
         delta += event.delta;
     }
 
