@@ -144,13 +144,11 @@ pub fn player_movement_system(
         player.vertical_velocity = 0.0;
     }
 
-    // // print coordinates
-    // println!(
-    //     "Player coordinates: x = {:.2}, y = {:.2}, z = {:.2}",
-    //     player_transform.translation.x,
-    //     player_transform.translation.y,
-    //     player_transform.translation.z
-    // );
-    //
-    //
+    // print coordinates
+    println!(
+        "Player coordinates: x = {:.2}, y = {:.2}, z = {:.2}",
+        player_transform.translation.x,
+        player_transform.translation.y,
+        player_transform.translation.z
+    );
 }

@@ -12,9 +12,9 @@ pub fn setup_world(
 
     let cube_mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
     let grass_material = materials.add(Color::srgb(0.0, 0.5, 0.0));
+    let dirt_material = materials.add(Color::srgb(0.5, 0.25, 0.0));
 
     let approx_total_blocks = 5000;
-
     let bound = ((approx_total_blocks as f32).sqrt().floor() / 2.0).round() as i32;
 
     println!("Bound: {}", bound);
@@ -28,26 +28,31 @@ pub fn setup_world(
 
     let scale = 0.1;
 
-    // Boucle pour générer les blocs avec variation de hauteur par bloc
+    let max_perlin_height = 10.0;
+
+    // Boucle pour générer les blocs avec variation de hauteur
     for i in -bound..bound {
         for j in -bound..bound {
             // Générer une hauteur en utilisant le bruit de Perlin
-            let height = perlin.get([i as f64 * scale, j as f64 * scale]) * 5.0;
+            let perlin_height = perlin.get([i as f64 * scale, j as f64 * scale]) * max_perlin_height;
+            let perlin_height = perlin_height.round() as i32; // Arrondir à des hauteurs entières
 
-            // Arrondir la hauteur à l'entier le plus proche pour que chaque bloc soit aligné
-            let height_block = height.round(); // Conversion en bloc entier
+            // Générer les couches de blocs jusqu'à la couche y = -10
+            for y in -10..=perlin_height {
+                let material = if y == perlin_height {
+                    grass_material.clone()  // Le bloc du dessus est de l'herbe
+                } else {
+                    dirt_material.clone()  // Les couches inférieures sont de la terre
+                };
 
-            // Placer chaque bloc à la hauteur arrondie
-            commands.spawn(PbrBundle {
-                mesh: cube_mesh.clone(),
-                material: grass_material.clone(),
-                transform: Transform::from_translation(Vec3::new(
-                    i as f32,
-                    height_block as f32,
-                    j as f32,
-                )),
-                ..Default::default()
-            });
+                // Placer chaque bloc à la bonne hauteur
+                commands.spawn(PbrBundle {
+                    mesh: cube_mesh.clone(),
+                    material,
+                    transform: Transform::from_translation(Vec3::new(i as f32, y as f32, j as f32)),
+                    ..Default::default()
+                });
+            }
         }
     }
 }
