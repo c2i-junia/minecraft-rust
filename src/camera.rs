@@ -1,4 +1,4 @@
-use crate::Player;
+use crate::{player, Player};
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
@@ -67,6 +67,7 @@ pub fn camera_control_system(
         (With<Camera>, Without<Player>),
     >,
     player_query: Query<&Transform, (With<Player>, Without<Camera>)>,
+    player: Query<&Player>,
 ) {
     let window = windows.single();
 
@@ -81,6 +82,18 @@ pub fn camera_control_system(
     for event in mouse_motion_events.read() {
         delta += event.delta;
     }
+
+    player.iter().for_each(|player| {
+        if player.view_mode == player::ViewMode::FirstPerson {
+            for (_, mut controller) in camera_query.iter_mut() {
+                controller.distance = 1.0;
+            }
+        } else if player.view_mode == player::ViewMode::ThirdPerson {
+            for (_, mut controller) in camera_query.iter_mut() {
+                controller.distance = 10.0;
+            }
+        }
+    });
 
     for (mut transform, mut controller) in camera_query.iter_mut() {
         controller.angle_x -= delta.x * controller.mouse_sensitivity;

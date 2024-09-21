@@ -34,15 +34,16 @@ pub fn setup_world(
     for i in -bound..bound {
         for j in -bound..bound {
             // Générer une hauteur en utilisant le bruit de Perlin
-            let perlin_height = perlin.get([i as f64 * scale, j as f64 * scale]) * max_perlin_height;
+            let perlin_height =
+                perlin.get([i as f64 * scale, j as f64 * scale]) * max_perlin_height;
             let perlin_height = perlin_height.round() as i32; // Arrondir à des hauteurs entières
 
             // Générer les couches de blocs jusqu'à la couche y = -10
             for y in -10..=perlin_height {
                 let material = if y == perlin_height {
-                    grass_material.clone()  // Le bloc du dessus est de l'herbe
+                    grass_material.clone() // Le bloc du dessus est de l'herbe
                 } else {
-                    dirt_material.clone()  // Les couches inférieures sont de la terre
+                    dirt_material.clone() // Les couches inférieures sont de la terre
                 };
 
                 // Placer chaque bloc à la bonne hauteur

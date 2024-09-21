@@ -14,6 +14,7 @@ pub enum GameAction {
     Jump,
     Escape,
     ToggleFps,
+    ToggleViewMode,
 }
 
 lazy_static! {
@@ -38,6 +39,7 @@ lazy_static! {
         map.insert(GameAction::Jump, vec![KeyCode::Space]);
         map.insert(GameAction::Escape, vec![KeyCode::Escape]);
         map.insert(GameAction::ToggleFps, vec![KeyCode::F3]);
+        map.insert(GameAction::ToggleViewMode, vec![KeyCode::F5]);
         map
     };
 }
@@ -46,6 +48,20 @@ pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<ButtonInput<Ke
     if let Some(key_codes) = KEY_MAP.get(&action) {
         for key_code in key_codes {
             if keyboard_input.pressed(*key_code) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+pub fn is_action_just_pressed(
+    action: GameAction,
+    keyboard_input: &Res<ButtonInput<KeyCode>>,
+) -> bool {
+    if let Some(key_codes) = KEY_MAP.get(&action) {
+        for key_code in key_codes {
+            if keyboard_input.just_pressed(*key_code) {
                 return true;
             }
         }
