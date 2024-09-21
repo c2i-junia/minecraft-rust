@@ -22,9 +22,7 @@ impl Default for CameraController {
     }
 }
 
-pub fn spawn_camera(
-    mut commands: Commands,
-) {
+pub fn spawn_camera(mut commands: Commands) {
     commands
         .spawn(Camera3dBundle {
             transform: Transform::from_translation(Vec3::new(0.0, 5.0, 10.0))

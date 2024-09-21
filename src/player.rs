@@ -47,7 +47,7 @@ pub fn player_movement_system(
     let camera_transform = camera_query.single();
 
     let speed = 5.0;
-    let gravity = (-9.8) * 4.0; 
+    let gravity = (-9.8) * 4.0;
     let jump_velocity = 5.0 * 2.0;
 
     // Calculate movement directions relative to the camera
@@ -93,9 +93,9 @@ pub fn player_movement_system(
     player_transform.translation.y += player.vertical_velocity * time.delta_seconds();
 
     // Ground detection: If the player is below or touching the platform, stop vertical movement
-    let is_on_plateform: bool = player_transform.translation.x < 11.0 
+    let is_on_plateform: bool = player_transform.translation.x < 11.0
         && player_transform.translation.x > -11.0
-        && player_transform.translation.z < 11.0 
+        && player_transform.translation.z < 11.0
         && player_transform.translation.z > -11.0;
 
     if player_transform.translation.y <= 1.0 && is_on_plateform {
@@ -107,15 +107,15 @@ pub fn player_movement_system(
     }
 
     // Detect if the player falls off the platform
-    println!(
-        "Player coordinates: x = {:.2}, y = {:.2}, z = {:.2}",
-        player_transform.translation.x,
-        player_transform.translation.y,
-        player_transform.translation.z
-    );
+    // println!(
+    //     "Player coordinates: x = {:.2}, y = {:.2}, z = {:.2}",
+    //     player_transform.translation.x,
+    //     player_transform.translation.y,
+    //     player_transform.translation.z
+    // );
     if player_transform.translation.y < -10.0 {
         println!("Player fell off the platform!");
-        player_transform.translation = Vec3::new(0.0, 1.0, 0.0);  // Reset position
+        player_transform.translation = Vec3::new(0.0, 1.0, 0.0); // Reset position
         player.vertical_velocity = 0.0;
         player.on_ground = true;
     }
