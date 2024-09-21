@@ -1,5 +1,5 @@
 use bevy::{
-    input::Input,
+    input::ButtonInput,
     prelude::{KeyCode, Res},
 };
 use lazy_static::lazy_static;
@@ -17,16 +17,28 @@ pub enum GameAction {
 lazy_static! {
     static ref KEY_MAP: HashMap<GameAction, Vec<KeyCode>> = {
         let mut map = HashMap::new();
-        map.insert(GameAction::MoveForward, vec![KeyCode::W, KeyCode::Up]);
-        map.insert(GameAction::MoveBackward, vec![KeyCode::S, KeyCode::Down]);
-        map.insert(GameAction::MoveLeft, vec![KeyCode::A, KeyCode::Left]);
-        map.insert(GameAction::MoveRight, vec![KeyCode::D, KeyCode::Right]);
+        map.insert(
+            GameAction::MoveForward,
+            vec![KeyCode::KeyW, KeyCode::ArrowUp],
+        );
+        map.insert(
+            GameAction::MoveBackward,
+            vec![KeyCode::KeyS, KeyCode::ArrowDown],
+        );
+        map.insert(
+            GameAction::MoveLeft,
+            vec![KeyCode::KeyA, KeyCode::ArrowLeft],
+        );
+        map.insert(
+            GameAction::MoveRight,
+            vec![KeyCode::KeyD, KeyCode::ArrowRight],
+        );
         map.insert(GameAction::Escape, vec![KeyCode::Escape]);
         map
     };
 }
 
-pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<Input<KeyCode>>) -> bool {
+pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<ButtonInput<KeyCode>>) -> bool {
     if let Some(key_codes) = KEY_MAP.get(&action) {
         for key_code in key_codes {
             if keyboard_input.pressed(*key_code) {

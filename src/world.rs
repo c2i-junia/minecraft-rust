@@ -10,8 +10,8 @@ pub fn setup_world(
 ) {
     // Spawn the platform
     commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Box::new(20.0, 1.0, 20.0))),
-        material: materials.add(Color::rgb(0.75, 0.75, 0.75).into()),
+        mesh: meshes.add(Mesh::from(Cuboid::new(20.0, 1.0, 20.0))),
+        material: materials.add(Color::rgb(0.75, 0.75, 0.75)),
         transform: Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)),
         ..Default::default()
     });
@@ -19,8 +19,8 @@ pub fn setup_world(
     // Spawn the player
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-            material: materials.add(Color::rgb(1.0, 0.0, 0.0).into()),
+            mesh: meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0))),
+            material: materials.add(Color::rgb(1.0, 0.0, 0.0)),
             transform: Transform::from_translation(Vec3::new(0.0, 0.5, 0.0)),
             ..Default::default()
         })
