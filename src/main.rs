@@ -18,7 +18,7 @@ fn main() {
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .insert_resource(AmbientLight {
             color: Color::WHITE,
-            brightness: 400.0, 
+            brightness: 400.0,
         })
         .add_systems(Startup, setup_world)
         .add_systems(Startup, spawn_player)

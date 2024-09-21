@@ -32,10 +32,18 @@ pub fn spawn_player(
         .insert(Player::new());
 }
 
-fn is_block_at_position(x: f32, y: f32, z: f32, blocks: &Query<&Transform, Without<Player>>) -> bool {
+fn is_block_at_position(
+    x: f32,
+    y: f32,
+    z: f32,
+    blocks: &Query<&Transform, Without<Player>>,
+) -> bool {
     for block_transform in blocks.iter() {
         let block_pos = block_transform.translation;
-        if (block_pos.x - x).abs() < 0.75 && (block_pos.y - y).abs() < 0.75 && (block_pos.z - z).abs() < 0.75 {
+        if (block_pos.x - x).abs() < 0.75
+            && (block_pos.y - y).abs() < 0.75
+            && (block_pos.z - z).abs() < 0.75
+        {
             return true;
         }
     }
@@ -89,7 +97,12 @@ pub fn player_movement_system(
         let new_pos = player_transform.translation + direction * speed * time.delta_seconds();
 
         // Vérification des collisions devant le joueur (sur l'axe X et Z)
-        if !is_block_at_position(new_pos.x, player_transform.translation.y, new_pos.z, &blocks) {
+        if !is_block_at_position(
+            new_pos.x,
+            player_transform.translation.y,
+            new_pos.z,
+            &blocks,
+        ) {
             player_transform.translation = new_pos;
         }
     }
@@ -108,7 +121,12 @@ pub fn player_movement_system(
     let new_y = player_transform.translation.y + player.vertical_velocity * time.delta_seconds();
 
     // check if their is a bloc underneath the player
-    if is_block_at_position(player_transform.translation.x, player_transform.translation.y - 1.0, player_transform.translation.z, &blocks) {
+    if is_block_at_position(
+        player_transform.translation.x,
+        player_transform.translation.y - 1.0,
+        player_transform.translation.z,
+        &blocks,
+    ) {
         // si un bloc est détecté sous le joueur, il reste sur le bloc
         player_transform.translation.y = new_y;
         player.on_ground = true;
@@ -117,6 +135,13 @@ pub fn player_movement_system(
         // Si aucun bloc n'est détecté sous le joueur, il continue de tomber
         player_transform.translation.y = new_y;
         player.on_ground = false;
+    }
+
+    // If the player is below the world, reset their position
+    if (player_transform.translation.y - 1.0) < -10.0 {
+        player_transform.translation = Vec3::new(0.0, 1.0, 0.0);
+        player.on_ground = true;
+        player.vertical_velocity = 0.0;
     }
 
     // // print coordinates
