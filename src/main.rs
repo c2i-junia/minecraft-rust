@@ -16,6 +16,10 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
+        .insert_resource(AmbientLight {
+            color: Color::WHITE,
+            brightness: 400.0, 
+        })
         .add_systems(Startup, setup_world)
         .add_systems(Startup, spawn_player)
         .add_systems(Startup, spawn_camera)
