@@ -1,21 +1,13 @@
 use bevy::prelude::*;
 use bevy::prelude::{Commands, ResMut};
-// use rand::Rng;
+use noise::{NoiseFn, Perlin};
+use rand::Rng;
 
 pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    /*
-    // Spawn the platform
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(Cuboid::new(20.0, 1.0, 20.0))),
-        material: materials.add(Color::srgb(0.75, 0.75, 0.75)),
-        transform: Transform::from_translation(Vec3::new(0.0, -0.5, 0.0)),
-        ..Default::default()
-    });
-     */
 
     // let mut rng = rand::thread_rng();
 
@@ -28,12 +20,29 @@ pub fn setup_world(
 
     println!("Bound: {}", bound);
 
+    // Génération d'un seed aléatoire
+    let mut rng = rand::thread_rng();
+    let seed: u32 = rng.gen(); 
+
+    let perlin = Perlin::new(seed);
+    println!("Seed utilisée: {}", seed);
+
+    let scale = 0.1;
+
+    // Boucle pour générer les blocs avec variation de hauteur par bloc
     for i in -bound..bound {
         for j in -bound..bound {
+            // Générer une hauteur en utilisant le bruit de Perlin
+            let height = perlin.get([i as f64 * scale, j as f64 * scale]) * 5.0;
+
+            // Arrondir la hauteur à l'entier le plus proche pour que chaque bloc soit aligné
+            let height_block = height.round();  // Conversion en bloc entier
+
+            // Placer chaque bloc à la hauteur arrondie
             commands.spawn(PbrBundle {
                 mesh: cube_mesh.clone(),
                 material: grass_material.clone(),
-                transform: Transform::from_translation(Vec3::new(i as f32, -0.5, j as f32)),
+                transform: Transform::from_translation(Vec3::new(i as f32, height_block as f32, j as f32)),
                 ..Default::default()
             });
         }
