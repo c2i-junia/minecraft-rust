@@ -5,6 +5,21 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct Player;
 
+pub fn spawn_player(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(Mesh::from(Cuboid::new(1.0, 2.0, 1.0))),
+            material: materials.add(Color::srgb(1.0, 0.0, 0.0)),
+            transform: Transform::from_translation(Vec3::new(0.0, 1.0, 0.0)),
+            ..Default::default()
+        })
+        .insert(Player);
+}
+
 // System to move the player based on keyboard input
 pub fn player_movement_system(
     time: Res<Time>,
