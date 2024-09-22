@@ -1,7 +1,8 @@
 use bevy::prelude::*;
-use bevy::prelude::{Commands, ResMut};
+use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
+use crate::BlockRaycastSet;
 
 pub fn setup_world(
     mut commands: Commands,
@@ -47,12 +48,16 @@ pub fn setup_world(
                 };
 
                 // Placer chaque bloc à la bonne hauteur
-                commands.spawn(PbrBundle {
-                    mesh: cube_mesh.clone(),
-                    material,
-                    transform: Transform::from_translation(Vec3::new(i as f32, y as f32, j as f32)),
-                    ..Default::default()
-                });
+                // Marquer les blocs comme détectables par raycasting
+                commands.spawn((
+                    PbrBundle {
+                        mesh: cube_mesh.clone(),
+                        material,
+                        transform: Transform::from_translation(Vec3::new(i as f32, y as f32, j as f32)),
+                        ..Default::default()
+                    },
+                    RaycastMesh::<BlockRaycastSet>::default() // Permet aux rayons de détecter ces blocs
+                ));
             }
         }
     }
