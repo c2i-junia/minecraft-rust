@@ -32,6 +32,6 @@ fn main() {
         .add_systems(Update, player_movement_system)
         .add_systems(Update, camera_control_system)
         .add_systems(Update, (fps_text_update_system, fps_counter_showhide))
-        .add_systems(Update, handle_block_breaking) // Ajout du système de clic pour casser les blocs
+        .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
         .run();
 }

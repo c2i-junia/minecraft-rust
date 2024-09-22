@@ -60,7 +60,7 @@ pub fn player_movement_system(
 
     let speed = 5.0;
     let gravity = (-9.8) * 4.0;
-    let jump_velocity = 5.0 * 2.0;
+    let jump_velocity = 6.0 * 2.0;
 
     // Calculate movement directions relative to the camera
     let mut forward = camera_transform.forward().xyz();
