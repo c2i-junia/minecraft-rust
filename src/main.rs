@@ -1,16 +1,16 @@
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
-use bevy_mod_raycast::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
 use camera::*;
+use input::*;
 use fps_counter::*;
 use player::*;
 use world::*;
 
 mod camera;
+mod input;
 mod fps_counter;
-mod keyboard;
 mod player;
 mod world;
 
@@ -36,21 +36,5 @@ fn main() {
         .run();
 }
 
-fn handle_block_breaking(
-    mut commands: Commands,
-    mouse_input: Res<ButtonInput<MouseButton>>,  // to handle mouse input
-    raycast_source: Query<&RaycastSource<BlockRaycastSet>>,  // raycast from the camera
-) {
-    // check if the left mouse button was pressed
-    if mouse_input.just_pressed(MouseButton::Left) {
-        let raycast_source = raycast_source.single();
 
-        // check if there are any intersections with a block
-        if let Some((entity, _intersection)) = raycast_source.intersections().first() {
-            // println!("block hit, removing...");
-            // remove the hit block
-            commands.entity(*entity).despawn();
-        }
-    }
-}
 

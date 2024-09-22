@@ -1,7 +1,7 @@
 use crate::{player, Player};
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use bevy::window::{CursorGrabMode, PrimaryWindow};
+use bevy::window::PrimaryWindow;
 use bevy_mod_raycast::prelude::*;
 
 #[derive(TypePath)]
@@ -41,32 +41,6 @@ pub fn spawn_camera(mut commands: Commands) {
             raycast_source.cast_method = RaycastMethod::Transform;  // Utilise la transformation de la caméra pour lancer le rayon
             raycast_source  // Retourne l'objet 
         });
-}
-
-pub fn spawn_reticle(mut commands: Commands) {
-    commands.spawn(NodeBundle {
-        style: Style {
-            width: Val::Px(5.0),  // Largeur du réticule
-            height: Val::Px(5.0), // Hauteur du réticule
-            margin: UiRect {
-                left: Val::Auto,
-                right: Val::Auto,
-                top: Val::Auto,
-                bottom: Val::Auto,
-            },
-            position_type: PositionType::Absolute,
-            ..Default::default()
-        },
-        background_color: Color::WHITE.into(), // Couleur du réticule
-        ..Default::default()
-    });
-}
-
-// System to hide and lock the cursor
-pub fn cursor_grab_system(mut windows: Query<&mut Window, With<PrimaryWindow>>) {
-    let mut window = windows.single_mut();
-    window.cursor.visible = false;
-    window.cursor.grab_mode = CursorGrabMode::Locked;
 }
 
 // System to control the camera based on mouse movement

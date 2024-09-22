@@ -1,51 +1,7 @@
-use crate::keyboard::*;
-use crate::CameraController;
+use crate::input::keyboard::*;
+use crate::camera::CameraController;
+use crate::player::{Player, ViewMode};
 use bevy::prelude::*;
-
-#[derive(Component)]
-pub struct Player {
-    pub vertical_velocity: f32,
-    pub on_ground: bool,
-    pub view_mode: ViewMode,
-}
-
-#[derive(Debug, PartialEq)]
-pub enum ViewMode {
-    FirstPerson,
-    ThirdPerson,
-}
-
-impl Player {
-    pub fn new() -> Self {
-        Self {
-            vertical_velocity: 0.0,
-            on_ground: true,
-            view_mode: ViewMode::FirstPerson,
-        }
-    }
-
-    pub fn toggle_view_mode(&mut self) {
-        self.view_mode = match self.view_mode {
-            ViewMode::FirstPerson => ViewMode::ThirdPerson,
-            ViewMode::ThirdPerson => ViewMode::FirstPerson,
-        };
-    }
-}
-
-pub fn spawn_player(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(Cuboid::new(1.0, 2.0, 1.0))),
-            material: materials.add(Color::srgba(1.0, 0.0, 0.0, 0.0)),
-            transform: Transform::from_translation(Vec3::new(0.0, 1.0, 0.0)),
-            ..Default::default()
-        })
-        .insert(Player::new());
-}
 
 fn is_block_at_position(
     x: f32,

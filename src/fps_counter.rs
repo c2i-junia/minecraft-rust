@@ -1,4 +1,4 @@
-use crate::keyboard::{get_action_keys, GameAction};
+use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::diagnostic::DiagnosticsStore;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
