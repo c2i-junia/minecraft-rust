@@ -20,7 +20,7 @@ impl Player {
         Self {
             vertical_velocity: 0.0,
             on_ground: true,
-            view_mode: ViewMode::ThirdPerson,
+            view_mode: ViewMode::FirstPerson,
         }
     }
 
