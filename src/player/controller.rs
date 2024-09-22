@@ -1,24 +1,15 @@
 use crate::camera::CameraController;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
+use crate::world::{load_chunk_around_player, WORLD_MAP};
 use bevy::prelude::*;
 
-fn is_block_at_position(
-    x: f32,
-    y: f32,
-    z: f32,
-    blocks: &Query<&Transform, Without<Player>>,
-) -> bool {
-    for block_transform in blocks.iter() {
-        let block_pos = block_transform.translation;
-        if (block_pos.x - x).abs() < 0.75
-            && (block_pos.y - y).abs() < 0.75
-            && (block_pos.z - z).abs() < 0.75
-        {
-            return true;
-        }
+fn is_block_at_position(x: i32, y: i32, z: i32) -> bool {
+    let map = WORLD_MAP.lock().unwrap();
+    match map.get_block(x, y, z) {
+        Some(_) => true,
+        None => false,
     }
-    false
 }
 // System to move the player based on keyboard input
 pub fn player_movement_system(
@@ -26,8 +17,9 @@ pub fn player_movement_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
     camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
-    blocks: Query<&Transform, Without<Player>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
 ) {
     if is_action_just_pressed(GameAction::Escape, &keyboard_input) {
         std::process::exit(0);
@@ -41,6 +33,13 @@ pub fn player_movement_system(
 
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
+
+    load_chunk_around_player(
+        player_transform.translation,
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+    );
 
     let material_handle = &*material_handle_mut_ref;
 
@@ -92,17 +91,17 @@ pub fn player_movement_system(
 
         // Vérification des collisions devant le joueur (sur l'axe X et Z)
         if !is_block_at_position(
-            new_pos.x,
-            player_transform.translation.y,
-            new_pos.z,
-            &blocks,
+            new_pos.x as i32,
+            player_transform.translation.y as i32,
+            new_pos.z as i32,
         ) {
             player_transform.translation = new_pos;
         }
     }
 
     // Handle jumping (if on the ground) and gravity
-    if player.on_ground && is_action_pressed(GameAction::Jump, &keyboard_input) {
+    // /*player.on_ground &&*/     (temporarily disabled for testing)
+    if is_action_pressed(GameAction::Jump, &keyboard_input) {
         // Player can jump only when grounded
         player.vertical_velocity = jump_velocity;
         player.on_ground = false;
@@ -116,10 +115,9 @@ pub fn player_movement_system(
 
     // check if there is a bloc underneath the player
     if is_block_at_position(
-        player_transform.translation.x,
-        player_transform.translation.y - 1.0,
-        player_transform.translation.z,
-        &blocks,
+        player_transform.translation.x as i32,
+        (player_transform.translation.y - 1.0) as i32,
+        player_transform.translation.z as i32,
     ) {
         // si un bloc est détecté sous le joueur, il reste sur le bloc
         player_transform.translation.y = new_y;
@@ -132,9 +130,8 @@ pub fn player_movement_system(
     }
 
     // If the player is below the world, reset their position
-    if (player_transform.translation.y - 1.0) < -10.0 {
-        player_transform.translation = Vec3::new(0.0, 1.0, 0.0);
-        player.on_ground = true;
+    if (player_transform.translation.y - 1.0) < -50.0 {
+        player_transform.translation = Vec3::new(0.0, 100.0, 0.0);
         player.vertical_velocity = 0.0;
     }
 
