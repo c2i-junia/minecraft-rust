@@ -1,6 +1,4 @@
-use crate::camera::CameraController;
-use crate::input::keyboard::*;
-use crate::player::{Player, ViewMode};
+use crate::player::Player;
 use bevy::prelude::*;
 
 pub fn spawn_player(
