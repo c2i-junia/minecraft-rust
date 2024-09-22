@@ -1,11 +1,11 @@
+use crate::camera::*;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
-use crate::camera::*;
 
 pub fn handle_block_breaking(
     mut commands: Commands,
-    mouse_input: Res<ButtonInput<MouseButton>>,  // to handle mouse input
-    raycast_source: Query<&RaycastSource<BlockRaycastSet>>,  // raycast from the camera
+    mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
+    raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
 ) {
     // check if the left mouse button was pressed
     if mouse_input.just_pressed(MouseButton::Left) {

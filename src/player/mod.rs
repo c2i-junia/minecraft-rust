@@ -1,12 +1,11 @@
 mod controller;
 mod spawn;
 
+use crate::camera::CameraController;
+use crate::input::keyboard::*;
+use bevy::prelude::*;
 pub use controller::*;
 pub use spawn::*;
-use crate::input::keyboard::*;
-use crate::camera::CameraController;
-use bevy::prelude::*;
-
 
 #[derive(Component)]
 pub struct Player {

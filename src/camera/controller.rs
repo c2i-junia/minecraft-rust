@@ -26,8 +26,6 @@ impl Default for CameraController {
     }
 }
 
-
-
 pub fn spawn_camera(mut commands: Commands) {
     commands
         .spawn(Camera3dBundle {
@@ -35,11 +33,11 @@ pub fn spawn_camera(mut commands: Commands) {
                 .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
             ..Default::default()
         })
-        .insert(CameraController::default())  // Ajoute le CameraController
+        .insert(CameraController::default()) // Ajoute le CameraController
         .insert({
-            let mut raycast_source = RaycastSource::<BlockRaycastSet>::default();  // Initialisation par défaut
-            raycast_source.cast_method = RaycastMethod::Transform;  // Utilise la transformation de la caméra pour lancer le rayon
-            raycast_source  // Retourne l'objet 
+            let mut raycast_source = RaycastSource::<BlockRaycastSet>::default(); // Initialisation par défaut
+            raycast_source.cast_method = RaycastMethod::Transform; // Utilise la transformation de la caméra pour lancer le rayon
+            raycast_source // Retourne l'objet
         });
 }
 

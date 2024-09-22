@@ -1,16 +1,16 @@
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
-use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
 use camera::*;
-use input::*;
 use fps_counter::*;
+use input::*;
 use player::*;
 use world::*;
 
 mod camera;
-mod input;
 mod fps_counter;
+mod input;
 mod player;
 mod world;
 
@@ -35,6 +35,3 @@ fn main() {
         .add_systems(Update, handle_block_breaking) // Ajout du système de clic pour casser les blocs
         .run();
 }
-
-
-

@@ -7,5 +7,3 @@ pub fn cursor_grab_system(mut windows: Query<&mut Window, With<PrimaryWindow>>) 
     window.cursor.visible = false;
     window.cursor.grab_mode = CursorGrabMode::Locked;
 }
-
-

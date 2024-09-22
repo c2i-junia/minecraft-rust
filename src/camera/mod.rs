@@ -1,7 +1,7 @@
 mod controller;
-mod reticle;
 mod cursor;
+mod reticle;
 
 pub use controller::*;
-pub use reticle::*;
 pub use cursor::*;
+pub use reticle::*;

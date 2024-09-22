@@ -1,5 +1,5 @@
-use crate::input::keyboard::*;
 use crate::camera::CameraController;
+use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use bevy::prelude::*;
 

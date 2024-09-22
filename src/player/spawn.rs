@@ -1,9 +1,7 @@
-use crate::input::keyboard::*;
 use crate::camera::CameraController;
+use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use bevy::prelude::*;
-
-
 
 pub fn spawn_player(
     mut commands: Commands,
@@ -19,5 +17,3 @@ pub fn spawn_player(
         })
         .insert(Player::new());
 }
-
-
