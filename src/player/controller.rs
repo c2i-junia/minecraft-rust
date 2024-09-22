@@ -21,10 +21,6 @@ pub fn player_movement_system(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
-    if is_action_just_pressed(GameAction::Escape, &keyboard_input) {
-        std::process::exit(0);
-    }
-
     if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
         for (_, mut player, _) in player_query.iter_mut() {
             player.toggle_view_mode();
