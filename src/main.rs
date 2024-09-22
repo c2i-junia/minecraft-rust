@@ -3,12 +3,14 @@ use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
 use camera::*;
+use exit::*;
 use fps_counter::*;
 use input::*;
 use player::*;
 use world::*;
 
 mod camera;
+mod exit;
 mod fps_counter;
 mod input;
 mod player;
@@ -33,5 +35,6 @@ fn main() {
         .add_systems(Update, camera_control_system)
         .add_systems(Update, (fps_text_update_system, fps_counter_showhide))
         .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
+        .add_systems(Update, exit_system)
         .run();
 }
