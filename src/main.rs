@@ -35,6 +35,7 @@ fn main() {
         .add_systems(Update, camera_control_system)
         .add_systems(Update, fps_text_update_system)
         .add_systems(Update, coords_text_update_system)
+        .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, toggle_hud_system)
         .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
         .add_systems(Update, exit_system)

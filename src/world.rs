@@ -13,7 +13,8 @@ pub enum Block {
 
 pub struct WorldMap {
     map: HashMap<IVec3, HashMap<IVec3, Block>>,
-    total_blocks_count: u64,
+    pub total_blocks_count: u64,
+    pub total_chunks_count: u64,
 }
 
 pub fn block_to_chunk_coord(x: i32) -> i32 {
@@ -60,6 +61,7 @@ lazy_static! {
     pub static ref WORLD_MAP: Arc<Mutex<WorldMap>> = Arc::new(Mutex::new(WorldMap {
         map: HashMap::new(),
         total_blocks_count: 0,
+        total_chunks_count: 0,
     }));
 }
 
@@ -126,6 +128,9 @@ fn generate_chunk(
             }
         }
     }
+
+    WORLD_MAP.lock().unwrap().total_chunks_count += 1;
+
     /*
     println!(
         "Total block count {}",

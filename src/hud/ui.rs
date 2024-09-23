@@ -1,3 +1,4 @@
+use crate::hud::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
@@ -72,26 +73,33 @@ pub fn setup_ui(mut commands: Commands) {
         ))
         .id();
 
-    let coords_text = commands
-        .spawn((
-            CoordsText,
-            TextBundle {
-                text: Text::from_sections([TextSection {
-                    value: "...".into(),
-                    style: TextStyle {
-                        font_size: 16.0,
-                        color: Color::WHITE,
-                        ..default()
-                    },
-                }]),
-                ..Default::default()
+    let default_text_bundle = || TextBundle {
+        text: Text::from_sections([TextSection {
+            value: "...".into(),
+            style: TextStyle {
+                font_size: 16.0,
+                color: Color::WHITE,
+                ..default()
             },
-        ))
+        }]),
+        ..Default::default()
+    };
+
+    let coords_text = commands.spawn((CoordsText, default_text_bundle())).id();
+
+    let blocks_number_text = commands
+        .spawn((BlocksNumberText, default_text_bundle()))
+        .id();
+    let chunks_number_text = commands
+        .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
-    commands
-        .entity(root)
-        .push_children(&[text_fps, coords_text]);
+    commands.entity(root).push_children(&[
+        text_fps,
+        coords_text,
+        blocks_number_text,
+        chunks_number_text,
+    ]);
 }
 
 /// Toggle the FPS counter when pressing F3
