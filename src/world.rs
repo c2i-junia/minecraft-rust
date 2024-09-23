@@ -126,10 +126,12 @@ fn generate_chunk(
             }
         }
     }
+    /*
     println!(
         "Total block count {}",
         WORLD_MAP.lock().unwrap().total_blocks_count
     );
+     */
 }
 
 pub fn setup_world(
