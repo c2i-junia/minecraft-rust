@@ -13,6 +13,7 @@ pub enum Block {
 
 pub struct WorldMap {
     map: HashMap<IVec3, HashMap<IVec3, Block>>,
+    total_blocks_count: u64,
 }
 
 pub fn block_to_chunk_coord(x: i32) -> i32 {
@@ -57,7 +58,8 @@ impl WorldMap {
 
 lazy_static! {
     pub static ref WORLD_MAP: Arc<Mutex<WorldMap>> = Arc::new(Mutex::new(WorldMap {
-        map: HashMap::new()
+        map: HashMap::new(),
+        total_blocks_count: 0,
     }));
 }
 
@@ -120,9 +122,14 @@ fn generate_chunk(
                     },
                     RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
                 ));
+                WORLD_MAP.lock().unwrap().total_blocks_count += 1;
             }
         }
     }
+    println!(
+        "Total block count {}",
+        WORLD_MAP.lock().unwrap().total_blocks_count
+    );
 }
 
 pub fn setup_world(
@@ -151,31 +158,19 @@ pub fn load_chunk_around_player(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    println!(
-        "load_chunk_around_player, TIME={}",
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_millis()
-    );
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
         0,
         block_to_chunk_coord(player_position.z as i32),
     );
 
-    println!("player position: {:?}", player_position);
-    println!("player chunk: {:?}", player_chunk);
-
-    for x in -1..=1 {
-        for z in -1..=1 {
-            println!("x={}, z={}", x, z);
+    for x in -4..=4 {
+        for z in -4..=4 {
             let chunk_pos = IVec3::new(player_chunk.x + x, 0, player_chunk.z + z);
             {
                 let world_map = WORLD_MAP.lock().unwrap();
                 let chunk = world_map.map.get(&chunk_pos);
                 if chunk.is_some() {
-                    println!("is some: {:?}", chunk_pos);
                     continue;
                 }
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
