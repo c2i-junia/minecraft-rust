@@ -1,5 +1,6 @@
 mod controller;
 mod spawn;
+mod inventory;
 
 use bevy::prelude::*;
 pub use controller::*;
@@ -11,6 +12,12 @@ pub struct Player {
     pub on_ground: bool,
     pub view_mode: ViewMode,
     pub is_chunk_debug_mode_enabled: bool,
+    pub inventory : Vec<Items>
+}
+
+pub struct Items {
+    id : i32,
+    nb : i32
 }
 
 #[derive(Debug, PartialEq)]
@@ -26,6 +33,7 @@ impl Player {
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
             is_chunk_debug_mode_enabled: true,
+            inventory : vec![]
         }
     }
 
