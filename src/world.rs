@@ -34,21 +34,21 @@ pub fn block_vec3_to_chunk_v3_coord(v: Vec3) -> Vec3 {
 }
 
 impl WorldMap {
-    pub fn get_block(&self, x: i32, y: i32, z: i32) -> Option<&Block> {
-        let cx = block_to_chunk_coord(x);
-        let cy = block_to_chunk_coord(y);
-        let cz = block_to_chunk_coord(z);
-        let chunk = self.map.get(&IVec3::new(cx, cy, cz));
-        match chunk {
-            Some(chunk) => {
-                let sub_x = x % 16;
-                let sub_y = y % 16;
-                let sub_z = z % 16;
-                chunk.get(&IVec3::new(sub_x, sub_y, sub_z))
-            }
-            None => None,
-        }
-    }
+    // pub fn get_block(&self, x: i32, y: i32, z: i32) -> Option<&Block> {
+    //     let cx = block_to_chunk_coord(x);
+    //     let cy = block_to_chunk_coord(y);
+    //     let cz = block_to_chunk_coord(z);
+    //     let chunk = self.map.get(&IVec3::new(cx, cy, cz));
+    //     match chunk {
+    //         Some(chunk) => {
+    //             let sub_x = x % 16;
+    //             let sub_y = y % 16;
+    //             let sub_z = z % 16;
+    //             chunk.get(&IVec3::new(sub_x, sub_y, sub_z))
+    //         }
+    //         None => None,
+    //     }
+    // }
 
     pub fn set_block(&mut self, x: i32, y: i32, z: i32, block: Block) {
         let cx = block_to_chunk_coord(x);
