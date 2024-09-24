@@ -1,9 +1,11 @@
+use crate::materials::MaterialResource;
 use crate::BlockRaycastSet;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use std::collections::HashMap;
 
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum Block {
     Grass,
     Dirt,
@@ -49,7 +51,16 @@ impl WorldMap {
     //     }
     // }
 
-    pub fn set_block(&mut self, x: i32, y: i32, z: i32, block: Block) {
+    pub fn set_block(
+        &mut self,
+        x: i32,
+        y: i32,
+        z: i32,
+        block: Block,
+        commands: &mut Commands,
+        mesh: Handle<Mesh>,
+        material_resource: &Res<MaterialResource>,
+    ) {
         let cx = block_to_chunk_coord(x);
         let cy = block_to_chunk_coord(y);
         let cz = block_to_chunk_coord(z);
@@ -61,6 +72,22 @@ impl WorldMap {
         let sub_y = y % 16;
         let sub_z = z % 16;
         chunk.insert(IVec3::new(sub_x, sub_y, sub_z), block);
+
+        let material = material_resource
+            .materials
+            .get(&block)
+            .expect("material not found")
+            .clone();
+
+        commands.spawn((
+            PbrBundle {
+                mesh,
+                material,
+                transform: Transform::from_translation(Vec3::new(x as f32, y as f32, z as f32)),
+                ..Default::default()
+            },
+            RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
+        ));
     }
 }
 
@@ -69,8 +96,8 @@ fn generate_chunk(
     seed: u32,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
     world_map: &mut WorldMap,
+    material_resource: &Res<MaterialResource>,
 ) {
     // println!(
     //     "Generating chunk: {}, {}, {}",
@@ -86,8 +113,6 @@ fn generate_chunk(
     let cz = chunk_pos.z;
 
     let cube_mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
-    let grass_material = materials.add(Color::srgb(0.0, 0.5, 0.0));
-    let dirt_material = materials.add(Color::srgb(0.5, 0.25, 0.0));
 
     // Boucle pour générer les blocs avec variation de hauteur
     for i in 0..16 {
@@ -101,29 +126,24 @@ fn generate_chunk(
 
             // Générer les couches de blocs jusqu'à la couche y = -10
             for y in -10..=perlin_height {
-                let material = if y == perlin_height {
-                    // Le bloc du dessus est de l'herbe
-                    world_map.set_block(x, y, z, Block::Grass);
-                    grass_material.clone()
+                let block = if y == perlin_height {
+                    Block::Grass
                 } else {
-                    // Les couches inférieures sont de la terre
-                    world_map.set_block(x, y, z, Block::Dirt);
-                    dirt_material.clone()
+                    Block::Dirt
                 };
 
+                world_map.set_block(
+                    x,
+                    y,
+                    z,
+                    block,
+                    commands,
+                    cube_mesh.clone(),
+                    material_resource,
+                );
                 // Placer chaque bloc à la bonne hauteur
                 // Marquer les blocs comme détectables par raycasting
-                commands.spawn((
-                    PbrBundle {
-                        mesh: cube_mesh.clone(),
-                        material,
-                        transform: Transform::from_translation(Vec3::new(
-                            x as f32, y as f32, z as f32,
-                        )),
-                        ..Default::default()
-                    },
-                    RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
-                ));
+
                 world_map.total_blocks_count += 1;
             }
         }
@@ -142,31 +162,29 @@ fn generate_chunk(
 pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut world_map: ResMut<WorldMap>,
+    material_resource: Res<MaterialResource>,
 ) {
-    //for x in -1..=1 {
-    //    for z in -1..=1 {
-    let x = 0;
-    let z = 0;
-    generate_chunk(
-        IVec3::new(x, 0, z),
-        42,
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut world_map,
-    );
-    //    }
-    //}
+    for x in -1..=1 {
+        for z in -1..=1 {
+            generate_chunk(
+                IVec3::new(x, 0, z),
+                42,
+                &mut commands,
+                &mut meshes,
+                &mut world_map,
+                &material_resource,
+            );
+        }
+    }
 }
 
 pub fn load_chunk_around_player(
     player_position: Vec3,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<StandardMaterial>>,
     world_map: &mut WorldMap,
+    material_resource: Res<MaterialResource>,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -185,7 +203,14 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(chunk_pos, 42, commands, meshes, materials, world_map);
+            generate_chunk(
+                chunk_pos,
+                42,
+                commands,
+                meshes,
+                world_map,
+                &material_resource,
+            );
         }
     }
 }

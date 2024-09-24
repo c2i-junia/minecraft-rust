@@ -7,6 +7,7 @@ use camera::*;
 use exit::*;
 use hud::*;
 use input::*;
+use materials::*;
 use player::*;
 use world::*;
 
@@ -15,6 +16,7 @@ mod chunk_debug_ghost;
 mod exit;
 mod hud;
 mod input;
+mod materials;
 mod player;
 mod world;
 
@@ -28,7 +30,10 @@ fn main() {
             brightness: 400.0,
         })
         .insert_resource(WorldMap { ..default() })
-        .add_systems(Startup, setup_world)
+        .add_systems(
+            Startup,
+            (setup_materials, setup_cube_mesh, setup_world).chain(),
+        )
         .add_systems(Startup, spawn_player)
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)

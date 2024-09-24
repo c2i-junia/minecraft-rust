@@ -1,5 +1,6 @@
 use crate::camera::CameraController;
 use crate::input::keyboard::*;
+use crate::materials::MaterialResource;
 use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap};
 use bevy::prelude::*;
@@ -78,6 +79,7 @@ pub fn player_movement_system(
     mut meshes: ResMut<Assets<Mesh>>,
     blocks: Query<&Transform, (Without<Player>, Without<Camera>)>,
     mut world_map: ResMut<WorldMap>,
+    material_resource: Res<MaterialResource>,
 ) {
     if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
         for (_, mut player, _) in player_query.iter_mut() {
@@ -106,8 +108,8 @@ pub fn player_movement_system(
         player_transform.translation,
         &mut commands,
         &mut meshes,
-        &mut materials,
         &mut world_map,
+        material_resource,
     );
 
     let material_handle = &*material_handle_mut_ref;

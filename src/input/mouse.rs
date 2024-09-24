@@ -1,4 +1,5 @@
 use crate::camera::*;
+use crate::materials::MaterialResource;
 use crate::player::inventory::*;
 use crate::player::Player;
 use crate::world::{Block, WorldMap};
@@ -16,11 +17,10 @@ pub fn handle_block_interactions(
     mut commands: Commands,
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
     mut meshes: ResMut<Assets<Mesh>>,           // for adding new block meshes
-    mut materials: ResMut<Assets<StandardMaterial>>, // for adding new block materials
     raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
     mut world_map: ResMut<WorldMap>,
+    material_resource: Res<MaterialResource>,
 ) {
-    let dirt_material = materials.add(Color::srgb(0.5, 0.25, 0.0)); // Material for dirt block
     let cube_mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0))); // Cube mesh for the blocks
 
     let raycast_source = raycast_source.single();
@@ -56,21 +56,14 @@ pub fn handle_block_interactions(
             // Snap the position to the grid
             position = snap_to_grid(position);
 
-            // Spawn a new dirt block at the snapped position
-            commands.spawn((
-                PbrBundle {
-                    mesh: cube_mesh.clone(),
-                    material: dirt_material.clone(),
-                    transform: Transform::from_translation(position),
-                    ..Default::default()
-                },
-                RaycastMesh::<BlockRaycastSet>::default(), // Mark the new block as raycastable
-            ));
             world_map.set_block(
                 position.x as i32,
                 position.y as i32,
                 position.z as i32,
                 Block::Dirt,
+                &mut commands,
+                cube_mesh.clone(),
+                &material_resource,
             );
         }
     }
