@@ -10,6 +10,12 @@ pub fn inventory_text_update_system(
 ) {
     for mut text in query.iter_mut() {
         let player = player.single();
+        // Check if inventory is empty
+        if player.inventory.is_empty() {
+            text.sections[0].value = "Inventory: Empty".to_string();
+            return;
+        }
+        // Update inventory text
         text.sections[0].value = format!("Inventory: {:?}", player.inventory);
     }
 }
