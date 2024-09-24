@@ -23,6 +23,9 @@ pub fn player_movement_system(
 ) {
     if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
         for (_, mut player, _) in player_query.iter_mut() {
+            // TOFIX: there is only one
+            // player so no need to iterate
+            // ??
             player.toggle_view_mode();
         }
     }
@@ -30,6 +33,13 @@ pub fn player_movement_system(
     if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
         for (_, mut player, _) in player_query.iter_mut() {
             player.toggle_chunk_debug_mode();
+        }
+    }
+
+    // fly mode (f key)
+    if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input) {
+        for (_, mut player, _) in player_query.iter_mut() {
+            player.toggle_fly_mode();
         }
     }
 
@@ -59,9 +69,25 @@ pub fn player_movement_system(
         }
     }
 
-    let speed = 5.0;
+    let speed;
+    if player.is_flying {
+        speed = 15.0
+    } else {
+        speed = 5.0
+    }
+
     let gravity = (-9.8) * 4.0;
     let jump_velocity = 6.0 * 2.0;
+
+    // flying mode
+    if player.is_flying {
+        if is_action_pressed(GameAction::FlyUp, &keyboard_input) {
+            player_transform.translation.y += speed * 2.0 * time.delta_seconds();
+        }
+        if is_action_pressed(GameAction::FlyDown, &keyboard_input) {
+            player_transform.translation.y -= speed * 2.0 * time.delta_seconds();
+        }
+    }
 
     // Calculate movement directions relative to the camera
     let mut forward = camera_transform.forward().xyz();
@@ -101,15 +127,16 @@ pub fn player_movement_system(
         }
     }
 
-    // Handle jumping (if on the ground) and gravity
-    // /*player.on_ground &&*/     (temporarily disabled for testing)
-    if is_action_pressed(GameAction::Jump, &keyboard_input) {
-        // Player can jump only when grounded
-        player.vertical_velocity = jump_velocity;
-        player.on_ground = false;
-    } else if !player.on_ground {
-        // Apply gravity when the player is in the air
-        player.vertical_velocity += gravity * time.delta_seconds();
+    // Handle jumping (if on the ground) and gravity (only if not flying)
+    if !player.is_flying {
+        if player.on_ground && is_action_pressed(GameAction::Jump, &keyboard_input) {
+            // Player can jump only when grounded
+            player.vertical_velocity = jump_velocity;
+            player.on_ground = false;
+        } else if !player.on_ground {
+            // Apply gravity when the player is in the air
+            player.vertical_velocity += gravity * time.delta_seconds();
+        }
     }
 
     // apply gravity
@@ -136,14 +163,4 @@ pub fn player_movement_system(
         player_transform.translation = Vec3::new(0.0, 100.0, 0.0);
         player.vertical_velocity = 0.0;
     }
-
-    /*
-    // print coordinates
-    println!(
-        "Player coordinates: x = {:.2}, y = {:.2}, z = {:.2}",
-        player_transform.translation.x,
-        player_transform.translation.y,
-        player_transform.translation.z
-    );
-     */
 }

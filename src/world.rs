@@ -80,10 +80,10 @@ fn generate_chunk(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
-    println!(
-        "Generating chunk: {}, {}, {}",
-        chunk_pos.x, chunk_pos.y, chunk_pos.z
-    );
+    // println!(
+    //     "Generating chunk: {}, {}, {}",
+    //     chunk_pos.x, chunk_pos.y, chunk_pos.z
+    // );
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;

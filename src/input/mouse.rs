@@ -1,6 +1,6 @@
 use crate::camera::*;
-use crate::player::Player;
 use crate::player::inventory::*;
+use crate::player::Player;
 use crate::world::{Block, WORLD_MAP};
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
@@ -46,10 +46,10 @@ pub fn handle_block_interactions(
             } else {
                 return;
             }
-            
+
             // Get the normal of the face where the block will be placed
             let normal = intersection.normal(); // This is already a Vec3, no need to unwrap
-            // Calculate the block position by adding a small offset to the intersection point
+                                                // Calculate the block position by adding a small offset to the intersection point
             let mut position = intersection.position() + normal * 0.51;
 
             // Snap the position to the grid

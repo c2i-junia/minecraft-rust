@@ -1,11 +1,11 @@
 pub mod coords;
 pub mod fps;
+pub mod inventory;
 mod loaded_stats;
 pub mod ui;
-pub mod inventory;
 
 pub use coords::*;
 pub use fps::*;
+pub use inventory::*;
 pub use loaded_stats::*;
 pub use ui::*;
-pub use inventory::*;

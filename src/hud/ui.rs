@@ -1,5 +1,5 @@
+use crate::hud::inventory::InventoryText;
 use crate::hud::loaded_stats::{BlocksNumberText, ChunksNumberText};
-use crate::hud::inventory::{InventoryText};
 use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;

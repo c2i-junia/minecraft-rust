@@ -1,6 +1,6 @@
+use crate::player;
 use crate::player::Player;
 use bevy::prelude::*;
-use crate::player;
 
 // Ajoute un item à l'inventaire du joueur
 pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: i32, nb: i32) {
@@ -11,7 +11,10 @@ pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: i32, nb: 
             return;
         }
     }
-    player.inventory.push(player::Items { id: item_id, nb: nb });
+    player.inventory.push(player::Items {
+        id: item_id,
+        nb: nb,
+    });
 }
 
 // Retire un item de l'inventaire du joueur

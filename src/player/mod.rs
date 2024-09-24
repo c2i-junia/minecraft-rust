@@ -1,6 +1,6 @@
 mod controller;
-mod spawn;
 pub(crate) mod inventory;
+mod spawn;
 
 use bevy::prelude::*;
 pub use controller::*;
@@ -12,13 +12,14 @@ pub struct Player {
     pub on_ground: bool,
     pub view_mode: ViewMode,
     pub is_chunk_debug_mode_enabled: bool,
-    pub inventory : Vec<Items>
+    pub is_flying: bool,
+    pub inventory: Vec<Items>,
 }
 
 #[derive(Debug)]
 pub struct Items {
-    id : i32,
-    nb : i32
+    id: i32,
+    nb: i32,
 }
 
 #[derive(Debug, PartialEq)]
@@ -34,7 +35,8 @@ impl Player {
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
             is_chunk_debug_mode_enabled: true,
-            inventory: vec![] // No items in the inventory at the beginning
+            is_flying: false,
+            inventory: vec![], // No items in the inventory at the beginning
         }
     }
 
@@ -47,5 +49,10 @@ impl Player {
 
     pub fn toggle_chunk_debug_mode(&mut self) {
         self.is_chunk_debug_mode_enabled = !self.is_chunk_debug_mode_enabled;
+    }
+
+    pub fn toggle_fly_mode(&mut self) {
+        self.is_flying = !self.is_flying;
+        self.vertical_velocity = 0.0; // Réinitialisation de la vélocité
     }
 }
