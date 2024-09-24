@@ -29,14 +29,14 @@ pub fn remove_item_from_inventory(player: &mut Query<&mut Player>, item_id: i32,
 }
 
 // Retourne le nombre d'items dans l'inventaire du joueur
-pub fn get_item_count(player: &Player, item_id: i32) -> i32 {
-    for item in player.inventory.iter() {
-        if item.id == item_id {
-            return item.nb;
-        }
-    }
-    return 0;
-}
+// pub fn get_item_count(player: &Player, item_id: i32) -> i32 {
+//     for item in player.inventory.iter() {
+//         if item.id == item_id {
+//             return item.nb;
+//         }
+//     }
+//     return 0;
+// }
 
 // Retourne true si le joueur possède l'item
 pub fn has_item(player: &mut Query<&mut Player>, item_id: i32) -> bool {
