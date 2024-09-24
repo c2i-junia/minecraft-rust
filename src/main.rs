@@ -27,6 +27,7 @@ fn main() {
             color: Color::WHITE,
             brightness: 400.0,
         })
+        .insert_resource(WorldMap { ..default() })
         .add_systems(Startup, setup_world)
         .add_systems(Startup, spawn_player)
         .add_systems(Startup, spawn_camera)

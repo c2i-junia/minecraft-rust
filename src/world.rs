@@ -1,18 +1,17 @@
 use crate::BlockRaycastSet;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
-use lazy_static::lazy_static;
 use noise::{NoiseFn, Perlin};
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 
 pub enum Block {
     Grass,
     Dirt,
 }
 
+#[derive(Resource, Default)]
 pub struct WorldMap {
-    map: HashMap<IVec3, HashMap<IVec3, Block>>,
+    pub map: HashMap<IVec3, HashMap<IVec3, Block>>,
     pub total_blocks_count: u64,
     pub total_chunks_count: u64,
 }
@@ -65,20 +64,13 @@ impl WorldMap {
     }
 }
 
-lazy_static! {
-    pub static ref WORLD_MAP: Arc<Mutex<WorldMap>> = Arc::new(Mutex::new(WorldMap {
-        map: HashMap::new(),
-        total_blocks_count: 0,
-        total_chunks_count: 0,
-    }));
-}
-
 fn generate_chunk(
     chunk_pos: IVec3,
     seed: u32,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    world_map: &mut WorldMap,
 ) {
     // println!(
     //     "Generating chunk: {}, {}, {}",
@@ -111,11 +103,11 @@ fn generate_chunk(
             for y in -10..=perlin_height {
                 let material = if y == perlin_height {
                     // Le bloc du dessus est de l'herbe
-                    WORLD_MAP.lock().unwrap().set_block(x, y, z, Block::Grass);
+                    world_map.set_block(x, y, z, Block::Grass);
                     grass_material.clone()
                 } else {
                     // Les couches inférieures sont de la terre
-                    WORLD_MAP.lock().unwrap().set_block(x, y, z, Block::Dirt);
+                    world_map.set_block(x, y, z, Block::Dirt);
                     dirt_material.clone()
                 };
 
@@ -132,12 +124,12 @@ fn generate_chunk(
                     },
                     RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
                 ));
-                WORLD_MAP.lock().unwrap().total_blocks_count += 1;
+                world_map.total_blocks_count += 1;
             }
         }
     }
 
-    WORLD_MAP.lock().unwrap().total_chunks_count += 1;
+    world_map.total_chunks_count += 1;
 
     /*
     println!(
@@ -151,6 +143,7 @@ pub fn setup_world(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut world_map: ResMut<WorldMap>,
 ) {
     //for x in -1..=1 {
     //    for z in -1..=1 {
@@ -162,6 +155,7 @@ pub fn setup_world(
         &mut commands,
         &mut meshes,
         &mut materials,
+        &mut world_map,
     );
     //    }
     //}
@@ -172,6 +166,7 @@ pub fn load_chunk_around_player(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
+    world_map: &mut WorldMap,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -183,7 +178,6 @@ pub fn load_chunk_around_player(
         for z in -4..=4 {
             let chunk_pos = IVec3::new(player_chunk.x + x, 0, player_chunk.z + z);
             {
-                let world_map = WORLD_MAP.lock().unwrap();
                 let chunk = world_map.map.get(&chunk_pos);
                 if chunk.is_some() {
                     continue;
@@ -191,7 +185,7 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(chunk_pos, 42, commands, meshes, materials);
+            generate_chunk(chunk_pos, 42, commands, meshes, materials, world_map);
         }
     }
 }
