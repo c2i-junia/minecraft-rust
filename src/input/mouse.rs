@@ -1,4 +1,6 @@
 use crate::camera::*;
+use crate::player::Player;
+use crate::player::inventory::*;
 use crate::world::{Block, WORLD_MAP};
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
@@ -10,6 +12,7 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
+    mut player: Query<&mut Player>,
     mut commands: Commands,
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
     mut meshes: ResMut<Assets<Mesh>>,           // for adding new block meshes
@@ -27,15 +30,26 @@ pub fn handle_block_interactions(
         if let Some((entity, _intersection)) = raycast_source.intersections().first() {
             // Remove the hit block
             commands.entity(*entity).despawn();
+
+            // add the block to the player's inventory
+            add_item_to_inventory(&mut player, 1, 1);
         }
     }
 
     // Handle right-click for placing blocks
     if mouse_input.just_pressed(MouseButton::Right) {
         if let Some((_entity, intersection)) = raycast_source.intersections().first() {
+            // Check if the block is in the player's inventory
+            if has_item(&mut player, 1) {
+                // Remove the block from the player's inventory
+                remove_item_from_inventory(&mut player, 1, 1);
+            } else {
+                return;
+            }
+            
             // Get the normal of the face where the block will be placed
             let normal = intersection.normal(); // This is already a Vec3, no need to unwrap
-                                                // Calculate the block position by adding a small offset to the intersection point
+            // Calculate the block position by adding a small offset to the intersection point
             let mut position = intersection.position() + normal * 0.51;
 
             // Snap the position to the grid

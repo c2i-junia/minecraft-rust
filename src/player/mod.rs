@@ -1,6 +1,6 @@
 mod controller;
 mod spawn;
-mod inventory;
+pub(crate) mod inventory;
 
 use bevy::prelude::*;
 pub use controller::*;
