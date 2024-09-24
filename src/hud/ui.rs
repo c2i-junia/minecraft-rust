@@ -1,4 +1,5 @@
 use crate::hud::loaded_stats::{BlocksNumberText, ChunksNumberText};
+use crate::hud::inventory::{InventoryText};
 use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
@@ -94,11 +95,14 @@ pub fn setup_ui(mut commands: Commands) {
         .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
+    let inventory_text = commands.spawn((InventoryText, default_text_bundle())).id();
+
     commands.entity(root).push_children(&[
         text_fps,
         coords_text,
         blocks_number_text,
         chunks_number_text,
+        inventory_text,
     ]);
 }
 
