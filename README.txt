@@ -13,6 +13,7 @@ Controls:
 - Toggle FPS Display  : F3
 - Toggle View Mode    : F5 (First-Person / Third-Person)
 - Toggle Chunk Debug  : F4
+- Toggle Block Debug  : F6
 - Exit Game           : Escape
 
 

@@ -1,3 +1,4 @@
+use crate::block_debug_wireframe::create_wireframe_cube;
 use crate::world::Block;
 use bevy::prelude::*;
 use std::collections::HashMap;
@@ -26,14 +27,19 @@ pub fn setup_materials(mut commands: Commands, mut materials: ResMut<Assets<Stan
 
 #[derive(Resource)]
 pub struct MeshResource {
-    cube_mesh: Handle<Mesh>,
+    pub cube_mesh: Handle<Mesh>,
+    pub wireframe_mesh: Handle<Mesh>,
 }
 
 pub fn setup_cube_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let cube_mesh = Mesh::from(Cuboid::new(1.0, 1.0, 1.0));
     let cube_handle = meshes.add(cube_mesh);
 
+    let cube_wireframe_mesh = create_wireframe_cube();
+    let cube_wireframe_handle = meshes.add(cube_wireframe_mesh);
+
     commands.insert_resource(MeshResource {
         cube_mesh: cube_handle,
+        wireframe_mesh: cube_wireframe_handle,
     });
 }

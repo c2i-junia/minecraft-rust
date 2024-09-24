@@ -5,6 +5,9 @@ use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use std::collections::HashMap;
 
+#[derive(Component)]
+pub struct BlockMarker;
+
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum Block {
     Grass,
@@ -80,6 +83,7 @@ impl WorldMap {
             .clone();
 
         commands.spawn((
+            BlockMarker,
             PbrBundle {
                 mesh,
                 material,

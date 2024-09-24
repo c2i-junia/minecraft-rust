@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
 use crate::chunk_debug_ghost::{chunk_ghost_update_system, setup_chunk_ghost};
+use block_debug_wireframe::*;
 use camera::*;
 use exit::*;
 use hud::*;
@@ -11,6 +12,7 @@ use materials::*;
 use player::*;
 use world::*;
 
+mod block_debug_wireframe;
 mod camera;
 mod chunk_debug_ghost;
 mod exit;
@@ -30,6 +32,7 @@ fn main() {
             brightness: 400.0,
         })
         .insert_resource(WorldMap { ..default() })
+        .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
         .add_systems(
             Startup,
             (setup_materials, setup_cube_mesh, setup_world).chain(),
@@ -50,5 +53,6 @@ fn main() {
         .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
         .add_systems(Update, chunk_ghost_update_system)
         .add_systems(Update, exit_system)
+        .add_systems(Update, toggle_wireframe_system)
         .run();
 }

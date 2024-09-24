@@ -19,6 +19,7 @@ pub enum GameAction {
     ToggleFlyMode,
     FlyUp,
     FlyDown,
+    ToggleBlockWireframeDebugMode,
 }
 
 lazy_static! {
@@ -48,6 +49,7 @@ lazy_static! {
         map.insert(GameAction::ToggleFlyMode, vec![KeyCode::KeyF]);
         map.insert(GameAction::FlyUp, vec![KeyCode::KeyR]);
         map.insert(GameAction::FlyDown, vec![KeyCode::KeyC]);
+        map.insert(GameAction::ToggleBlockWireframeDebugMode, vec![KeyCode::F6]);
         map
     };
 }
