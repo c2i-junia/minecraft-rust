@@ -8,7 +8,7 @@ pub fn spawn_player(
 ) {
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(Cuboid::new(1.0, 2.0, 1.0))),
+            mesh: meshes.add(Mesh::from(Cuboid::new(0.8, 1.8, 0.8))),
             material: materials.add(Color::srgba(1.0, 0.0, 0.0, 0.0)),
             transform: Transform::from_translation(Vec3::new(7.5, 100.0, 7.5)),
             ..Default::default()

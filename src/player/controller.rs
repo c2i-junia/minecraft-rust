@@ -25,9 +25,8 @@ fn check_player_collision(
     player_position: Vec3,
     blocks: &Query<&Transform, (Without<Player>, Without<Camera>)>,
 ) -> bool {
-    // Le joueur fait 1 bloc de large et 2 blocs de haut
-    let player_width = 0.5;
-    let player_height = 2.0;
+    let player_width = 0.4;
+    let player_height = 1.8;
 
     // Vérification de la collision avec les pieds et la tête du joueur
     let foot_position = Vec3::new(
