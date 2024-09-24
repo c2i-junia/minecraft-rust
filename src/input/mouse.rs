@@ -1,4 +1,5 @@
 use crate::camera::*;
+use crate::world::{Block, WORLD_MAP};
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
@@ -50,6 +51,12 @@ pub fn handle_block_interactions(
                 },
                 RaycastMesh::<BlockRaycastSet>::default(), // Mark the new block as raycastable
             ));
+            WORLD_MAP.lock().unwrap().set_block(
+                position.x as i32,
+                position.y as i32,
+                position.z as i32,
+                Block::Dirt,
+            );
         }
     }
 }
