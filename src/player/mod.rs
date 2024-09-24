@@ -15,6 +15,7 @@ pub struct Player {
     pub inventory : Vec<Items>
 }
 
+#[derive(Debug)]
 pub struct Items {
     id : i32,
     nb : i32
@@ -33,7 +34,8 @@ impl Player {
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
             is_chunk_debug_mode_enabled: true,
-            inventory : vec![]
+            // Add one item to the player's inventory
+            inventory: vec![Items { id: 0, nb: 1 }],
         }
     }
 
