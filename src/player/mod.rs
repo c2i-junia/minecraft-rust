@@ -10,6 +10,7 @@ pub struct Player {
     pub vertical_velocity: f32,
     pub on_ground: bool,
     pub view_mode: ViewMode,
+    pub is_chunk_debug_mode_enabled: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -24,6 +25,7 @@ impl Player {
             vertical_velocity: 0.0,
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
+            is_chunk_debug_mode_enabled: true,
         }
     }
 
@@ -32,5 +34,9 @@ impl Player {
             ViewMode::FirstPerson => ViewMode::ThirdPerson,
             ViewMode::ThirdPerson => ViewMode::FirstPerson,
         };
+    }
+
+    pub fn toggle_chunk_debug_mode(&mut self) {
+        self.is_chunk_debug_mode_enabled = !self.is_chunk_debug_mode_enabled;
     }
 }

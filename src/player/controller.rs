@@ -27,6 +27,12 @@ pub fn player_movement_system(
         }
     }
 
+    if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
+        for (_, mut player, _) in player_query.iter_mut() {
+            player.toggle_chunk_debug_mode();
+        }
+    }
+
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
 

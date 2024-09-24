@@ -2,6 +2,7 @@ use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
+use crate::chunk_debug_ghost::{chunk_ghost_update_system, setup_chunk_ghost};
 use camera::*;
 use exit::*;
 use hud::*;
@@ -10,6 +11,7 @@ use player::*;
 use world::*;
 
 mod camera;
+mod chunk_debug_ghost;
 mod exit;
 mod hud;
 mod input;
@@ -31,6 +33,7 @@ fn main() {
         .add_systems(Startup, spawn_reticle)
         .add_systems(Startup, setup_ui)
         .add_systems(Startup, cursor_grab_system)
+        .add_systems(Startup, setup_chunk_ghost)
         .add_systems(Update, player_movement_system)
         .add_systems(Update, camera_control_system)
         .add_systems(Update, fps_text_update_system)
@@ -38,6 +41,7 @@ fn main() {
         .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, toggle_hud_system)
         .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
+        .add_systems(Update, chunk_ghost_update_system)
         .add_systems(Update, exit_system)
         .run();
 }

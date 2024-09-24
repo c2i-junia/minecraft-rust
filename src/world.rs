@@ -25,6 +25,14 @@ pub fn block_to_chunk_coord(x: i32) -> i32 {
     }
 }
 
+pub fn block_vec3_to_chunk_v3_coord(v: Vec3) -> Vec3 {
+    Vec3::new(
+        block_to_chunk_coord(v.x as i32) as f32,
+        block_to_chunk_coord(v.y as i32) as f32,
+        block_to_chunk_coord(v.z as i32) as f32,
+    )
+}
+
 impl WorldMap {
     pub fn get_block(&self, x: i32, y: i32, z: i32) -> Option<&Block> {
         let cx = block_to_chunk_coord(x);

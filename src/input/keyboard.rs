@@ -15,6 +15,7 @@ pub enum GameAction {
     Escape,
     ToggleFps,
     ToggleViewMode,
+    ToggleChunkDebugMode,
 }
 
 lazy_static! {
@@ -40,6 +41,7 @@ lazy_static! {
         map.insert(GameAction::Escape, vec![KeyCode::Escape]);
         map.insert(GameAction::ToggleFps, vec![KeyCode::F3]);
         map.insert(GameAction::ToggleViewMode, vec![KeyCode::F5]);
+        map.insert(GameAction::ToggleChunkDebugMode, vec![KeyCode::F4]);
         map
     };
 }
