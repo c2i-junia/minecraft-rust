@@ -34,8 +34,7 @@ impl Player {
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
             is_chunk_debug_mode_enabled: true,
-            // Add one item to the player's inventory
-            inventory: vec![Items { id: 0, nb: 1 }],
+            inventory: vec![] // No items in the inventory at the beginning
         }
     }
 
