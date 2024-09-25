@@ -118,8 +118,8 @@ fn generate_chunk(
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
-    let max_perlin_height_variation = 10.0;
-    let base_height = 64;
+    let max_perlin_height_variation = 5.0;
+    let base_height = 10;  // should be 64
 
     const CHUNK_SIZE: i32 = 16;
     const WORLD_MIN_Y: i32 = 0;
@@ -146,7 +146,7 @@ fn generate_chunk(
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
                     Block::Bedrock // Placer la bedrock à la couche 0
-                } else if y < terrain_height - 3 {
+                } else if y < terrain_height - 2 {
                     Block::Stone // Placer de la pierre en dessous des 3 dernières couches
                 } else if y < terrain_height {
                     Block::Dirt // Placer de la terre dans les 3 couches sous la surface
