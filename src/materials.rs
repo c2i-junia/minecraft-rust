@@ -14,14 +14,13 @@ pub fn setup_materials(mut commands: Commands, mut materials: ResMut<Assets<Stan
 
     let grass_material = materials.add(Color::srgb(0.0, 0.5, 0.0));
     let dirt_material = materials.add(Color::srgb(0.5, 0.25, 0.0));
+    let stone_material = materials.add(Color::srgb(0.3, 0.3, 0.3)); 
+    let bedrock_material = materials.add(Color::srgb(0.1, 0.1, 0.1));
 
-    material_resource
-        .materials
-        .insert(Block::Dirt, dirt_material);
-
-    material_resource
-        .materials
-        .insert(Block::Grass, grass_material);
+    material_resource.materials.insert(Block::Dirt, dirt_material);
+    material_resource.materials.insert(Block::Grass, grass_material);
+    material_resource.materials.insert(Block::Stone, stone_material); 
+    material_resource.materials.insert(Block::Bedrock, bedrock_material); 
 
     commands.insert_resource(material_resource);
 }

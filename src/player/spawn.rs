@@ -8,6 +8,8 @@ pub fn spawn_player(
 ) {
     let player = Player::new();
 
+    let spawn_coords = Vec3::new(7.5, 100.0, 7.5);
+
     commands
         .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(Cuboid::new(
@@ -16,7 +18,7 @@ pub fn spawn_player(
                 player.width,
             ))),
             material: materials.add(Color::srgba(1.0, 0.0, 0.0, 0.0)),
-            transform: Transform::from_translation(Vec3::new(7.5, 100.0, 7.5)),
+            transform: Transform::from_translation(spawn_coords),
             ..Default::default()
         })
         .insert(player);
