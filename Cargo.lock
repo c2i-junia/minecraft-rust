@@ -2383,6 +2383,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "minecraft-rust"
+version = "0.3.0"
+dependencies = [
+ "bevy",
+ "bevy_mod_raycast",
+ "lazy_static",
+ "noise",
+ "rand 0.8.5",
+]
+
+[[package]]
 name = "minimal-lexical"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3249,17 +3260,6 @@ dependencies = [
  "bitflags 2.6.0",
  "serde",
  "serde_derive",
-]
-
-[[package]]
-name = "rust-32"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_mod_raycast",
- "lazy_static",
- "noise",
- "rand 0.8.5",
 ]
 
 [[package]]
