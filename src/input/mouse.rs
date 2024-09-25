@@ -1,9 +1,10 @@
 use crate::camera::*;
-use crate::constants::CUBE_SIZE;
+use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::materials::MaterialResource;
 use crate::player::inventory::*;
 use crate::player::Player;
 use crate::world::{Block, WorldMap};
+use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
@@ -15,6 +16,7 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
     mut player: Query<&mut Player>,
+    mut p_transform: Query<&mut Transform, With<Player>>,
     mut commands: Commands,
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
     mut meshes: ResMut<Assets<Mesh>>,           // for adding new block meshes
@@ -29,12 +31,17 @@ pub fn handle_block_interactions(
     // Handle left-click for breaking blocks
     if mouse_input.just_pressed(MouseButton::Left) {
         // Check if there are any intersections with a block
-        if let Some((entity, _intersection)) = raycast_source.intersections().first() {
-            // Remove the hit block
-            world_map.remove_block_by_entity(*entity, &mut commands);
+        if let Some((entity, intersection)) = raycast_source.intersections().first() {
+            // Check if block is close enough to the player
+            if (intersection.position() - p_transform.single_mut().translation).norm()
+                < INTERACTION_DISTANCE
+            {
+                // Remove the hit block
+                world_map.remove_block_by_entity(*entity, &mut commands);
 
-            // add the block to the player's inventory
-            add_item_to_inventory(&mut player, 1, 1);
+                // add the block to the player's inventory
+                add_item_to_inventory(&mut player, 1, 1);
+            }
         }
     }
 
