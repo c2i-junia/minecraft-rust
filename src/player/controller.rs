@@ -171,15 +171,25 @@ pub fn player_movement_system(
         // Déplacement sur l'axe X
         let new_pos_x = player_transform.translation
             + Vec3::new(direction.x, 0.0, 0.0) * speed * time.delta_seconds();
-        if !check_player_collision(new_pos_x, &player, &blocks) {
+
+        if player.is_flying {
             player_transform.translation.x = new_pos_x.x;
+        } else {
+            if !check_player_collision(new_pos_x, &player, &blocks) {
+                player_transform.translation.x = new_pos_x.x;
+            }
         }
 
         // Déplacement sur l'axe Z
         let new_pos_z = player_transform.translation
             + Vec3::new(0.0, 0.0, direction.z) * speed * time.delta_seconds();
-        if !check_player_collision(new_pos_z, &player, &blocks) {
+
+        if player.is_flying {
             player_transform.translation.z = new_pos_z.z;
+        } else {
+            if !check_player_collision(new_pos_z, &player, &blocks) && !player.is_flying {
+                player_transform.translation.z = new_pos_z.z;
+            }
         }
     }
 
