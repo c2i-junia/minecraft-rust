@@ -15,7 +15,7 @@ pub struct BlockMarker;
 pub enum Block {
     Grass,
     Dirt,
-    Stone, 
+    Stone,
     Bedrock,
 }
 
@@ -136,7 +136,8 @@ fn generate_chunk(
             let z = CHUNK_SIZE * cz + j;
 
             // Générer une hauteur en utilisant le bruit de Perlin
-            let perlin_height = perlin.get([x as f64 * scale, z as f64 * scale]) * max_perlin_height_variation;
+            let perlin_height =
+                perlin.get([x as f64 * scale, z as f64 * scale]) * max_perlin_height_variation;
 
             // Ajouter un offset de 64 blocs pour centrer la hauteur autour de y = 64
             let terrain_height = base_height + perlin_height.round() as i32;
@@ -144,13 +145,13 @@ fn generate_chunk(
             // Générer des blocs à partir de la couche 0 (bedrock) jusqu'à la hauteur générée
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    Block::Bedrock  // Placer la bedrock à la couche 0
+                    Block::Bedrock // Placer la bedrock à la couche 0
                 } else if y < terrain_height - 3 {
-                    Block::Stone  // Placer de la pierre en dessous des 3 dernières couches
+                    Block::Stone // Placer de la pierre en dessous des 3 dernières couches
                 } else if y < terrain_height {
-                    Block::Dirt  // Placer de la terre dans les 3 couches sous la surface
+                    Block::Dirt // Placer de la terre dans les 3 couches sous la surface
                 } else {
-                    Block::Grass  // Placer de l'herbe à la surface
+                    Block::Grass // Placer de l'herbe à la surface
                 };
 
                 world_map.set_block(
@@ -166,8 +167,7 @@ fn generate_chunk(
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
             }
-
-       }
+        }
     }
 
     world_map.total_chunks_count += 1;
