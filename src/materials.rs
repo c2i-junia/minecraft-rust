@@ -1,5 +1,5 @@
 use crate::block_debug_wireframe::create_wireframe_cube;
-use crate::constants::CUBE_SIZE;
+use crate::constants::{BASE_ROUGHNESS, CUBE_SIZE};
 use crate::world::Block;
 use bevy::prelude::*;
 use std::collections::HashMap;
@@ -9,13 +9,36 @@ pub struct MaterialResource {
     pub materials: HashMap<Block, Handle<StandardMaterial>>,
 }
 
-pub fn setup_materials(mut commands: Commands, mut materials: ResMut<Assets<StandardMaterial>>) {
+pub fn setup_materials(mut commands: Commands, asset_server: Res<AssetServer>, mut materials: ResMut<Assets<StandardMaterial>>) {
     let mut material_resource = MaterialResource { ..default() };
 
-    let grass_material = materials.add(Color::srgb(0.0, 0.5, 0.0));
-    let dirt_material = materials.add(Color::srgb(0.5, 0.25, 0.0));
-    let stone_material = materials.add(Color::srgb(0.3, 0.3, 0.3));
-    let bedrock_material = materials.add(Color::srgb(0.1, 0.1, 0.1));
+    // Root directory for asset server : /assets/
+    // TODO : atlas textures (currently only supports 1 texture per cube, for all 6 faces)
+    let grass_material = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load("textures/grass.png")),
+        base_color: Color::srgb(0.14, 0.7, 0.2),
+        perceptual_roughness: BASE_ROUGHNESS,
+        ..default()
+    });     // MC's grass texture is grey and tinted via a colormap according to biome
+            // Don't have the knowledge to do that atm so used constant "grass green" color instead
+            // Modifying color based on noise generation values could be interesting tho
+
+    let dirt_material = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load("textures/dirt.png")),
+        perceptual_roughness: BASE_ROUGHNESS,
+        ..default()
+    });
+    let stone_material = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load("textures/stone.png")),
+        perceptual_roughness: BASE_ROUGHNESS,
+        ..default()
+    });
+    let bedrock_material = materials.add(StandardMaterial {
+        base_color_texture: Some(asset_server.load("textures/bedrock.png")),
+        perceptual_roughness: BASE_ROUGHNESS,
+        ..default()
+    });
+    
 
     material_resource
         .materials
