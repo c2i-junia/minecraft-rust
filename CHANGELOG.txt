@@ -1,0 +1,27 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.3    
+Date: 25.09.2024    
+
+  Changes: 
+    - Added stone and bedrock blocks
+    - Added a basic inventory system
+    - Added F3 debug menu
+    - Added chunk system with infinite generation
+
+---------------------------------------------------------------------------------------------------
+Version: 0.2    
+Date: 22.09.2024    
+
+  Changes: 
+    - Added block destruction and creation
+    - Set up first-person view
+    - Implemented random block height generation using Perlin Noise
+    - Added global light source
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1    
+Date: 21.09.2024    
+
+  Changes: 
+    - Added gravity
+    - Player creation with movement on a platform
