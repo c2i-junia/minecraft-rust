@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.14"
 lazy_static = "1.5.0"
-rand = "0.8.5"
-noise = "0.8"              # to generate the map
+rand = "0.8.5"              # to generate the seed
+noise = "0.8"               # to generate the map
 bevy_mod_raycast = "0.18"   # pour recuperer le bloc pointé par le curseur
 
 # Enable a small amount of optimization in the dev profile.

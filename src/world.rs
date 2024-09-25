@@ -1,8 +1,11 @@
+use crate::constants::CUBE_SIZE;
 use crate::materials::MaterialResource;
 use crate::BlockRaycastSet;
+use bevy::prelude::Resource;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
+use rand::Rng;
 use std::collections::HashMap;
 
 #[derive(Component)]
@@ -13,6 +16,9 @@ pub enum Block {
     Grass,
     Dirt,
 }
+
+#[derive(Resource)]
+pub struct WorldSeed(pub u32);
 
 #[derive(Resource, Default)]
 pub struct WorldMap {
@@ -110,26 +116,28 @@ fn generate_chunk(
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
-
     let max_perlin_height = 10.0;
+
+    const CHUNK_SIZE: i32 = 16;
+    const WORLD_MIN_Y: i32 = -10;
 
     let cx = chunk_pos.x;
     let cz = chunk_pos.z;
 
-    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0)));
+    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)));
 
     // Boucle pour générer les blocs avec variation de hauteur
-    for i in 0..16 {
-        for j in 0..16 {
-            let x = 16 * cx + i;
-            let z = 16 * cz + j;
+    for i in 0..CHUNK_SIZE {
+        for j in 0..CHUNK_SIZE {
+            let x = CHUNK_SIZE * cx + i;
+            let z = CHUNK_SIZE * cz + j;
             // Générer une hauteur en utilisant le bruit de Perlin
             let perlin_height =
                 perlin.get([x as f64 * scale, z as f64 * scale]) * max_perlin_height;
             let perlin_height = perlin_height.round() as i32; // Arrondir à des hauteurs entières
 
             // Générer les couches de blocs jusqu'à la couche y = -10
-            for y in -10..=perlin_height {
+            for y in WORLD_MIN_Y..=perlin_height {
                 let block = if y == perlin_height {
                     Block::Grass
                 } else {
@@ -169,11 +177,16 @@ pub fn setup_world(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
 ) {
+    let seed = rand::thread_rng().gen::<u32>();
+    println!("Generated random seed: {}", seed);
+
+    commands.insert_resource(WorldSeed(seed));
+
     for x in -1..=1 {
         for z in -1..=1 {
             generate_chunk(
                 IVec3::new(x, 0, z),
-                42,
+                seed,
                 &mut commands,
                 &mut meshes,
                 &mut world_map,
@@ -189,6 +202,7 @@ pub fn load_chunk_around_player(
     meshes: &mut ResMut<Assets<Mesh>>,
     world_map: &mut WorldMap,
     material_resource: Res<MaterialResource>,
+    seed: u32,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -209,7 +223,7 @@ pub fn load_chunk_around_player(
             }
             generate_chunk(
                 chunk_pos,
-                42,
+                seed,
                 commands,
                 meshes,
                 world_map,

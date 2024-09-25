@@ -1,4 +1,5 @@
 use crate::camera::*;
+use crate::constants::CUBE_SIZE;
 use crate::materials::MaterialResource;
 use crate::player::inventory::*;
 use crate::player::Player;
@@ -21,7 +22,7 @@ pub fn handle_block_interactions(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
 ) {
-    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(1.0, 1.0, 1.0))); // Cube mesh for the blocks
+    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE))); // Utilisez CUBE_SIZE ici
 
     let raycast_source = raycast_source.single();
 

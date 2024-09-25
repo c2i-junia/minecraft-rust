@@ -14,6 +14,8 @@ pub struct Player {
     pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
     pub inventory: Vec<Items>,
+    pub height: f32,
+    pub width: f32,
 }
 
 #[derive(Debug)]
@@ -37,6 +39,8 @@ impl Player {
             is_chunk_debug_mode_enabled: true,
             is_flying: false,
             inventory: vec![], // No items in the inventory at the beginning
+            height: 1.8,
+            width: 0.8,
         }
     }
 

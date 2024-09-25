@@ -1,8 +1,9 @@
 use crate::camera::CameraController;
+use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::materials::MaterialResource;
 use crate::player::{Player, ViewMode};
-use crate::world::{load_chunk_around_player, WorldMap};
+use crate::world::{load_chunk_around_player, WorldMap, WorldSeed};
 use bevy::prelude::*;
 
 fn is_block_at_position(
@@ -24,29 +25,27 @@ fn is_block_at_position(
 
 fn check_player_collision(
     player_position: Vec3,
+    player: &Player,
     blocks: &Query<&Transform, (Without<Player>, Without<Camera>)>,
 ) -> bool {
-    let player_width = 0.4;
-    let player_height = 1.8;
-
     // Vérification de la collision avec les pieds et la tête du joueur
     let foot_position = Vec3::new(
         player_position.x,
-        player_position.y - player_height / 2.0,
+        player_position.y - player.height / 2.0,
         player_position.z,
     );
     let head_position = Vec3::new(
         player_position.x,
-        player_position.y + player_height / 2.0,
+        player_position.y + player.height / 2.0,
         player_position.z,
     );
 
     // On vérifie les coins du joueur
     let offsets = [
-        Vec3::new(-player_width, 0.0, -player_width), // bas gauche devant
-        Vec3::new(player_width, 0.0, -player_width),  // bas droite devant
-        Vec3::new(-player_width, 0.0, player_width),  // bas gauche derrière
-        Vec3::new(player_width, 0.0, player_width),   // bas droite derrière
+        Vec3::new(-player.width / 2.0, 0.0, -player.width / 2.0), // bas gauche devant
+        Vec3::new(player.width / 2.0, 0.0, -player.width / 2.0),  // bas droite devant
+        Vec3::new(-player.width / 2.0, 0.0, player.width / 2.0),  // bas gauche derrière
+        Vec3::new(player.width / 2.0, 0.0, player.width / 2.0),   // bas droite derrière
     ];
 
     // Vérifier la collision au niveau des pieds
@@ -80,29 +79,23 @@ pub fn player_movement_system(
     blocks: Query<&Transform, (Without<Player>, Without<Camera>)>,
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
+    world_seed: Res<WorldSeed>,
 ) {
+    let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
+    let camera_transform = camera_query.single();
+
     if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
-        for (_, mut player, _) in player_query.iter_mut() {
-            // TOFIX: there is only one player so no need to iterate ??
-            player.toggle_view_mode();
-        }
+        player.toggle_view_mode();
     }
 
     if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
-        for (_, mut player, _) in player_query.iter_mut() {
-            player.toggle_chunk_debug_mode();
-        }
+        player.toggle_chunk_debug_mode();
     }
 
     // fly mode (f key)
     if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input) {
-        for (_, mut player, _) in player_query.iter_mut() {
-            player.toggle_fly_mode();
-        }
+        player.toggle_fly_mode();
     }
-
-    let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
-    let camera_transform = camera_query.single();
 
     load_chunk_around_player(
         player_transform.translation,
@@ -110,6 +103,7 @@ pub fn player_movement_system(
         &mut meshes,
         &mut world_map,
         material_resource,
+        world_seed.0,
     );
 
     let material_handle = &*material_handle_mut_ref;
@@ -135,8 +129,7 @@ pub fn player_movement_system(
         speed = 5.0;
     }
 
-    let gravity = (-9.8) * 4.0;
-    let jump_velocity = 6.0 * 2.0;
+    let jump_velocity = 10.0;
 
     // flying mode
     if player.is_flying {
@@ -178,14 +171,14 @@ pub fn player_movement_system(
         // Déplacement sur l'axe X
         let new_pos_x = player_transform.translation
             + Vec3::new(direction.x, 0.0, 0.0) * speed * time.delta_seconds();
-        if !check_player_collision(new_pos_x, &blocks) {
+        if !check_player_collision(new_pos_x, &player, &blocks) {
             player_transform.translation.x = new_pos_x.x;
         }
 
         // Déplacement sur l'axe Z
         let new_pos_z = player_transform.translation
             + Vec3::new(0.0, 0.0, direction.z) * speed * time.delta_seconds();
-        if !check_player_collision(new_pos_z, &blocks) {
+        if !check_player_collision(new_pos_z, &player, &blocks) {
             player_transform.translation.z = new_pos_z.z;
         }
     }
@@ -198,7 +191,7 @@ pub fn player_movement_system(
             player.on_ground = false;
         } else if !player.on_ground {
             // Apply gravity when the player is in the air
-            player.vertical_velocity += gravity * time.delta_seconds();
+            player.vertical_velocity += GRAVITY * time.delta_seconds();
         }
     }
 
@@ -212,6 +205,7 @@ pub fn player_movement_system(
             new_y,
             player_transform.translation.z,
         ),
+        &player,
         &blocks,
     ) {
         // Si un bloc est détecté sous le joueur, il reste sur le bloc
@@ -224,7 +218,8 @@ pub fn player_movement_system(
     }
 
     // If the player is below the world, reset their position
-    if player_transform.translation.y < -50.0 {
+    const FALL_LIMIT: f32 = -50.0;
+    if player_transform.translation.y < FALL_LIMIT {
         player_transform.translation = Vec3::new(0.0, 100.0, 0.0);
         player.vertical_velocity = 0.0;
     }

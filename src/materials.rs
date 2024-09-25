@@ -1,4 +1,5 @@
 use crate::block_debug_wireframe::create_wireframe_cube;
+use crate::constants::CUBE_SIZE;
 use crate::world::Block;
 use bevy::prelude::*;
 use std::collections::HashMap;
@@ -32,7 +33,7 @@ pub struct MeshResource {
 }
 
 pub fn setup_cube_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let cube_mesh = Mesh::from(Cuboid::new(1.0, 1.0, 1.0));
+    let cube_mesh = Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE));
     let cube_handle = meshes.add(cube_mesh);
 
     let cube_wireframe_mesh = create_wireframe_cube();
