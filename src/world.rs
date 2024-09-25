@@ -71,6 +71,7 @@ impl WorldMap {
         }
     }
 
+    /*
     pub fn get_block_wrapper_by_entity(&self, entity: Entity) -> Option<&BlockWrapper> {
         for (_, inner_map) in &self.map {
             for (_, value) in inner_map {
@@ -81,6 +82,7 @@ impl WorldMap {
         }
         None
     }
+    */
 
     pub fn remove_block_by_entity(&mut self, entity: Entity, commands: &mut Commands) {
         let mut chunk_key_to_delete: Option<IVec3> = None;
