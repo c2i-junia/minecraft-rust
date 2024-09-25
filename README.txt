@@ -8,8 +8,8 @@ Controls:
 - Move Right          : D / Arrow Right
 - Jump                : Space
 - Toggle Fly Mode     : F
-- Fly Up              : R (only in Fly Mode)
-- Fly Down            : C (only in Fly Mode)
+- Fly Up              : Space (only in Fly Mode)
+- Fly Down            : Left Shift (only in Fly Mode)
 - Toggle FPS Display  : F3
 - Toggle View Mode    : F5 (First-Person / Third-Person)
 - Toggle Chunk Debug  : F4

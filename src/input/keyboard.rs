@@ -47,8 +47,8 @@ lazy_static! {
         map.insert(GameAction::ToggleViewMode, vec![KeyCode::F5]);
         map.insert(GameAction::ToggleChunkDebugMode, vec![KeyCode::F4]);
         map.insert(GameAction::ToggleFlyMode, vec![KeyCode::KeyF]);
-        map.insert(GameAction::FlyUp, vec![KeyCode::KeyR]);
-        map.insert(GameAction::FlyDown, vec![KeyCode::KeyC]);
+        map.insert(GameAction::FlyUp, vec![KeyCode::Space]);
+        map.insert(GameAction::FlyDown, vec![KeyCode::ShiftLeft]);
         map.insert(GameAction::ToggleBlockWireframeDebugMode, vec![KeyCode::F6]);
         map
     };
