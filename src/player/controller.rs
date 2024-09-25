@@ -1,9 +1,8 @@
 use crate::camera::CameraController;
 use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
-use crate::materials::MaterialResource;
 use crate::player::{Player, ViewMode};
-use crate::world::{load_chunk_around_player, WorldMap, WorldSeed};
+use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
 use bevy::prelude::*;
 
 fn is_block_at_position(
@@ -74,12 +73,10 @@ pub fn player_movement_system(
     mut player_query: Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
     camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
     blocks: Query<&Transform, (Without<Player>, Without<Camera>)>,
     mut world_map: ResMut<WorldMap>,
-    material_resource: Res<MaterialResource>,
     world_seed: Res<WorldSeed>,
+    mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
@@ -99,11 +96,9 @@ pub fn player_movement_system(
 
     load_chunk_around_player(
         player_transform.translation,
-        &mut commands,
-        &mut meshes,
         &mut world_map,
-        material_resource,
         world_seed.0,
+        &mut ev_render,
     );
 
     let material_handle = &*material_handle_mut_ref;

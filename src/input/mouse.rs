@@ -1,10 +1,10 @@
 use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
-use crate::materials::MaterialResource;
 use crate::player::inventory::*;
 use crate::player::Player;
 use crate::world::{Block, WorldMap};
 use bevy::math::NormedVectorSpace;
+use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
@@ -17,15 +17,12 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 pub fn handle_block_interactions(
     mut player: Query<&mut Player>,
     mut p_transform: Query<&mut Transform, With<Player>>,
-    mut commands: Commands,
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
-    mut meshes: ResMut<Assets<Mesh>>,           // for adding new block meshes
     raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
     mut world_map: ResMut<WorldMap>,
-    material_resource: Res<MaterialResource>,
+    mut commands: Commands,
+    mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
-    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE))); // Utilisez CUBE_SIZE ici
-
     let raycast_source = raycast_source.single();
 
     // Handle left-click for breaking blocks
@@ -41,6 +38,8 @@ pub fn handle_block_interactions(
 
                 // add the block to the player's inventory
                 add_item_to_inventory(&mut player, 1, 1);
+
+                ev_render.send(WorldRenderRequestUpdateEvent());
             }
         }
     }
@@ -70,14 +69,11 @@ pub fn handle_block_interactions(
                 }
 
                 world_map.set_block(
-                    position.x as i32,
-                    position.y as i32,
-                    position.z as i32,
+                    &IVec3::new(position.x as i32, position.y as i32, position.z as i32),
                     Block::Dirt,
-                    &mut commands,
-                    cube_mesh.clone(),
-                    &material_resource,
                 );
+    
+                ev_render.send(WorldRenderRequestUpdateEvent());
             }
         }
     }

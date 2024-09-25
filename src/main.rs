@@ -39,6 +39,7 @@ fn main() {
         })
         .insert_resource(WorldMap { ..default() })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
+        .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             Startup,
             (setup_materials, setup_cube_mesh, setup_world).chain(),
@@ -61,5 +62,7 @@ fn main() {
         .add_systems(Update, chunk_ghost_update_system)
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)
+        .add_systems(Update, world_render_system)
+        //.add_systems(Update, chunk_optimization_system)
         .run();
 }

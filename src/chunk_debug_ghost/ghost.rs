@@ -1,3 +1,4 @@
+use crate::constants::CHUNK_SIZE;
 use crate::player::Player;
 use crate::world::block_vec3_to_chunk_v3_coord;
 use bevy::prelude::*;
@@ -14,7 +15,12 @@ pub fn setup_chunk_ghost(
 ) {
     commands
         .spawn(PbrBundle {
-            mesh: meshes.add(create_repeated_wireframe_mesh(16.0, 256.0, 16, Vec3::ZERO)),
+            mesh: meshes.add(create_repeated_wireframe_mesh(
+                CHUNK_SIZE as f32,
+                (CHUNK_SIZE as f32) * 16.0,
+                CHUNK_SIZE as u32,
+                Vec3::ZERO,
+            )),
             material: materials.add(StandardMaterial {
                 base_color: Color::srgb(1.0, 1.0, 1.0),
                 unlit: true,
@@ -35,7 +41,7 @@ pub fn chunk_ghost_update_system(
 
     let mut chunk = block_vec3_to_chunk_v3_coord(player.0.translation);
     chunk.y = 0.0;
-    ghost.0.translation = chunk * 16.0;
+    ghost.0.translation = chunk * (CHUNK_SIZE as f32);
     *ghost.1 = if player.1.is_chunk_debug_mode_enabled {
         Visibility::Visible
     } else {
