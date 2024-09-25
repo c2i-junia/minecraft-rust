@@ -48,31 +48,39 @@ pub fn handle_block_interactions(
     // Handle right-click for placing blocks
     if mouse_input.just_pressed(MouseButton::Right) {
         if let Some((_entity, intersection)) = raycast_source.intersections().first() {
-            // Check if the block is in the player's inventory
-            if has_item(&mut player, 1) {
-                // Remove the block from the player's inventory
-                remove_item_from_inventory(&mut player, 1, 1);
-            } else {
-                return;
+            // Check if target space is close enough to the player
+            if (intersection.position() - p_transform.single_mut().translation).norm()
+                < INTERACTION_DISTANCE
+            {
+                // Check if the block is in the player's inventory
+                if has_item(&mut player, 1) {
+                    // Remove the block from the player's inventory
+                    remove_item_from_inventory(&mut player, 1, 1);
+                } else {
+                    return;
+                }
+
+                // Get the normal of the face where the block will be placed
+                let normal = intersection.normal(); // This is already a Vec3, no need to unwrap
+                                                    // Calculate the block position by adding a small offset to the intersection point
+                let mut position = intersection.position() + normal * 0.51;
+
+                // Snap the position to the grid
+                position = snap_to_grid(position);
+
+                // Guarantees a block cannot be placed too close to the player (which would be unable to move because of constant collision)
+                if (position - p_transform.single_mut().translation).norm() > CUBE_SIZE {
+                    world_map.set_block(
+                        position.x as i32,
+                        position.y as i32,
+                        position.z as i32,
+                        Block::Dirt,
+                        &mut commands,
+                        cube_mesh.clone(),
+                        &material_resource,
+                    );
+                }
             }
-
-            // Get the normal of the face where the block will be placed
-            let normal = intersection.normal(); // This is already a Vec3, no need to unwrap
-                                                // Calculate the block position by adding a small offset to the intersection point
-            let mut position = intersection.position() + normal * 0.51;
-
-            // Snap the position to the grid
-            position = snap_to_grid(position);
-
-            world_map.set_block(
-                position.x as i32,
-                position.y as i32,
-                position.z as i32,
-                Block::Dirt,
-                &mut commands,
-                cube_mesh.clone(),
-                &material_resource,
-            );
         }
     }
 }
