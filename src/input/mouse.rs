@@ -31,7 +31,7 @@ pub fn handle_block_interactions(
         // Check if there are any intersections with a block
         if let Some((entity, _intersection)) = raycast_source.intersections().first() {
             // Remove the hit block
-            commands.entity(*entity).despawn();
+            world_map.remove_block_by_entity(*entity, &mut commands);
 
             // add the block to the player's inventory
             add_item_to_inventory(&mut player, 1, 1);

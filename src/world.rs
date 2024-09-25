@@ -19,12 +19,18 @@ pub enum Block {
     Bedrock,
 }
 
+#[derive(Component)]
+pub struct BlockWrapper {
+    pub kind: Block,
+    pub entity: Entity,
+}
+
 #[derive(Resource)]
 pub struct WorldSeed(pub u32);
 
 #[derive(Resource, Default)]
 pub struct WorldMap {
-    pub map: HashMap<IVec3, HashMap<IVec3, Block>>,
+    pub map: HashMap<IVec3, HashMap<IVec3, BlockWrapper>>,
     pub total_blocks_count: u64,
     pub total_chunks_count: u64,
 }
@@ -62,6 +68,27 @@ impl WorldMap {
     //     }
     // }
 
+    pub fn get_block_wrapper_by_entity(&self, entity: Entity) -> Option<&BlockWrapper> {
+        for (_, inner_map) in &self.map {
+            for (_, value) in inner_map {
+                if value.entity == entity {
+                    return Some(value);
+                }
+            }
+        }
+        None
+    }
+
+    pub fn remove_block_by_entity(
+        &mut self,
+        entity: Entity,
+        commands: &mut Commands,
+    ) -> Option<Block> {
+        let wrapper = self.get_block_wrapper_by_entity(entity)?;
+        commands.entity(wrapper.entity).despawn_recursive();
+        Some(wrapper.kind)
+    }
+
     pub fn set_block(
         &mut self,
         x: i32,
@@ -82,7 +109,6 @@ impl WorldMap {
         let sub_x = x % 16;
         let sub_y = y % 16;
         let sub_z = z % 16;
-        chunk.insert(IVec3::new(sub_x, sub_y, sub_z), block);
 
         let material = material_resource
             .materials
@@ -90,16 +116,26 @@ impl WorldMap {
             .expect("material not found")
             .clone();
 
-        commands.spawn((
-            BlockMarker,
-            PbrBundle {
-                mesh,
-                material,
-                transform: Transform::from_translation(Vec3::new(x as f32, y as f32, z as f32)),
-                ..Default::default()
+        let entity = commands
+            .spawn((
+                BlockMarker,
+                PbrBundle {
+                    mesh,
+                    material,
+                    transform: Transform::from_translation(Vec3::new(x as f32, y as f32, z as f32)),
+                    ..Default::default()
+                },
+                RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
+            ))
+            .id();
+
+        chunk.insert(
+            IVec3::new(sub_x, sub_y, sub_z),
+            BlockWrapper {
+                kind: block,
+                entity,
             },
-            RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
-        ));
+        );
     }
 }
 
@@ -119,7 +155,7 @@ fn generate_chunk(
 
     let scale = 0.1;
     let max_perlin_height_variation = 5.0;
-    let base_height = 10;  // should be 64
+    let base_height = 10; // should be 64
 
     const CHUNK_SIZE: i32 = 16;
     const WORLD_MIN_Y: i32 = 0;
@@ -171,13 +207,6 @@ fn generate_chunk(
     }
 
     world_map.total_chunks_count += 1;
-
-    /*
-    println!(
-        "Total block count {}",
-        WORLD_MAP.lock().unwrap().total_blocks_count
-    );
-     */
 }
 
 pub fn setup_world(
