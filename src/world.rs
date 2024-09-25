@@ -1,5 +1,5 @@
-use crate::constants::CUBE_SIZE;
-use crate::materials::MaterialResource;
+use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
+use crate::materials::{MaterialResource, MeshResource};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
@@ -19,16 +19,16 @@ pub enum Block {
     Bedrock,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct BlockWrapper {
     pub kind: Block,
-    pub entity: Entity,
+    pub entity: Option<Entity>,
 }
 
 #[derive(Resource)]
 pub struct WorldSeed(pub u32);
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Clone)]
 pub struct WorldMap {
     pub map: HashMap<IVec3, HashMap<IVec3, BlockWrapper>>,
     pub total_blocks_count: u64,
@@ -37,9 +37,9 @@ pub struct WorldMap {
 
 pub fn block_to_chunk_coord(x: i32) -> i32 {
     if x >= 0 {
-        x / 16
+        x / CHUNK_SIZE
     } else {
-        (x - 15) / 16
+        (x - (CHUNK_SIZE - 1)) / CHUNK_SIZE
     }
 }
 
@@ -52,26 +52,29 @@ pub fn block_vec3_to_chunk_v3_coord(v: Vec3) -> Vec3 {
 }
 
 impl WorldMap {
-    // pub fn get_block(&self, x: i32, y: i32, z: i32) -> Option<&Block> {
-    //     let cx = block_to_chunk_coord(x);
-    //     let cy = block_to_chunk_coord(y);
-    //     let cz = block_to_chunk_coord(z);
-    //     let chunk = self.map.get(&IVec3::new(cx, cy, cz));
-    //     match chunk {
-    //         Some(chunk) => {
-    //             let sub_x = x % 16;
-    //             let sub_y = y % 16;
-    //             let sub_z = z % 16;
-    //             chunk.get(&IVec3::new(sub_x, sub_y, sub_z))
-    //         }
-    //         None => None,
-    //     }
-    // }
+    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockWrapper> {
+        let x = position.x;
+        let y = position.y;
+        let z = position.z;
+        let cx = block_to_chunk_coord(x);
+        let cy = block_to_chunk_coord(y);
+        let cz = block_to_chunk_coord(z);
+        let chunk = self.map.get(&IVec3::new(cx, cy, cz));
+        match chunk {
+            Some(chunk) => {
+                let sub_x = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+                let sub_y = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+                let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+                chunk.get(&IVec3::new(sub_x, sub_y, sub_z))
+            }
+            None => None,
+        }
+    }
 
     pub fn get_block_wrapper_by_entity(&self, entity: Entity) -> Option<&BlockWrapper> {
         for (_, inner_map) in &self.map {
             for (_, value) in inner_map {
-                if value.entity == entity {
+                if value.entity == Some(entity) {
                     return Some(value);
                 }
             }
@@ -79,26 +82,46 @@ impl WorldMap {
         None
     }
 
-    pub fn remove_block_by_entity(
-        &mut self,
-        entity: Entity,
-        commands: &mut Commands,
-    ) -> Option<Block> {
-        let wrapper = self.get_block_wrapper_by_entity(entity)?;
-        commands.entity(wrapper.entity).despawn_recursive();
-        Some(wrapper.kind)
+    pub fn remove_block_by_entity(&mut self, entity: Entity, commands: &mut Commands) {
+        let mut chunk_key_to_delete: Option<IVec3> = None;
+        let mut local_block_key_to_delete: Option<IVec3> = None;
+        let mut entity_to_delete = None;
+
+        // Search for the chunk and block containing the entity
+        for (chunk_pos, inner_map) in self.map.iter() {
+            for (local_block_pos, block_wrapper) in inner_map.iter() {
+                if block_wrapper.entity == Some(entity) {
+                    chunk_key_to_delete = Some(chunk_pos.clone());
+                    local_block_key_to_delete = Some(local_block_pos.clone());
+                    entity_to_delete = block_wrapper.entity;
+                    break;
+                }
+            }
+
+            // Exit early if we've already found the keys
+            if chunk_key_to_delete.is_some() {
+                break;
+            }
+        }
+
+        // If we found both the chunk and block, attempt to remove the block
+        if let (Some(chunk_key), Some(local_block_key)) =
+            (chunk_key_to_delete, local_block_key_to_delete)
+        {
+            if let Some(inner_map) = self.map.get_mut(&chunk_key) {
+                commands
+                    .get_entity(entity_to_delete.unwrap())
+                    .unwrap()
+                    .despawn_recursive();
+                inner_map.remove(&local_block_key);
+            }
+        }
     }
 
-    pub fn set_block(
-        &mut self,
-        x: i32,
-        y: i32,
-        z: i32,
-        block: Block,
-        commands: &mut Commands,
-        mesh: Handle<Mesh>,
-        material_resource: &Res<MaterialResource>,
-    ) {
+    pub fn set_block(&mut self, position: &IVec3, block: Block) {
+        let x = position.x;
+        let y = position.y;
+        let z = position.z;
         let cx = block_to_chunk_coord(x);
         let cy = block_to_chunk_coord(y);
         let cz = block_to_chunk_coord(z);
@@ -106,34 +129,18 @@ impl WorldMap {
             .map
             .entry(IVec3::new(cx, cy, cz))
             .or_insert(HashMap::new());
-        let sub_x = x % 16;
-        let sub_y = y % 16;
-        let sub_z = z % 16;
+        let sub_x = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+        let sub_y = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
+        let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
 
-        let material = material_resource
-            .materials
-            .get(&block)
-            .expect("material not found")
-            .clone();
-
-        let entity = commands
-            .spawn((
-                BlockMarker,
-                PbrBundle {
-                    mesh,
-                    material,
-                    transform: Transform::from_translation(Vec3::new(x as f32, y as f32, z as f32)),
-                    ..Default::default()
-                },
-                RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
-            ))
-            .id();
-
+        if x == 0 && z == 0 {
+            println!("inserting y={}", y)
+        }
         chunk.insert(
             IVec3::new(sub_x, sub_y, sub_z),
             BlockWrapper {
                 kind: block,
-                entity,
+                entity: None,
             },
         );
     }
@@ -142,28 +149,20 @@ impl WorldMap {
 fn generate_chunk(
     chunk_pos: IVec3,
     seed: u32,
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
     world_map: &mut WorldMap,
-    material_resource: &Res<MaterialResource>,
+    ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
-    // println!(
-    //     "Generating chunk: {}, {}, {}",
-    //     chunk_pos.x, chunk_pos.y, chunk_pos.z
-    // );
+    println!("gen chunk {}", chunk_pos);
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
     let max_perlin_height_variation = 5.0;
     let base_height = 10; // should be 64
 
-    const CHUNK_SIZE: i32 = 16;
     const WORLD_MIN_Y: i32 = 0;
 
     let cx = chunk_pos.x;
     let cz = chunk_pos.z;
-
-    let cube_mesh = meshes.add(Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE)));
 
     // Boucle pour générer les blocs avec variation de hauteur
     for i in 0..CHUNK_SIZE {
@@ -190,15 +189,7 @@ fn generate_chunk(
                     Block::Grass // Placer de l'herbe à la surface
                 };
 
-                world_map.set_block(
-                    x,
-                    y,
-                    z,
-                    block,
-                    commands,
-                    cube_mesh.clone(),
-                    material_resource,
-                );
+                world_map.set_block(&IVec3::new(x, y, z), block);
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
@@ -207,13 +198,13 @@ fn generate_chunk(
     }
 
     world_map.total_chunks_count += 1;
+    ev_render.send(WorldRenderRequestUpdateEvent());
 }
 
 pub fn setup_world(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut world_map: ResMut<WorldMap>,
-    material_resource: Res<MaterialResource>,
+    mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let seed = rand::thread_rng().gen::<u32>();
     println!("Generated random seed: {}", seed);
@@ -222,25 +213,16 @@ pub fn setup_world(
 
     for x in -1..=1 {
         for z in -1..=1 {
-            generate_chunk(
-                IVec3::new(x, 0, z),
-                seed,
-                &mut commands,
-                &mut meshes,
-                &mut world_map,
-                &material_resource,
-            );
+            generate_chunk(IVec3::new(x, 0, z), seed, &mut world_map, &mut ev_render);
         }
     }
 }
 
 pub fn load_chunk_around_player(
     player_position: Vec3,
-    commands: &mut Commands,
-    meshes: &mut ResMut<Assets<Mesh>>,
     world_map: &mut WorldMap,
-    material_resource: Res<MaterialResource>,
     seed: u32,
+    ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -248,8 +230,10 @@ pub fn load_chunk_around_player(
         block_to_chunk_coord(player_position.z as i32),
     );
 
-    for x in -4..=4 {
-        for z in -4..=4 {
+    let r = CHUNK_RENDER_DISTANCE_RADIUS;
+
+    for x in -r..=r {
+        for z in -r..=r {
             let chunk_pos = IVec3::new(player_chunk.x + x, 0, player_chunk.z + z);
             {
                 let chunk = world_map.map.get(&chunk_pos);
@@ -259,14 +243,154 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(
-                chunk_pos,
-                seed,
-                commands,
-                meshes,
-                world_map,
-                &material_resource,
-            );
+            generate_chunk(chunk_pos, seed, world_map, ev_render);
+        }
+    }
+}
+
+/*
+#[derive(Default)]
+pub struct ChunkUpdateState {
+    to_check: Vec<IVec3>,
+}
+
+pub fn chunk_optimization_system(
+    world_map: ResMut<WorldMap>,
+    mut state: Local<ChunkUpdateState>,
+    mut visibility_query: Query<&mut Visibility>,
+) {
+    if state.to_check.is_empty() {
+        for (pos, _) in world_map.map.iter() {
+            state.to_check.push(pos.clone())
+        }
+        return;
+    }
+
+    let chunk_pos = state.to_check.pop().unwrap();
+
+    let chunk_data = match world_map.map.get(&chunk_pos) {
+        Some(v) => v,
+        None => return,
+    };
+
+    let six_offsets = [
+        IVec3::new(1, 0, 0),
+        IVec3::new(-1, 0, 0),
+        IVec3::new(0, 1, 0),
+        IVec3::new(0, -1, 0),
+        IVec3::new(0, 0, 1),
+        IVec3::new(0, 0, -1),
+    ];
+
+    'outer: for (block_pos, block) in chunk_data.iter() {
+        for offset in &six_offsets {
+            let neighbor_pos = *block_pos + *offset;
+
+            // Check if the block exists at the neighboring position
+            if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
+                let res = visibility_query.get_mut(block.entity);
+                if let Ok(mut vis) = res {
+                    *vis = Visibility::Visible;
+                }
+                continue 'outer;
+            }
+        }
+        let res = visibility_query.get_mut(block.entity);
+        if let Ok(mut vis) = res {
+            *vis = Visibility::Hidden;
+            println!("changed entity to hidden e={}", block.entity);
+        }
+    }
+
+    println!("optimized pos {} {}", &chunk_pos, state.to_check.len());
+}
+*/
+
+fn to_global_pos(chunk_pos: &IVec3, local_block_pos: &IVec3) -> IVec3 {
+    *chunk_pos * CHUNK_SIZE + *local_block_pos
+}
+
+fn should_block_be_rendered(
+    world_map: &WorldMap,
+    chunk_pos: &IVec3,
+    local_block_pos: &IVec3,
+) -> bool {
+    let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
+
+    let six_offsets = [
+        IVec3::new(1, 0, 0),
+        IVec3::new(-1, 0, 0),
+        IVec3::new(0, 1, 0),
+        IVec3::new(0, -1, 0),
+        IVec3::new(0, 0, 1),
+        IVec3::new(0, 0, -1),
+    ];
+
+    for offset in &six_offsets {
+        let neighbor_pos = global_block_pos + *offset;
+
+        // Check if the block exists at the neighboring position
+        if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
+            return true;
+        }
+    }
+
+    false
+}
+
+#[derive(Event)]
+pub struct WorldRenderRequestUpdateEvent();
+
+pub fn world_render_system(
+    mut world_map: ResMut<WorldMap>,
+    material_resource: Res<MaterialResource>,
+    mesh_resource: Res<MeshResource>,
+    mut commands: Commands,
+    mut ev_event: EventReader<WorldRenderRequestUpdateEvent>,
+) {
+    for _ev in ev_event.read() {
+        let cloned_map = world_map.clone();
+        println!("iterating over {} chunks", cloned_map.map.len());
+        for (chunk_pos, chunk) in world_map.map.iter_mut() {
+            for (local_cube_pos, block) in chunk {
+                let should_render =
+                    should_block_be_rendered(&cloned_map, chunk_pos, local_cube_pos);
+                if (block.entity.is_some() && should_render)
+                    || (block.entity.is_none() && !should_render)
+                {
+                    continue;
+                }
+
+                if block.entity.is_none() && should_render {
+                    let material = material_resource
+                        .materials
+                        .get(&block.kind)
+                        .expect("material not found")
+                        .clone();
+
+                    let x = (local_cube_pos.x + CHUNK_SIZE * chunk_pos.x) as f32;
+                    let y = (local_cube_pos.y + CHUNK_SIZE * chunk_pos.y) as f32;
+                    let z = (local_cube_pos.z + CHUNK_SIZE * chunk_pos.z) as f32;
+
+                    let entity = commands
+                        .spawn((
+                            BlockMarker,
+                            PbrBundle {
+                                mesh: mesh_resource.cube_mesh.clone(),
+                                material,
+                                transform: Transform::from_translation(Vec3::new(x, y, z)),
+                                ..Default::default()
+                            },
+                            RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
+                        ))
+                        .id();
+
+                    block.entity = Some(entity);
+                } else if block.entity.is_some() && !should_render {
+                    commands.entity(block.entity.unwrap()).despawn_recursive();
+                    block.entity = None;
+                }
+            }
         }
     }
 }
