@@ -1,6 +1,7 @@
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
+use block::block_text_update_system;
 
 use crate::chunk_debug_ghost::{chunk_ghost_update_system, setup_chunk_ghost};
 use block_debug_wireframe::*;
@@ -50,6 +51,7 @@ fn main() {
         .add_systems(Update, inventory_text_update_system)
         .add_systems(Update, coords_text_update_system)
         .add_systems(Update, total_blocks_text_update_system)
+        .add_systems(Update, block_text_update_system)
         .add_systems(Update, toggle_hud_system)
         .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
         .add_systems(Update, chunk_ghost_update_system)
