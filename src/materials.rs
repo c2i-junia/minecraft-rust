@@ -7,7 +7,7 @@ use std::collections::HashMap;
 #[derive(Resource, Default)]
 pub struct MaterialResource {
     pub block_materials: HashMap<Block, Handle<StandardMaterial>>,
-    pub global_materials : HashMap<GlobalMaterial, Handle<StandardMaterial>>,
+    pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
 }
 
 pub fn setup_materials(

@@ -12,6 +12,5 @@ pub const CELESTIAL_SIZE: f32 = 10.;
 pub const CELESTIAL_DISTANCE: f32 = 50.; // Low value for testing ; will be increased later
 pub const DAY_DURATION: f32 = 20.; // Length of a full day/night cycle, in seconds
 
-// UNUSED YET. Planned for later
 pub const MAX_ITEM_STACK: u32 = 64;
 pub const MAX_ITEM_SLOTS: u32 = 3 * 9;

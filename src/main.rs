@@ -15,11 +15,10 @@ use camera::*;
 use exit::*;
 use hud::*;
 use input::*;
+use lighting::*;
 use materials::*;
 use player::*;
 use world::*;
-use lighting::*;
-use items::*;
 
 mod block_debug_wireframe;
 mod camera;
@@ -28,11 +27,11 @@ mod constants;
 mod exit;
 mod hud;
 mod input;
+mod lighting;
 mod materials;
 mod player;
 mod utils;
 mod world;
-mod lighting;
 mod items;
 
 fn main() {
@@ -71,7 +70,14 @@ fn main() {
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             Startup,
-            (setup_materials, setup_cube_mesh, setup_world, spawn_player, setup_main_lighting).chain(),
+            (
+                setup_materials,
+                setup_cube_mesh,
+                setup_world,
+                spawn_player,
+                setup_main_lighting,
+            )
+                .chain(),
         )
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)
