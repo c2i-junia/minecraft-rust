@@ -42,7 +42,7 @@ pub fn add_item_to_inventory(
         );
 
         // If no more items to add, end loop
-        if nb <= 0 {
+        if nb == 0 {
             break;
         }
     }
@@ -70,7 +70,7 @@ pub fn remove_item_from_inventory(
             continue;
         }
 
-        if existing_stack.nb - nb <= 0 {
+        if existing_stack.nb - nb == 0 {
             player.inventory.remove(&i);
             nb -= existing_stack.nb;
         } else {
@@ -86,7 +86,7 @@ pub fn remove_item_from_inventory(
         }
 
         // If no more items to remove, end loop
-        if nb <= 0 {
+        if nb == 0 {
             break;
         }
     }

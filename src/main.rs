@@ -27,12 +27,12 @@ mod constants;
 mod exit;
 mod hud;
 mod input;
+mod items;
 mod lighting;
 mod materials;
 mod player;
 mod utils;
 mod world;
-mod items;
 
 fn main() {
     App::new()
@@ -89,6 +89,7 @@ fn main() {
         .add_systems(Update, camera_control_system)
         .add_systems(Update, fps_text_update_system)
         .add_systems(Update, inventory_text_update_system)
+        .add_systems(Update, inventory_grid_update_system)
         .add_systems(Update, coords_text_update_system)
         .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, block_text_update_system)

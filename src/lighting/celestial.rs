@@ -44,7 +44,7 @@ pub fn setup_main_lighting(
                     shadows_enabled: true,
                     ..Default::default()
                 },
-                transform: light_transform.clone(),
+                transform: light_transform,
                 ..Default::default()
             },
         ))
@@ -81,7 +81,7 @@ pub fn setup_main_lighting(
 
                     ..Default::default()
                 },
-                transform: light_transform.clone(),
+                transform: light_transform,
                 ..Default::default()
             },
         ))

@@ -1,4 +1,5 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT, CUBE_SIZE};
+use crate::items::ItemsType;
 use crate::world::{Block, GlobalMaterial};
 use bevy::prelude::*;
 use bevy::render::render_resource::Face;
@@ -8,6 +9,7 @@ use std::collections::HashMap;
 pub struct MaterialResource {
     pub block_materials: HashMap<Block, Handle<StandardMaterial>>,
     pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
+    pub item_textures: HashMap<ItemsType, Handle<Image>>,
 }
 
 pub fn setup_materials(
@@ -83,6 +85,20 @@ pub fn setup_materials(
     material_resource
         .global_materials
         .insert(GlobalMaterial::Moon, moon_material);
+
+    material_resource
+        .item_textures
+        .insert(ItemsType::Grass, asset_server.load("textures/grass.png"));
+    material_resource
+        .item_textures
+        .insert(ItemsType::Dirt, asset_server.load("textures/dirt.png"));
+    material_resource
+        .item_textures
+        .insert(ItemsType::Stone, asset_server.load("textures/stone.png"));
+    material_resource.item_textures.insert(
+        ItemsType::Bedrock,
+        asset_server.load("textures/bedrock.png"),
+    );
 
     commands.insert_resource(material_resource);
 }

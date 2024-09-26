@@ -1,7 +1,10 @@
 use crate::{
-    constants::MAX_ITEM_SLOTS, keyboard::{get_action_keys, GameAction}, player::Player
+    constants::MAX_ITEM_SLOTS,
+    keyboard::{get_action_keys, GameAction},
+    player::Player,
+    MaterialResource,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, render::texture::TRANSPARENT_IMAGE_HANDLE};
 
 // Marker for Inventory root
 #[derive(Component)]
@@ -12,7 +15,7 @@ pub struct InventoryRoot;
 pub struct InventoryDialog;
 
 #[derive(Component)]
-pub struct InventoryGrid;
+pub struct InventoryCell;
 
 #[derive(Component)]
 pub struct InventoryText;
@@ -72,40 +75,45 @@ pub fn setup_inventory(mut commands: Commands) {
                     ..Default::default()
                 },
             ),
+            style: Style {
+                align_content: AlignContent::Center,
+                ..Default::default()
+            },
             ..Default::default()
         })
         .id();
 
     let inventory_grid = commands
-        .spawn((
-            InventoryGrid,
-            NodeBundle {
-                style: Style {
-                    display: Display::Grid,
-                    grid_template_columns: RepeatedGridTrack::auto(9),
-                    margin: UiRect::all(Val::Px(20.)),
-                    padding: UiRect::ZERO,
-                    border: UiRect::all(Val::Px(1.)),
-                    ..Default::default()
-                },
-                border_color: BorderColor(Color::BLACK),
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,
+                grid_template_columns: RepeatedGridTrack::auto(9),
+                margin: UiRect::all(Val::Px(20.)),
+                padding: UiRect::ZERO,
+                border: UiRect::all(Val::Px(1.)),
+                position_type: PositionType::Relative,
                 ..Default::default()
             },
-        ))
+            border_color: BorderColor(Color::BLACK),
+            ..Default::default()
+        })
         .with_children(|builder| {
             for i in 0..MAX_ITEM_SLOTS {
                 builder
-                    .spawn(ButtonBundle {
-                        border_color: BorderColor(Color::BLACK),
-                        style: Style {
-                            width: Val::Px(50.),
-                            height: Val::Px(50.),
-                            margin: UiRect::ZERO,
-                            border: UiRect::all(Val::Px(1.)),
+                    .spawn((
+                        InventoryCell,
+                        ButtonBundle {
+                            border_color: BorderColor(Color::BLACK),
+                            style: Style {
+                                width: Val::Px(50.),
+                                height: Val::Px(50.),
+                                margin: UiRect::ZERO,
+                                border: UiRect::all(Val::Px(1.)),
+                                ..Default::default()
+                            },
                             ..Default::default()
                         },
-                        ..Default::default()
-                    })
+                    ))
                     .with_children(|btn| {
                         btn.spawn(TextBundle::from_section(
                             format!("{:?}", i),
@@ -114,6 +122,16 @@ pub fn setup_inventory(mut commands: Commands) {
                                 ..Default::default()
                             },
                         ));
+                        btn.spawn(ImageBundle {
+                            z_index: ZIndex::Local(-1),
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                width: Val::Percent(100.),
+                                height: Val::Percent(100.),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        });
                     });
             }
         })
@@ -156,5 +174,42 @@ pub fn inventory_text_update_system(
         }
         // Update inventory text
         text.sections[0].value = format!("Inventory: {:?}", player.inventory);
+    }
+}
+
+pub fn inventory_grid_update_system(
+    player: Query<&Player>,
+    mut btn_query: Query<(&mut Button, &Children), With<InventoryCell>>,
+    mut text_query: Query<&mut Text>,
+    mut image_query: Query<&mut UiImage>,
+    vis: Query<&mut Visibility, With<InventoryRoot>>,
+    material_resource: Res<MaterialResource>,
+) {
+    // If inventory is hidden, do not update it
+    if vis.single() == Visibility::Hidden {
+        return;
+    }
+
+    let player = player.single();
+
+    // For each cell : Update content
+    for ((_cell, children), i) in btn_query.iter_mut().zip(0..MAX_ITEM_SLOTS) {
+        let stack = player.inventory.get(&i);
+        let mut txt = text_query.get_mut(children[0]).unwrap();
+        let mut img = image_query.get_mut(children[1]).unwrap();
+
+        // Set text content
+        if stack.is_none() {
+            txt.sections[0].value = "".to_string();
+            img.texture = TRANSPARENT_IMAGE_HANDLE;
+        } else {
+            let stack = stack.unwrap();
+            txt.sections[0].value = format!("{:?}", stack.nb);
+            img.texture = material_resource
+                .item_textures
+                .get(&stack.id)
+                .unwrap()
+                .clone();
+        }
     }
 }
