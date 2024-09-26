@@ -39,6 +39,7 @@ pub fn setup_inventory(mut commands: Commands) {
                     justify_content: JustifyContent::Center,
                     ..Default::default()
                 },
+                visibility: Visibility::Hidden,
                 ..Default::default()
             },
         ))
@@ -133,7 +134,7 @@ pub fn toggle_inventory(
     mut q: Query<&mut Visibility, With<InventoryRoot>>,
     kbd: Res<ButtonInput<KeyCode>>,
 ) {
-    let keys = get_action_keys(GameAction::OpenInventory);
+    let keys = get_action_keys(GameAction::ToggleInventory);
     for key in keys {
         if kbd.just_pressed(key) {
             let mut vis = q.single_mut();
