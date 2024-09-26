@@ -21,7 +21,6 @@ pub fn handle_block_interactions(
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
     raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
     mut world_map: ResMut<WorldMap>,
-    mut commands: Commands,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     if player.single().ui_mode == UIMode::Opened {
@@ -46,8 +45,7 @@ pub fn handle_block_interactions(
                 );
 
                 // Remove the hit block
-                let block =
-                    world_map.remove_block_by_coordinates(&global_block_coords, &mut commands);
+                let block = world_map.remove_block_by_coordinates(&global_block_coords);
 
                 if let Some(block) = block {
                     // add the block to the player's inventory

@@ -4,6 +4,7 @@ use crate::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_O
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
+use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
@@ -29,15 +30,20 @@ pub enum GlobalMaterial {
 #[derive(Component, Clone)]
 pub struct BlockWrapper {
     pub kind: Block,
-    pub entity: Option<Entity>,
 }
 
 #[derive(Resource)]
 pub struct WorldSeed(pub u32);
 
+#[derive(Clone, Default)]
+pub struct Chunk {
+    map: HashMap<IVec3, BlockWrapper>,
+    entity: Option<Entity>,
+}
+
 #[derive(Resource, Default, Clone)]
 pub struct WorldMap {
-    pub map: HashMap<IVec3, HashMap<IVec3, BlockWrapper>>,
+    pub map: HashMap<IVec3, Chunk>,
     pub total_blocks_count: u64,
     pub total_chunks_count: u64,
 }
@@ -72,23 +78,15 @@ impl WorldMap {
                 let sub_x = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
                 let sub_y = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
                 let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
-                chunk.get(&IVec3::new(sub_x, sub_y, sub_z))
+                chunk.map.get(&IVec3::new(sub_x, sub_y, sub_z))
             }
             None => None,
         }
     }
 
-    pub fn remove_block_by_coordinates(
-        &mut self,
-        global_block_pos: &IVec3,
-        commands: &mut Commands,
-    ) -> Option<Block> {
+    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<Block> {
         let block = self.get_block_by_coordinates(global_block_pos)?;
         let kind = block.kind;
-
-        if let Some(entity) = block.entity {
-            commands.get_entity(entity)?.despawn_recursive();
-        }
 
         let chunk_pos = global_block_to_chunk_pos(global_block_pos);
 
@@ -98,7 +96,7 @@ impl WorldMap {
 
         let local_block_pos = to_local_pos(global_block_pos);
 
-        chunk_map.remove(&local_block_pos);
+        chunk_map.map.remove(&local_block_pos);
 
         Some(kind)
     }
@@ -118,12 +116,9 @@ impl WorldMap {
         if x == 0 && z == 0 {
             println!("inserting y={}", y)
         }
-        chunk.insert(
+        chunk.map.insert(
             IVec3::new(sub_x, sub_y, sub_z),
-            BlockWrapper {
-                kind: block,
-                entity: None,
-            },
+            BlockWrapper { kind: block },
         );
     }
 }
@@ -255,74 +250,143 @@ pub enum WorldRenderRequestUpdateEvent {
     BlockToReload(IVec3),
 }
 
-pub fn world_render_system(
-    mut world_map: ResMut<WorldMap>,
-    material_resource: Res<MaterialResource>,
-    mesh_resource: Res<MeshResource>,
-    mut commands: Commands,
-    mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
-) {
-    for ev in ev_render.read() {
-        let target_chunk_pos = match ev {
-            WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
-            WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
-                // Temporary shortcut
-                &global_block_to_chunk_pos(pos)
-            }
-        };
+fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
+    let mut vertices: Vec<[f32; 3]> = Vec::new();
+    let mut indices: Vec<u32> = Vec::new();
+    let mut normals = Vec::new();
 
-        let mut chunks_pos_to_reload = vec![*target_chunk_pos];
-        for offset in &SIX_OFFSETS {
-            chunks_pos_to_reload.push(*target_chunk_pos + *offset);
-        }
+    let mut indices_offset = 0;
 
-        let cloned_map = world_map.clone();
-        for (chunk_pos, chunk) in world_map.map.iter_mut() {
-            if !chunks_pos_to_reload.contains(chunk_pos) {
-                continue;
-            }
+    for x in 0..CHUNK_SIZE {
+        for y in 0..CHUNK_SIZE {
+            for z in 0..CHUNK_SIZE {
+                let local_block_pos = IVec3::new(x, y, z);
+                let x = x as f32;
+                let y = y as f32;
+                let z = z as f32;
 
-            println!("Reloading chunk {}", chunk_pos);
+                let block =
+                    world_map.get_block_by_coordinates(&to_global_pos(chunk_pos, &local_block_pos));
 
-            for (local_cube_pos, block) in chunk {
-                let should_render =
-                    should_block_be_rendered(&cloned_map, chunk_pos, local_cube_pos);
-                if (block.entity.is_some() && should_render)
-                    || (block.entity.is_none() && !should_render)
-                {
+                if block.is_none() {
                     continue;
                 }
 
-                if block.entity.is_none() && should_render {
-                    let material = material_resource
-                        .block_materials
-                        .get(&block.kind)
-                        .expect("material not found")
-                        .clone();
+                println!("{} {} {}", x, y, z);
 
-                    let x = (local_cube_pos.x + CHUNK_SIZE * chunk_pos.x) as f32;
-                    let y = (local_cube_pos.y + CHUNK_SIZE * chunk_pos.y) as f32;
-                    let z = (local_cube_pos.z + CHUNK_SIZE * chunk_pos.z) as f32;
+                // Define vertices for a cube in the range [0,1]
+                let local_vertices: Vec<[f32; 3]> = vec![
+                    // Front face
+                    [0.0, 0.0, 1.0], // 0
+                    [1.0, 0.0, 1.0], // 1
+                    [1.0, 1.0, 1.0], // 2
+                    [0.0, 1.0, 1.0], // 3
+                    // Back face
+                    [0.0, 0.0, 0.0], // 4
+                    [1.0, 0.0, 0.0], // 5
+                    [1.0, 1.0, 0.0], // 6
+                    [0.0, 1.0, 0.0], // 7
+                ]
+                .iter()
+                .map(|v| [v[0] + x, v[1] + y, v[2] + z])
+                .collect();
 
-                    let entity = commands
-                        .spawn((
-                            BlockMarker,
-                            PbrBundle {
-                                mesh: mesh_resource.cube_mesh.clone(),
-                                material,
-                                transform: Transform::from_translation(Vec3::new(x, y, z)),
-                                ..Default::default()
-                            },
-                            RaycastMesh::<BlockRaycastSet>::default(), // Permet aux rayons de détecter ces blocs
-                        ))
-                        .id();
+                let local_indices: Vec<u32> = vec![
+                    0, 1, 2, 0, 2, 3, // Front face
+                    1, 5, 6, 1, 6, 2, // Right face
+                    5, 4, 7, 5, 7, 6, // Back face
+                    4, 0, 3, 4, 3, 7, // Left face
+                    3, 2, 6, 3, 6, 7, // Top face
+                    4, 5, 1, 4, 1, 0, // Bottom face
+                ]
+                .iter()
+                .map(|x| x + indices_offset)
+                .collect();
 
-                    block.entity = Some(entity);
-                } else if block.entity.is_some() && !should_render {
-                    commands.entity(block.entity.unwrap()).despawn_recursive();
-                    block.entity = None;
-                }
+                let local_normals = vec![
+                    // Normals for each vertex
+                    [0.0, 0.0, 1.0],
+                    [0.0, 0.0, 1.0],
+                    [0.0, 0.0, 1.0],
+                    [0.0, 0.0, 1.0], // Front face normals
+                    [1.0, 0.0, 0.0],
+                    [1.0, 0.0, 0.0],
+                    [1.0, 0.0, 0.0],
+                    [1.0, 0.0, 0.0], // Right face normals
+                ];
+
+                indices_offset += local_vertices.len() as u32;
+
+                vertices.extend(local_vertices);
+                indices.extend(local_indices);
+                normals.extend(local_normals);
             }
         }
     }
+
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices.to_vec());
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    //mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_indices(Indices::U32(indices));
+
+    mesh
+}
+
+pub fn world_render_system(
+    mut world_map: ResMut<WorldMap>,
+    material_resource: Res<MaterialResource>,
+    mut commands: Commands,
+    mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
+    for _ in ev_render.read() {
+        let mut cloned_map = world_map.clone();
+        for (chunk_pos, chunk) in cloned_map.map.iter_mut() {
+            match chunk.entity {
+                Some(_) => {
+                    println!("skip {}", chunk_pos);
+                }
+                None => update_chunk(
+                    chunk_pos,
+                    &material_resource,
+                    &mut commands,
+                    &mut meshes,
+                    &mut world_map,
+                ),
+            };
+        }
+    }
+}
+
+fn update_chunk(
+    chunk_pos: &IVec3,
+    material_resource: &Res<MaterialResource>,
+    commands: &mut Commands,
+    meshes: &mut Assets<Mesh>,
+    world_map: &mut WorldMap,
+) {
+    let texture = match material_resource.block_materials.get(&Block::Grass) {
+        Some(t) => t,
+        None => return,
+    };
+    println!("update_chunk {}", chunk_pos);
+    let mesh = generate_chunk_mesh(world_map, chunk_pos);
+
+    // Cube
+    let new_entity = commands
+        .spawn(PbrBundle {
+            mesh: meshes.add(mesh),
+            material: texture.clone(),
+            transform: Transform::from_xyz(
+                (chunk_pos.x * CHUNK_SIZE) as f32,
+                (chunk_pos.y * CHUNK_SIZE) as f32,
+                (chunk_pos.z * CHUNK_SIZE) as f32,
+            ),
+            ..Default::default()
+        })
+        .id();
+
+    let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
+    ch.entity = Some(new_entity);
 }
