@@ -1,5 +1,6 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
 use crate::materials::{MaterialResource, MeshResource};
+use crate::utils::{global_block_to_chunk_pos, to_global_pos};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
@@ -84,7 +85,11 @@ impl WorldMap {
     }
     */
 
-    pub fn remove_block_by_entity(&mut self, entity: Entity, commands: &mut Commands) {
+    pub fn remove_block_by_entity(
+        &mut self,
+        entity: Entity,
+        commands: &mut Commands,
+    ) -> Option<IVec3> {
         let mut chunk_key_to_delete: Option<IVec3> = None;
         let mut local_block_key_to_delete: Option<IVec3> = None;
         let mut entity_to_delete = None;
@@ -111,13 +116,15 @@ impl WorldMap {
             (chunk_key_to_delete, local_block_key_to_delete)
         {
             if let Some(inner_map) = self.map.get_mut(&chunk_key) {
-                commands
-                    .get_entity(entity_to_delete.unwrap())
-                    .unwrap()
-                    .despawn_recursive();
+                commands.get_entity(entity_to_delete?)?.despawn_recursive();
                 inner_map.remove(&local_block_key);
+                return Some(to_global_pos(
+                    &chunk_key_to_delete?,
+                    &local_block_key_to_delete?,
+                ));
             }
         }
+        None
     }
 
     pub fn set_block(&mut self, position: &IVec3, block: Block) {
@@ -197,7 +204,7 @@ fn generate_chunk(
     }
 
     world_map.total_chunks_count += 1;
-    ev_render.send(WorldRenderRequestUpdateEvent());
+    ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(chunk_pos));
 }
 
 pub fn setup_world(
@@ -305,10 +312,6 @@ pub fn chunk_optimization_system(
 }
 */
 
-fn to_global_pos(chunk_pos: &IVec3, local_block_pos: &IVec3) -> IVec3 {
-    *chunk_pos * CHUNK_SIZE + *local_block_pos
-}
-
 fn should_block_be_rendered(
     world_map: &WorldMap,
     chunk_pos: &IVec3,
@@ -338,19 +341,35 @@ fn should_block_be_rendered(
 }
 
 #[derive(Event)]
-pub struct WorldRenderRequestUpdateEvent();
+pub enum WorldRenderRequestUpdateEvent {
+    ChunkToReload(IVec3),
+    BlockToReload(IVec3),
+}
 
 pub fn world_render_system(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
     mesh_resource: Res<MeshResource>,
     mut commands: Commands,
-    mut ev_event: EventReader<WorldRenderRequestUpdateEvent>,
+    mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
 ) {
-    for _ev in ev_event.read() {
+    for ev in ev_render.read() {
+        let chunk_pos_to_reload = match ev {
+            WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
+            WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
+                // Temporary shortcut
+                &global_block_to_chunk_pos(pos)
+            }
+        };
+
         let cloned_map = world_map.clone();
-        println!("iterating over {} chunks", cloned_map.map.len());
         for (chunk_pos, chunk) in world_map.map.iter_mut() {
+            if chunk_pos != chunk_pos_to_reload {
+                continue;
+            }
+
+            println!("Reloading chunk {}", chunk_pos);
+
             for (local_cube_pos, block) in chunk {
                 let should_render =
                     should_block_be_rendered(&cloned_map, chunk_pos, local_cube_pos);

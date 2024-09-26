@@ -34,12 +34,14 @@ pub fn handle_block_interactions(
                 < INTERACTION_DISTANCE
             {
                 // Remove the hit block
-                world_map.remove_block_by_entity(*entity, &mut commands);
+                let block = world_map.remove_block_by_entity(*entity, &mut commands);
 
-                // add the block to the player's inventory
-                add_item_to_inventory(&mut player, 1, 1);
+                if let Some(block) = block {
+                    // add the block to the player's inventory
+                    add_item_to_inventory(&mut player, 1, 1);
 
-                ev_render.send(WorldRenderRequestUpdateEvent());
+                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block));
+                }
             }
         }
     }
@@ -68,12 +70,11 @@ pub fn handle_block_interactions(
                     return;
                 }
 
-                world_map.set_block(
-                    &IVec3::new(position.x as i32, position.y as i32, position.z as i32),
-                    Block::Dirt,
-                );
+                let block_pos = IVec3::new(position.x as i32, position.y as i32, position.z as i32);
 
-                ev_render.send(WorldRenderRequestUpdateEvent());
+                world_map.set_block(&block_pos, Block::Dirt);
+
+                ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
             }
         }
     }

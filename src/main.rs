@@ -22,6 +22,7 @@ mod hud;
 mod input;
 mod materials;
 mod player;
+mod utils;
 mod world;
 
 fn main() {
