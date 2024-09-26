@@ -1,4 +1,5 @@
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::log::tracing_subscriber;
 use bevy::prelude::*;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
@@ -7,6 +8,7 @@ use exit::*;
 use fps_counter::*;
 use input::*;
 use player::*;
+use protocol::*;
 use world::*;
 
 mod camera;
@@ -14,11 +16,13 @@ mod exit;
 mod fps_counter;
 mod input;
 mod player;
+mod protocol;
 mod world;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(ProtocolPlugin)
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
         .insert_resource(AmbientLight {

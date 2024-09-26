@@ -4,11 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+valence_protocol = { git = "https://github.com/valence-rs/valence", features = [
+    "encryption",
+    "compression",
+] }
+tokio = { version = "1", features = ["full"] }
 bevy = "0.14"
 lazy_static = "1.5.0"
 rand = "0.8.5"
-noise = "0.8"              # to generate the map
-bevy_mod_raycast = "0.18"   # pour recuperer le bloc pointé par le curseur
+noise = "0.8" # to generate the map
+bevy_mod_raycast = "0.18" # pour recuperer le bloc pointé par le curseur
+tracing = "0.1.40"
+anyhow = "1.0.89"
 
 # Enable a small amount of optimization in the dev profile.
 [profile.dev]
