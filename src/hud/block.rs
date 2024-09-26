@@ -1,4 +1,4 @@
-use crate::{constants::INTERACTION_DISTANCE, world::WorldMap, Block, BlockRaycastSet, Player};
+use crate::{constants::{CUBE_SIZE, INTERACTION_DISTANCE}, world::WorldMap, Block, BlockRaycastSet, Player};
 use bevy::{math::NormedVectorSpace, prelude::*};
 use bevy_mod_raycast::prelude::RaycastSource;
 
@@ -15,13 +15,15 @@ pub fn block_text_update_system(
 
     let raycast_source = raycast_source.single();
 
-    let mut col = Color::srgb(0.2, 0.2, 0.2);
+    let mut col = Color::srgb(1., 1., 1.);
     let mut txt = "<none>".to_string();
 
-    if let Some((entity, intersection)) = raycast_source.intersections().first() {
+    if let Some((_entity, intersection)) = raycast_source.intersections().first() {
         // Check if block is close enough to the player
         if (intersection.position() - player.single().translation).norm() < INTERACTION_DISTANCE {
-            let block_type = world_map.get_block_wrapper_by_entity(*entity).unwrap().kind;
+            let block_pos = intersection.position() - intersection.normal() * (CUBE_SIZE / 2.);
+            let vec = IVec3::new(block_pos.x.round() as i32, block_pos.y.round() as i32, block_pos.z.round() as i32);
+            let block_type = world_map.get_block_by_coordinates(&vec).unwrap().kind;
             col = match block_type {
                 Block::Bedrock => Color::srgb(0.4, 0.4, 0.4),
                 Block::Dirt => Color::Srgba(Srgba::hex("69512E").unwrap()),

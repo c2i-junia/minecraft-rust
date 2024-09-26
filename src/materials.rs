@@ -16,7 +16,7 @@ pub fn setup_materials(mut commands: Commands, asset_server: Res<AssetServer>, m
     // TODO : atlas textures (currently only supports 1 texture per cube, for all 6 faces)
     let grass_material = materials.add(StandardMaterial {
         base_color_texture: Some(asset_server.load("textures/grass.png")),
-        base_color: Color::srgb(0.14, 0.7, 0.2),
+        base_color: Color::srgb(0.2, 0.85, 0.3),
         perceptual_roughness: BASE_ROUGHNESS,
         ..default()
     });     // MC's grass texture is grey and tinted via a colormap according to biome

@@ -48,6 +48,7 @@ fn main() {
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)
         .add_systems(Startup, setup_ui)
+        .add_systems(Startup, setup_inventory)
         .add_systems(Startup, cursor_grab_system)
         .add_systems(Startup, setup_chunk_ghost)
         .add_systems(Update, player_movement_system)
@@ -63,6 +64,7 @@ fn main() {
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)
         .add_systems(Update, world_render_system)
+        .add_systems(Update, toggle_inventory)
         //.add_systems(Update, chunk_optimization_system)
         .run();
 }
