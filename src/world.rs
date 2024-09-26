@@ -1,6 +1,6 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
 use crate::materials::{MaterialResource, MeshResource};
-use crate::utils::{global_block_to_chunk_pos, to_global_pos, SIX_OFFSETS};
+use crate::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
@@ -72,59 +72,29 @@ impl WorldMap {
         }
     }
 
-    /*
-    pub fn get_block_wrapper_by_entity(&self, entity: Entity) -> Option<&BlockWrapper> {
-        for (_, inner_map) in &self.map {
-            for (_, value) in inner_map {
-                if value.entity == Some(entity) {
-                    return Some(value);
-                }
-            }
-        }
-        None
-    }
-    */
-
-    pub fn remove_block_by_entity(
+    pub fn remove_block_by_coordinates(
         &mut self,
-        entity: Entity,
+        global_block_pos: &IVec3,
         commands: &mut Commands,
-    ) -> Option<IVec3> {
-        let mut chunk_key_to_delete: Option<IVec3> = None;
-        let mut local_block_key_to_delete: Option<IVec3> = None;
-        let mut entity_to_delete = None;
+    ) -> Option<Block> {
+        let block = self.get_block_by_coordinates(global_block_pos)?;
+        let kind = block.kind;
 
-        // Search for the chunk and block containing the entity
-        for (chunk_pos, inner_map) in self.map.iter() {
-            for (local_block_pos, block_wrapper) in inner_map.iter() {
-                if block_wrapper.entity == Some(entity) {
-                    chunk_key_to_delete = Some(*chunk_pos);
-                    local_block_key_to_delete = Some(*local_block_pos);
-                    entity_to_delete = block_wrapper.entity;
-                    break;
-                }
-            }
-
-            // Exit early if we've already found the keys
-            if chunk_key_to_delete.is_some() {
-                break;
-            }
+        if let Some(entity) = block.entity {
+            commands.get_entity(entity)?.despawn_recursive();
         }
 
-        // If we found both the chunk and block, attempt to remove the block
-        if let (Some(chunk_key), Some(local_block_key)) =
-            (chunk_key_to_delete, local_block_key_to_delete)
-        {
-            if let Some(inner_map) = self.map.get_mut(&chunk_key) {
-                commands.get_entity(entity_to_delete?)?.despawn_recursive();
-                inner_map.remove(&local_block_key);
-                return Some(to_global_pos(
-                    &chunk_key_to_delete?,
-                    &local_block_key_to_delete?,
-                ));
-            }
-        }
-        None
+        let chunk_pos = global_block_to_chunk_pos(global_block_pos);
+
+        let chunk_map = self
+            .map
+            .get_mut(&IVec3::new(chunk_pos.x, chunk_pos.y, chunk_pos.z))?;
+
+        let local_block_pos = to_local_pos(global_block_pos);
+
+        chunk_map.remove(&local_block_pos);
+
+        Some(kind)
     }
 
     pub fn set_block(&mut self, position: &IVec3, block: Block) {

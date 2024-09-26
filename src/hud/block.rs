@@ -42,7 +42,11 @@ pub fn block_text_update_system(
                 Block::Grass => Color::Srgba(Srgba::hex("7CFC00").unwrap()),
                 Block::Stone => Color::Srgba(Srgba::hex("888C8D").unwrap()),
             };
-            txt = format!("{:?}", block_type);
+            txt = format!(
+                "{:?} | pos = {}",
+                block_type,
+                intersection.position().xyz().round()
+            );
         }
     }
 

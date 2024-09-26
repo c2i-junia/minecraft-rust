@@ -28,19 +28,29 @@ pub fn handle_block_interactions(
     // Handle left-click for breaking blocks
     if mouse_input.just_pressed(MouseButton::Left) {
         // Check if there are any intersections with a block
-        if let Some((entity, intersection)) = raycast_source.intersections().first() {
+        if let Some((_, intersection)) = raycast_source.intersections().first() {
             // Check if block is close enough to the player
             if (intersection.position() - p_transform.single_mut().translation).norm()
                 < INTERACTION_DISTANCE
             {
-                // Remove the hit block
-                let block = world_map.remove_block_by_entity(*entity, &mut commands);
+                let block_pos = intersection.position() - intersection.normal() * (CUBE_SIZE / 2.);
+                let global_block_coords = IVec3::new(
+                    block_pos.x.round() as i32,
+                    block_pos.y.round() as i32,
+                    block_pos.z.round() as i32,
+                );
 
-                if let Some(block) = block {
+                // Remove the hit block
+                let block =
+                    world_map.remove_block_by_coordinates(&global_block_coords, &mut commands);
+
+                if let Some(_) = block {
                     // add the block to the player's inventory
                     add_item_to_inventory(&mut player, 1, 1);
 
-                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block));
+                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
+                        global_block_coords,
+                    ));
                 }
             }
         }
