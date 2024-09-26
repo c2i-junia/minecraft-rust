@@ -224,64 +224,6 @@ pub fn load_chunk_around_player(
     }
 }
 
-/*
-#[derive(Default)]
-pub struct ChunkUpdateState {
-    to_check: Vec<IVec3>,
-}
-
-pub fn chunk_optimization_system(
-    world_map: ResMut<WorldMap>,
-    mut state: Local<ChunkUpdateState>,
-    mut visibility_query: Query<&mut Visibility>,
-) {
-    if state.to_check.is_empty() {
-        for (pos, _) in world_map.map.iter() {
-            state.to_check.push(pos.clone())
-        }
-        return;
-    }
-
-    let chunk_pos = state.to_check.pop().unwrap();
-
-    let chunk_data = match world_map.map.get(&chunk_pos) {
-        Some(v) => v,
-        None => return,
-    };
-
-    let six_offsets = [
-        IVec3::new(1, 0, 0),
-        IVec3::new(-1, 0, 0),
-        IVec3::new(0, 1, 0),
-        IVec3::new(0, -1, 0),
-        IVec3::new(0, 0, 1),
-        IVec3::new(0, 0, -1),
-    ];
-
-    'outer: for (block_pos, block) in chunk_data.iter() {
-        for offset in &six_offsets {
-            let neighbor_pos = *block_pos + *offset;
-
-            // Check if the block exists at the neighboring position
-            if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
-                let res = visibility_query.get_mut(block.entity);
-                if let Ok(mut vis) = res {
-                    *vis = Visibility::Visible;
-                }
-                continue 'outer;
-            }
-        }
-        let res = visibility_query.get_mut(block.entity);
-        if let Ok(mut vis) = res {
-            *vis = Visibility::Hidden;
-            println!("changed entity to hidden e={}", block.entity);
-        }
-    }
-
-    println!("optimized pos {} {}", &chunk_pos, state.to_check.len());
-}
-*/
-
 fn should_block_be_rendered(
     world_map: &WorldMap,
     chunk_pos: &IVec3,
@@ -330,7 +272,7 @@ pub fn world_render_system(
 
         let cloned_map = world_map.clone();
         for (chunk_pos, chunk) in world_map.map.iter_mut() {
-            if !chunks_pos_to_reload.contains(&chunk_pos) {
+            if !chunks_pos_to_reload.contains(chunk_pos) {
                 continue;
             }
 
