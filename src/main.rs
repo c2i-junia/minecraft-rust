@@ -29,8 +29,8 @@ fn main() {
         .add_plugins(
             DefaultPlugins
                 // Ensures that pixel-art textures will remain pixelated, and not become a blurry mess
-                .set(ImagePlugin::default_nearest())
-            )
+                .set(ImagePlugin::default_nearest()),
+        )
         .add_plugins(FrameTimeDiagnosticsPlugin::default())
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
         .insert_resource(AmbientLight {

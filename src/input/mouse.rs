@@ -2,9 +2,9 @@ use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
+use crate::world::WorldRenderRequestUpdateEvent;
 use crate::world::{Block, WorldMap};
 use bevy::math::NormedVectorSpace;
-use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
@@ -72,7 +72,7 @@ pub fn handle_block_interactions(
                     &IVec3::new(position.x as i32, position.y as i32, position.z as i32),
                     Block::Dirt,
                 );
-    
+
                 ev_render.send(WorldRenderRequestUpdateEvent());
             }
         }

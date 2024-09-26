@@ -9,7 +9,11 @@ pub struct MaterialResource {
     pub materials: HashMap<Block, Handle<StandardMaterial>>,
 }
 
-pub fn setup_materials(mut commands: Commands, asset_server: Res<AssetServer>, mut materials: ResMut<Assets<StandardMaterial>>) {
+pub fn setup_materials(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     let mut material_resource = MaterialResource { ..default() };
 
     // Root directory for asset server : /assets/
@@ -19,9 +23,9 @@ pub fn setup_materials(mut commands: Commands, asset_server: Res<AssetServer>, m
         base_color: Color::srgb(0.2, 0.85, 0.3),
         perceptual_roughness: BASE_ROUGHNESS,
         ..default()
-    });     // MC's grass texture is grey and tinted via a colormap according to biome
-            // Don't have the knowledge to do that atm so used constant "grass green" color instead
-            // Modifying color based on noise generation values could be interesting tho
+    }); // MC's grass texture is grey and tinted via a colormap according to biome
+        // Don't have the knowledge to do that atm so used constant "grass green" color instead
+        // Modifying color based on noise generation values could be interesting tho
 
     let dirt_material = materials.add(StandardMaterial {
         base_color_texture: Some(asset_server.load("textures/dirt.png")),
@@ -38,7 +42,6 @@ pub fn setup_materials(mut commands: Commands, asset_server: Res<AssetServer>, m
         perceptual_roughness: BASE_ROUGHNESS,
         ..default()
     });
-    
 
     material_resource
         .materials
