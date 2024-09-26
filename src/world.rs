@@ -20,6 +20,12 @@ pub enum Block {
     Bedrock,
 }
 
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+pub enum GlobalMaterial {
+    Sun,
+    Moon,
+}
+
 #[derive(Component, Clone)]
 pub struct BlockWrapper {
     pub kind: Block,
@@ -289,7 +295,7 @@ pub fn world_render_system(
 
                 if block.entity.is_none() && should_render {
                     let material = material_resource
-                        .materials
+                        .block_materials
                         .get(&block.kind)
                         .expect("material not found")
                         .clone();

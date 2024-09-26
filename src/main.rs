@@ -7,6 +7,7 @@ use bevy::render::settings::{RenderCreation, WgpuSettings};
 use bevy::render::RenderPlugin;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 use block::block_text_update_system;
+use lighting::setup_main_lighting;
 
 use crate::chunk_debug_ghost::{chunk_ghost_update_system, setup_chunk_ghost};
 use block_debug_wireframe::*;
@@ -17,6 +18,7 @@ use input::*;
 use materials::*;
 use player::*;
 use world::*;
+use lighting::*;
 
 mod block_debug_wireframe;
 mod camera;
@@ -29,6 +31,7 @@ mod materials;
 mod player;
 mod utils;
 mod world;
+mod lighting;
 
 fn main() {
     App::new()
@@ -66,9 +69,8 @@ fn main() {
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             Startup,
-            (setup_materials, setup_cube_mesh, setup_world).chain(),
+            (setup_materials, setup_cube_mesh, setup_world, spawn_player, setup_main_lighting).chain(),
         )
-        .add_systems(Startup, spawn_player)
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)
         .add_systems(Startup, setup_ui)
@@ -89,5 +91,6 @@ fn main() {
         .add_systems(Update, toggle_wireframe_system)
         .add_systems(Update, world_render_system)
         .add_systems(Update, toggle_inventory)
+        .add_systems(Update, update_celestial_bodies)
         .run();
 }

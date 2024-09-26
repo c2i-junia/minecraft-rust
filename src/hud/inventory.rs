@@ -25,6 +25,7 @@ pub fn setup_inventory(mut commands: Commands) {
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.4)),
                 // Z-index of 1 : displayed above game, but under everything else
                 z_index: ZIndex::Global(1),
+                visibility: Visibility::Hidden,
                 style: Style {
                     position_type: PositionType::Absolute,
                     // Cover whole screen as a dark backdrop
@@ -39,7 +40,6 @@ pub fn setup_inventory(mut commands: Commands) {
                     justify_content: JustifyContent::Center,
                     ..Default::default()
                 },
-                visibility: Visibility::Hidden,
                 ..Default::default()
             },
         ))
