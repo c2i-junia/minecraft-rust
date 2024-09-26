@@ -30,7 +30,12 @@ pub fn block_text_update_system(
                 block_pos.y.round() as i32,
                 block_pos.z.round() as i32,
             );
-            let block_type = world_map.get_block_by_coordinates(&vec).unwrap().kind;
+            let block_wrapper = world_map.get_block_by_coordinates(&vec);
+            let block_wrapper = match block_wrapper {
+                Some(v) => v,
+                None => return,
+            };
+            let block_type = block_wrapper.kind;
             col = match block_type {
                 Block::Bedrock => Color::srgb(0.4, 0.4, 0.4),
                 Block::Dirt => Color::Srgba(Srgba::hex("69512E").unwrap()),
