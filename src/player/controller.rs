@@ -117,12 +117,7 @@ pub fn player_movement_system(
         }
     }
 
-    let speed;
-    if player.is_flying {
-        speed = 15.0;
-    } else {
-        speed = 5.0;
-    }
+    let speed = if player.is_flying { 15.0 } else { 5.0 };
 
     let jump_velocity = 10.0;
 

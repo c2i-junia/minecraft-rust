@@ -93,8 +93,8 @@ impl WorldMap {
         for (chunk_pos, inner_map) in self.map.iter() {
             for (local_block_pos, block_wrapper) in inner_map.iter() {
                 if block_wrapper.entity == Some(entity) {
-                    chunk_key_to_delete = Some(chunk_pos.clone());
-                    local_block_key_to_delete = Some(local_block_pos.clone());
+                    chunk_key_to_delete = Some(*chunk_pos);
+                    local_block_key_to_delete = Some(*local_block_pos);
                     entity_to_delete = block_wrapper.entity;
                     break;
                 }
@@ -127,10 +127,7 @@ impl WorldMap {
         let cx = block_to_chunk_coord(x);
         let cy = block_to_chunk_coord(y);
         let cz = block_to_chunk_coord(z);
-        let chunk = self
-            .map
-            .entry(IVec3::new(cx, cy, cz))
-            .or_insert(HashMap::new());
+        let chunk = self.map.entry(IVec3::new(cx, cy, cz)).or_default();
         let sub_x = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
         let sub_y = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
         let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
