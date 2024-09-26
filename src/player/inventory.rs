@@ -11,7 +11,7 @@ pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: i32, nb: 
             return;
         }
     }
-    player.inventory.push(player::Items {
+    player.inventory.push(player::Item {
         id: item_id,
         nb: nb,
     });

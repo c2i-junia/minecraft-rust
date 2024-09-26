@@ -1,8 +1,9 @@
-use crate::hud::inventory::InventoryText;
 use crate::hud::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
+
+use super::block::BlockText;
 
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]
@@ -74,6 +75,34 @@ pub fn setup_ui(mut commands: Commands) {
         ))
         .id();
 
+    // Displays selected block type
+    let block_text = commands
+        .spawn((
+            BlockText,
+            TextBundle {
+                // use two sections, so it is easy to update just the number
+                text: Text::from_sections([
+                    TextSection {
+                        value: "Selected block : ".into(),
+                        style: TextStyle {
+                            font_size: 16.0,
+                            ..default()
+                        },
+                    },
+                    TextSection {
+                        value: "<None>".into(),
+                        style: TextStyle {
+                            font_size: 16.0,
+                            color: Color::srgb(0.2, 0.2, 0.2),
+                            ..default()
+                        },
+                    },
+                ]),
+                ..Default::default()
+            },
+        ))
+        .id();
+
     let default_text_bundle = || TextBundle {
         text: Text::from_sections([TextSection {
             value: "...".into(),
@@ -95,14 +124,12 @@ pub fn setup_ui(mut commands: Commands) {
         .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
-    let inventory_text = commands.spawn((InventoryText, default_text_bundle())).id();
-
     commands.entity(root).push_children(&[
         text_fps,
         coords_text,
         blocks_number_text,
         chunks_number_text,
-        inventory_text,
+        block_text,
     ]);
 }
 
