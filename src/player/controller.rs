@@ -5,28 +5,17 @@ use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
 use bevy::prelude::*;
 
-fn is_block_at_position(
-    position: Vec3,
-    blocks: &Query<&Transform, (Without<Player>, Without<Camera>)>,
-) -> bool {
-    for block_transform in blocks.iter() {
-        let block_pos = block_transform.translation;
-        // consider a margin of 0.5 (as each block is centered at a whole position)
-        if (block_pos.x - position.x).abs() < 0.5
-            && (block_pos.y - position.y).abs() < 0.5
-            && (block_pos.z - position.z).abs() < 0.5
-        {
-            return true;
-        }
-    }
-    false
+fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
+    world_map
+        .get_block_by_coordinates(&IVec3::new(
+            position.x.round() as i32,
+            position.y.round() as i32,
+            position.z.round() as i32,
+        ))
+        .is_some()
 }
 
-fn check_player_collision(
-    player_position: Vec3,
-    player: &Player,
-    blocks: &Query<&Transform, (Without<Player>, Without<Camera>)>,
-) -> bool {
+fn check_player_collision(player_position: Vec3, player: &Player, world_map: &WorldMap) -> bool {
     // Vérification de la collision avec les pieds et la tête du joueur
     let foot_position = Vec3::new(
         player_position.x,
@@ -50,7 +39,7 @@ fn check_player_collision(
     // Vérifier la collision au niveau des pieds
     for offset in &offsets {
         let check_pos = foot_position + *offset;
-        if is_block_at_position(check_pos, blocks) {
+        if is_block_at_position(check_pos, world_map) {
             return true;
         }
     }
@@ -58,7 +47,7 @@ fn check_player_collision(
     // Vérifier la collision au niveau de la tête
     for offset in &offsets {
         let check_pos = head_position + *offset;
-        if is_block_at_position(check_pos, blocks) {
+        if is_block_at_position(check_pos, world_map) {
             return true;
         }
     }
@@ -73,7 +62,6 @@ pub fn player_movement_system(
     mut player_query: Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
     camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    blocks: Query<&Transform, (Without<Player>, Without<Camera>)>,
     mut world_map: ResMut<WorldMap>,
     world_seed: Res<WorldSeed>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
@@ -162,7 +150,7 @@ pub fn player_movement_system(
         let new_pos_x = player_transform.translation
             + Vec3::new(direction.x, 0.0, 0.0) * speed * time.delta_seconds();
 
-        if player.is_flying || !check_player_collision(new_pos_x, &player, &blocks) {
+        if player.is_flying || !check_player_collision(new_pos_x, &player, &world_map) {
             player_transform.translation.x = new_pos_x.x;
         }
 
@@ -170,7 +158,7 @@ pub fn player_movement_system(
         let new_pos_z = player_transform.translation
             + Vec3::new(0.0, 0.0, direction.z) * speed * time.delta_seconds();
 
-        if player.is_flying || !check_player_collision(new_pos_z, &player, &blocks) {
+        if player.is_flying || !check_player_collision(new_pos_z, &player, &world_map) {
             player_transform.translation.z = new_pos_z.z;
         }
     }
@@ -198,7 +186,7 @@ pub fn player_movement_system(
             player_transform.translation.z,
         ),
         &player,
-        &blocks,
+        &world_map,
     ) {
         // Si un bloc est détecté sous le joueur, il reste sur le bloc
         player.on_ground = true;
