@@ -1,6 +1,6 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
 use crate::materials::{MaterialResource, MeshResource};
-use crate::utils::{global_block_to_chunk_pos, to_global_pos};
+use crate::utils::{global_block_to_chunk_pos, to_global_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
@@ -319,16 +319,7 @@ fn should_block_be_rendered(
 ) -> bool {
     let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
 
-    let six_offsets = [
-        IVec3::new(1, 0, 0),
-        IVec3::new(-1, 0, 0),
-        IVec3::new(0, 1, 0),
-        IVec3::new(0, -1, 0),
-        IVec3::new(0, 0, 1),
-        IVec3::new(0, 0, -1),
-    ];
-
-    for offset in &six_offsets {
+    for offset in &SIX_OFFSETS {
         let neighbor_pos = global_block_pos + *offset;
 
         // Check if the block exists at the neighboring position
@@ -354,7 +345,7 @@ pub fn world_render_system(
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
 ) {
     for ev in ev_render.read() {
-        let chunk_pos_to_reload = match ev {
+        let target_chunk_pos = match ev {
             WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
             WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
                 // Temporary shortcut
@@ -362,9 +353,14 @@ pub fn world_render_system(
             }
         };
 
+        let mut chunks_pos_to_reload = vec![*target_chunk_pos];
+        for offset in &SIX_OFFSETS {
+            chunks_pos_to_reload.push(*target_chunk_pos + *offset);
+        }
+
         let cloned_map = world_map.clone();
         for (chunk_pos, chunk) in world_map.map.iter_mut() {
-            if chunk_pos != chunk_pos_to_reload {
+            if !chunks_pos_to_reload.contains(&chunk_pos) {
                 continue;
             }
 

@@ -13,3 +13,12 @@ pub fn global_block_to_chunk_pos(global_block_pos: &IVec3) -> IVec3 {
         block_to_chunk_coord(global_block_pos.z),
     )
 }
+
+pub const SIX_OFFSETS: [IVec3; 6] = [
+    IVec3::new(1, 0, 0),
+    IVec3::new(-1, 0, 0),
+    IVec3::new(0, 1, 0),
+    IVec3::new(0, -1, 0),
+    IVec3::new(0, 0, 1),
+    IVec3::new(0, 0, -1),
+];
