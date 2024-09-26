@@ -1,9 +1,9 @@
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
-use crate::world::WorldRenderRequestUpdateEvent;
 use crate::world::WorldMap;
-use crate::{ camera::*, items};
+use crate::world::WorldRenderRequestUpdateEvent;
+use crate::{camera::*, items};
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
@@ -46,8 +46,9 @@ pub fn handle_block_interactions(
 
                 if let Some(_) = block {
                     // add the block to the player's inventory
-                    let item_type =
-                        items::item_from_block(block.expect("Error : Empty Some(block) in mouse.rs"));
+                    let item_type = items::item_from_block(
+                        block.expect("Error : Empty Some(block) in mouse.rs"),
+                    );
                     // If block has corresponding item, add it to inventory
                     if item_type.is_some() {
                         add_item_to_inventory(&mut player, item_type.unwrap(), 1);

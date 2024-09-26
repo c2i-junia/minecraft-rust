@@ -27,12 +27,12 @@ mod constants;
 mod exit;
 mod hud;
 mod input;
+mod items;
 mod lighting;
 mod materials;
 mod player;
 mod utils;
 mod world;
-mod items;
 
 fn main() {
     App::new()

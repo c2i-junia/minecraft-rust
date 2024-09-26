@@ -1,5 +1,7 @@
 use crate::{
-    constants::MAX_ITEM_SLOTS, keyboard::{get_action_keys, GameAction}, player::Player
+    constants::MAX_ITEM_SLOTS,
+    keyboard::{get_action_keys, GameAction},
+    player::Player,
 };
 use bevy::prelude::*;
 

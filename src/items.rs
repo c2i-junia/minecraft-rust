@@ -18,8 +18,7 @@ pub fn item_from_block(block: Block) -> Option<ItemsType> {
     match block {
         Block::Bedrock => Some(ItemsType::Bedrock),
         Block::Dirt | Block::Grass => Some(ItemsType::Dirt),
-        Block::Stone => Some(ItemsType::Stone)
-        // _ => None
+        Block::Stone => Some(ItemsType::Stone), // _ => None
     }
 }
 
