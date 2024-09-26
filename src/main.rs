@@ -19,6 +19,7 @@ use materials::*;
 use player::*;
 use world::*;
 use lighting::*;
+use items::*;
 
 mod block_debug_wireframe;
 mod camera;
@@ -32,6 +33,7 @@ mod player;
 mod utils;
 mod world;
 mod lighting;
+mod items;
 
 fn main() {
     App::new()

@@ -2,9 +2,13 @@ mod controller;
 pub(crate) mod inventory;
 mod spawn;
 
+use std::collections::HashMap;
+
 use bevy::prelude::*;
 pub use controller::*;
 pub use spawn::*;
+
+use crate::items;
 
 #[macro_export]
 macro_rules! back_to_enum {
@@ -36,31 +40,15 @@ pub struct Player {
     pub view_mode: ViewMode,
     pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
-    pub inventory: Vec<Item>,
+    pub inventory: HashMap<u32, items::Item>,
     pub height: f32,
     pub width: f32,
-}
-
-#[derive(Debug)]
-pub struct Item {
-    id: i32,
-    nb: i32,
 }
 
 #[derive(Debug, PartialEq)]
 pub enum ViewMode {
     FirstPerson,
     ThirdPerson,
-}
-
-back_to_enum! {
-#[derive(Debug, PartialEq)]
-pub enum ItemsType {
-    Grass,
-    Dirt,
-    Stone,
-    Bedrock,
-}
 }
 
 impl Player {
@@ -71,7 +59,7 @@ impl Player {
             view_mode: ViewMode::FirstPerson,
             is_chunk_debug_mode_enabled: true,
             is_flying: false,
-            inventory: vec![], // No items in the inventory at the beginning
+            inventory: HashMap::new(), // No items in the inventory at the beginning
             height: 1.8,
             width: 0.8,
         }

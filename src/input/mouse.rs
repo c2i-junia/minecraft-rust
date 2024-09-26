@@ -1,9 +1,9 @@
-use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
 use crate::world::WorldRenderRequestUpdateEvent;
-use crate::world::{Block, WorldMap};
+use crate::world::WorldMap;
+use crate::{ camera::*, items};
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
@@ -46,7 +46,12 @@ pub fn handle_block_interactions(
 
                 if let Some(_) = block {
                     // add the block to the player's inventory
-                    add_item_to_inventory(&mut player, 1, 1);
+                    let item_type =
+                        items::item_from_block(block.expect("Error : Empty Some(block) in mouse.rs"));
+                    // If block has corresponding item, add it to inventory
+                    if item_type.is_some() {
+                        add_item_to_inventory(&mut player, item_type.unwrap(), 1);
+                    }
 
                     ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
                         global_block_coords,
@@ -72,17 +77,18 @@ pub fn handle_block_interactions(
                 <= INTERACTION_DISTANCE
                 && (position - p_transform.single_mut().translation).norm() >= CUBE_SIZE
             {
+                let item_type = items::ItemsType::Dirt;
                 // Check if the block is in the player's inventory
-                if has_item(&mut player, 1) {
+                if has_item(&mut player, item_type) {
                     // Remove the block from the player's inventory
-                    remove_item_from_inventory(&mut player, 1, 1);
+                    remove_item_from_inventory(&mut player, item_type, 1);
                 } else {
                     return;
                 }
 
                 let block_pos = IVec3::new(position.x as i32, position.y as i32, position.z as i32);
 
-                world_map.set_block(&block_pos, Block::Dirt);
+                world_map.set_block(&block_pos, items::block_from_item(item_type).unwrap());
 
                 ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
             }

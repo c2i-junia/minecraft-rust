@@ -1,7 +1,5 @@
 use crate::{
-    keyboard::{get_action_keys, GameAction},
-    player::Player,
-    ItemsType,
+    constants::MAX_ITEM_SLOTS, keyboard::{get_action_keys, GameAction}, player::Player
 };
 use bevy::prelude::*;
 
@@ -15,6 +13,9 @@ pub struct InventoryDialog;
 
 #[derive(Component)]
 pub struct InventoryGrid;
+
+#[derive(Component)]
+pub struct InventoryText;
 
 pub fn setup_inventory(mut commands: Commands) {
     // Inventory root : root container for the inventory
@@ -92,7 +93,7 @@ pub fn setup_inventory(mut commands: Commands) {
             },
         ))
         .with_children(|builder| {
-            for i in 0..27 {
+            for i in 0..MAX_ITEM_SLOTS {
                 builder
                     .spawn(ButtonBundle {
                         border_color: BorderColor(Color::BLACK),
@@ -123,10 +124,6 @@ pub fn setup_inventory(mut commands: Commands) {
         .push_children(&[inventory_title, inventory_grid]);
 
     commands.entity(root).push_children(&[dialog]);
-
-    let t = ItemsType::Bedrock as i32;
-    let u = ItemsType::try_from(1).unwrap();
-    println!("t : {:?}, u : {:?}", t, u);
 }
 
 // Open inventory when E key is pressed
@@ -148,7 +145,7 @@ pub fn toggle_inventory(
 
 pub fn inventory_text_update_system(
     player: Query<&Player>,
-    mut query: Query<&mut Text, With<InventoryGrid>>,
+    mut query: Query<&mut Text, With<InventoryText>>,
 ) {
     for mut text in query.iter_mut() {
         let player = player.single();
