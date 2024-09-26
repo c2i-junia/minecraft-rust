@@ -1,5 +1,10 @@
+use bevy::color::palettes::basic::WHITE;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
+use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 use bevy::prelude::*;
+use bevy::render::render_resource::WgpuFeatures;
+use bevy::render::settings::{RenderCreation, WgpuSettings};
+use bevy::render::RenderPlugin;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 use block::block_text_update_system;
 use lighting::setup_main_lighting;
@@ -24,6 +29,7 @@ mod hud;
 mod input;
 mod materials;
 mod player;
+mod utils;
 mod world;
 mod lighting;
 
@@ -33,15 +39,33 @@ fn main() {
             DefaultPlugins
                 // Ensures that pixel-art textures will remain pixelated, and not become a blurry mess
                 .set(ImagePlugin::default_nearest())
-            )
-        .add_plugins(FrameTimeDiagnosticsPlugin::default())
+                .set(RenderPlugin {
+                    render_creation: RenderCreation::Automatic(WgpuSettings {
+                        // WARN this is a native only feature. It will not work with webgl or webgpu
+                        features: WgpuFeatures::POLYGON_MODE_LINE,
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
+        .add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
+        .add_plugins(WireframePlugin)
         .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 400.0,
         })
         .insert_resource(WorldMap { ..default() })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
+        .insert_resource(WireframeConfig {
+            // The global wireframe config enables drawing of wireframes on every mesh,
+            // except those with `NoWireframe`. Meshes with `Wireframe` will always have a wireframe,
+            // regardless of the global configuration.
+            global: false,
+            // Controls the default color of all wireframes. Used as the default color for global wireframes.
+            // Can be changed per mesh using the `WireframeColor` component.
+            default_color: WHITE.into(),
+        })
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             Startup,
@@ -61,13 +85,12 @@ fn main() {
         .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, block_text_update_system)
         .add_systems(Update, toggle_hud_system)
-        .add_systems(Update, handle_block_interactions) // Ajout du système de clic pour casser les blocs
+        .add_systems(Update, handle_block_interactions)
         .add_systems(Update, chunk_ghost_update_system)
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)
         .add_systems(Update, world_render_system)
         .add_systems(Update, toggle_inventory)
         .add_systems(Update, update_celestial_bodies)
-        //.add_systems(Update, chunk_optimization_system)
         .run();
 }

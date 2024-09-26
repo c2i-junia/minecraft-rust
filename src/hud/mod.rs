@@ -1,7 +1,7 @@
+pub mod block;
 pub mod coords;
 pub mod fps;
 pub mod inventory;
-pub mod block;
 mod loaded_stats;
 pub mod ui;
 

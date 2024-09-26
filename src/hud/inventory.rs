@@ -1,4 +1,8 @@
-use crate::{ keyboard::{get_action_keys, GameAction}, player::Player, ItemsType};
+use crate::{
+    keyboard::{get_action_keys, GameAction},
+    player::Player,
+    ItemsType,
+};
 use bevy::prelude::*;
 
 // Marker for Inventory root
@@ -26,7 +30,7 @@ pub fn setup_inventory(mut commands: Commands) {
                     position_type: PositionType::Absolute,
                     // Cover whole screen as a dark backdrop
                     left: Val::Percent(0.),
-                    right:Val::Percent(0.),
+                    right: Val::Percent(0.),
                     bottom: Val::Percent(0.),
                     top: Val::Percent(0.),
                     // Align children at its center
@@ -40,50 +44,59 @@ pub fn setup_inventory(mut commands: Commands) {
             },
         ))
         .id();
-    
+
     let dialog = commands
-        .spawn((InventoryDialog, NodeBundle {
-            background_color: BackgroundColor(Color::srgb(0.4, 0.4, 0.4)),
-            border_radius: BorderRadius::all(Val::Percent(10.)),
-            style: Style {
-                display: Display::Flex,
-                flex_direction: FlexDirection::Column,
-                padding: UiRect::all(Val::Percent(7.)),
+        .spawn((
+            InventoryDialog,
+            NodeBundle {
+                background_color: BackgroundColor(Color::srgb(0.4, 0.4, 0.4)),
+                border_radius: BorderRadius::all(Val::Percent(10.)),
+                style: Style {
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::all(Val::Percent(7.)),
+                    ..default()
+                },
                 ..default()
             },
-            ..default()
-        }))
+        ))
         .id();
-    
+
     let inventory_title = commands
         .spawn(TextBundle {
-            text: Text::from_section("Inventory", TextStyle {
-                font_size: 24.,
-                ..Default::default()
-            }),
+            text: Text::from_section(
+                "Inventory",
+                TextStyle {
+                    font_size: 24.,
+                    ..Default::default()
+                },
+            ),
             ..Default::default()
         })
         .id();
-    
+
     let inventory_grid = commands
-        .spawn((InventoryGrid, NodeBundle {
-            style: Style {
-                display: Display::Grid,
-                grid_template_columns: RepeatedGridTrack::auto(9),
-                margin: UiRect::all(Val::Px(20.)),
-                padding: UiRect::ZERO,
-                border: UiRect::all(Val::Px(1.)),
+        .spawn((
+            InventoryGrid,
+            NodeBundle {
+                style: Style {
+                    display: Display::Grid,
+                    grid_template_columns: RepeatedGridTrack::auto(9),
+                    margin: UiRect::all(Val::Px(20.)),
+                    padding: UiRect::ZERO,
+                    border: UiRect::all(Val::Px(1.)),
+                    ..Default::default()
+                },
+                border_color: BorderColor(Color::BLACK),
                 ..Default::default()
             },
-            border_color: BorderColor(Color::BLACK),
-            ..Default::default()
-        }))
+        ))
         .with_children(|builder| {
             for i in 0..27 {
                 builder
                     .spawn(ButtonBundle {
                         border_color: BorderColor(Color::BLACK),
-                        style: Style{
+                        style: Style {
                             width: Val::Px(50.),
                             height: Val::Px(50.),
                             margin: UiRect::ZERO,
@@ -93,28 +106,27 @@ pub fn setup_inventory(mut commands: Commands) {
                         ..Default::default()
                     })
                     .with_children(|btn| {
-                        btn.spawn(TextBundle::from_section(format!("{:?}", i), TextStyle {
-                            font_size: 15.,
-                            ..Default::default()
-                        }));
+                        btn.spawn(TextBundle::from_section(
+                            format!("{:?}", i),
+                            TextStyle {
+                                font_size: 15.,
+                                ..Default::default()
+                            },
+                        ));
                     });
             }
         })
         .id();
-    
-        commands.entity(dialog).push_children(&[
-            inventory_title,
-            inventory_grid
-        ]);
 
-        commands.entity(root).push_children(&[
-            dialog
-        ]);
+    commands
+        .entity(dialog)
+        .push_children(&[inventory_title, inventory_grid]);
 
-        let t = ItemsType::Bedrock as i32;
-        let u = ItemsType::try_from(1).unwrap();
-        println!("t : {:?}, u : {:?}", t, u);
-    
+    commands.entity(root).push_children(&[dialog]);
+
+    let t = ItemsType::Bedrock as i32;
+    let u = ItemsType::try_from(1).unwrap();
+    println!("t : {:?}, u : {:?}", t, u);
 }
 
 // Open inventory when E key is pressed
@@ -122,7 +134,7 @@ pub fn toggle_inventory(
     mut q: Query<&mut Visibility, With<InventoryRoot>>,
     kbd: Res<ButtonInput<KeyCode>>,
 ) {
-    let keys = get_action_keys(GameAction::OpenInventory);
+    let keys = get_action_keys(GameAction::ToggleInventory);
     for key in keys {
         if kbd.just_pressed(key) {
             let mut vis = q.single_mut();

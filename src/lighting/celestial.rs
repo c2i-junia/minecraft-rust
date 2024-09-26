@@ -5,7 +5,8 @@ use crate::{
     Player,
 };
 use bevy::{
-    log::tracing_subscriber::fmt::time, pbr::{NotShadowCaster, NotShadowReceiver}, prelude::*
+    pbr::{NotShadowCaster, NotShadowReceiver},
+    prelude::*,
 };
 use std::f32::consts::PI;
 
@@ -117,6 +118,8 @@ pub fn update_celestial_bodies(
     time: Res<Time>,
 ) {
     for mut tr in &mut query {
-        tr.rotate(Quat::from_rotation_x((2. * PI * time.delta_seconds()) / DAY_DURATION));
+        tr.rotate(Quat::from_rotation_x(
+            (2. * PI * time.delta_seconds()) / DAY_DURATION,
+        ));
     }
 }

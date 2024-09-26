@@ -11,10 +11,7 @@ pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: i32, nb: 
             return;
         }
     }
-    player.inventory.push(player::Item {
-        id: item_id,
-        nb: nb,
-    });
+    player.inventory.push(player::Item { id: item_id, nb });
 }
 
 // Retire un item de l'inventaire du joueur
@@ -49,5 +46,5 @@ pub fn has_item(player: &mut Query<&mut Player>, item_id: i32) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }

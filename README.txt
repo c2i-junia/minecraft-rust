@@ -7,6 +7,7 @@ Controls:
 - Move Left           : A / Arrow Left
 - Move Right          : D / Arrow Right
 - Jump                : Space
+- Inventory           : E
 - Toggle Fly Mode     : F
 - Fly Up              : Space (only in Fly Mode)
 - Fly Down            : Left Shift (only in Fly Mode)

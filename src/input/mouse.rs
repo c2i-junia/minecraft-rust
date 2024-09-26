@@ -2,9 +2,9 @@ use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
+use crate::world::WorldRenderRequestUpdateEvent;
 use crate::world::{Block, WorldMap};
 use bevy::math::NormedVectorSpace;
-use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
@@ -28,18 +28,30 @@ pub fn handle_block_interactions(
     // Handle left-click for breaking blocks
     if mouse_input.just_pressed(MouseButton::Left) {
         // Check if there are any intersections with a block
-        if let Some((entity, intersection)) = raycast_source.intersections().first() {
+        if let Some((_, intersection)) = raycast_source.intersections().first() {
             // Check if block is close enough to the player
             if (intersection.position() - p_transform.single_mut().translation).norm()
                 < INTERACTION_DISTANCE
             {
+                let block_pos = intersection.position() - intersection.normal() * (CUBE_SIZE / 2.);
+                let global_block_coords = IVec3::new(
+                    block_pos.x.round() as i32,
+                    block_pos.y.round() as i32,
+                    block_pos.z.round() as i32,
+                );
+
                 // Remove the hit block
-                world_map.remove_block_by_entity(*entity, &mut commands);
+                let block =
+                    world_map.remove_block_by_coordinates(&global_block_coords, &mut commands);
 
-                // add the block to the player's inventory
-                add_item_to_inventory(&mut player, 1, 1);
+                if let Some(_) = block {
+                    // add the block to the player's inventory
+                    add_item_to_inventory(&mut player, 1, 1);
 
-                ev_render.send(WorldRenderRequestUpdateEvent());
+                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
+                        global_block_coords,
+                    ));
+                }
             }
         }
     }
@@ -68,12 +80,11 @@ pub fn handle_block_interactions(
                     return;
                 }
 
-                world_map.set_block(
-                    &IVec3::new(position.x as i32, position.y as i32, position.z as i32),
-                    Block::Dirt,
-                );
-    
-                ev_render.send(WorldRenderRequestUpdateEvent());
+                let block_pos = IVec3::new(position.x as i32, position.y as i32, position.z as i32);
+
+                world_map.set_block(&block_pos, Block::Dirt);
+
+                ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
             }
         }
     }

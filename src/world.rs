@@ -1,5 +1,6 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
 use crate::materials::{MaterialResource, MeshResource};
+use crate::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
@@ -77,53 +78,29 @@ impl WorldMap {
         }
     }
 
-    /*
-    pub fn get_block_wrapper_by_entity(&self, entity: Entity) -> Option<&BlockWrapper> {
-        for (_, inner_map) in &self.map {
-            for (_, value) in inner_map {
-                if value.entity == Some(entity) {
-                    return Some(value);
-                }
-            }
-        }
-        None
-    }
-    */
+    pub fn remove_block_by_coordinates(
+        &mut self,
+        global_block_pos: &IVec3,
+        commands: &mut Commands,
+    ) -> Option<Block> {
+        let block = self.get_block_by_coordinates(global_block_pos)?;
+        let kind = block.kind;
 
-    pub fn remove_block_by_entity(&mut self, entity: Entity, commands: &mut Commands) {
-        let mut chunk_key_to_delete: Option<IVec3> = None;
-        let mut local_block_key_to_delete: Option<IVec3> = None;
-        let mut entity_to_delete = None;
-
-        // Search for the chunk and block containing the entity
-        for (chunk_pos, inner_map) in self.map.iter() {
-            for (local_block_pos, block_wrapper) in inner_map.iter() {
-                if block_wrapper.entity == Some(entity) {
-                    chunk_key_to_delete = Some(chunk_pos.clone());
-                    local_block_key_to_delete = Some(local_block_pos.clone());
-                    entity_to_delete = block_wrapper.entity;
-                    break;
-                }
-            }
-
-            // Exit early if we've already found the keys
-            if chunk_key_to_delete.is_some() {
-                break;
-            }
+        if let Some(entity) = block.entity {
+            commands.get_entity(entity)?.despawn_recursive();
         }
 
-        // If we found both the chunk and block, attempt to remove the block
-        if let (Some(chunk_key), Some(local_block_key)) =
-            (chunk_key_to_delete, local_block_key_to_delete)
-        {
-            if let Some(inner_map) = self.map.get_mut(&chunk_key) {
-                commands
-                    .get_entity(entity_to_delete.unwrap())
-                    .unwrap()
-                    .despawn_recursive();
-                inner_map.remove(&local_block_key);
-            }
-        }
+        let chunk_pos = global_block_to_chunk_pos(global_block_pos);
+
+        let chunk_map = self
+            .map
+            .get_mut(&IVec3::new(chunk_pos.x, chunk_pos.y, chunk_pos.z))?;
+
+        let local_block_pos = to_local_pos(global_block_pos);
+
+        chunk_map.remove(&local_block_pos);
+
+        Some(kind)
     }
 
     pub fn set_block(&mut self, position: &IVec3, block: Block) {
@@ -133,10 +110,7 @@ impl WorldMap {
         let cx = block_to_chunk_coord(x);
         let cy = block_to_chunk_coord(y);
         let cz = block_to_chunk_coord(z);
-        let chunk = self
-            .map
-            .entry(IVec3::new(cx, cy, cz))
-            .or_insert(HashMap::new());
+        let chunk = self.map.entry(IVec3::new(cx, cy, cz)).or_default();
         let sub_x = ((x % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
         let sub_y = ((y % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
         let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
@@ -206,7 +180,7 @@ fn generate_chunk(
     }
 
     world_map.total_chunks_count += 1;
-    ev_render.send(WorldRenderRequestUpdateEvent());
+    ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(chunk_pos));
 }
 
 pub fn setup_world(
@@ -256,68 +230,6 @@ pub fn load_chunk_around_player(
     }
 }
 
-/*
-#[derive(Default)]
-pub struct ChunkUpdateState {
-    to_check: Vec<IVec3>,
-}
-
-pub fn chunk_optimization_system(
-    world_map: ResMut<WorldMap>,
-    mut state: Local<ChunkUpdateState>,
-    mut visibility_query: Query<&mut Visibility>,
-) {
-    if state.to_check.is_empty() {
-        for (pos, _) in world_map.map.iter() {
-            state.to_check.push(pos.clone())
-        }
-        return;
-    }
-
-    let chunk_pos = state.to_check.pop().unwrap();
-
-    let chunk_data = match world_map.map.get(&chunk_pos) {
-        Some(v) => v,
-        None => return,
-    };
-
-    let six_offsets = [
-        IVec3::new(1, 0, 0),
-        IVec3::new(-1, 0, 0),
-        IVec3::new(0, 1, 0),
-        IVec3::new(0, -1, 0),
-        IVec3::new(0, 0, 1),
-        IVec3::new(0, 0, -1),
-    ];
-
-    'outer: for (block_pos, block) in chunk_data.iter() {
-        for offset in &six_offsets {
-            let neighbor_pos = *block_pos + *offset;
-
-            // Check if the block exists at the neighboring position
-            if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
-                let res = visibility_query.get_mut(block.entity);
-                if let Ok(mut vis) = res {
-                    *vis = Visibility::Visible;
-                }
-                continue 'outer;
-            }
-        }
-        let res = visibility_query.get_mut(block.entity);
-        if let Ok(mut vis) = res {
-            *vis = Visibility::Hidden;
-            println!("changed entity to hidden e={}", block.entity);
-        }
-    }
-
-    println!("optimized pos {} {}", &chunk_pos, state.to_check.len());
-}
-*/
-
-fn to_global_pos(chunk_pos: &IVec3, local_block_pos: &IVec3) -> IVec3 {
-    *chunk_pos * CHUNK_SIZE + *local_block_pos
-}
-
 fn should_block_be_rendered(
     world_map: &WorldMap,
     chunk_pos: &IVec3,
@@ -325,16 +237,7 @@ fn should_block_be_rendered(
 ) -> bool {
     let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
 
-    let six_offsets = [
-        IVec3::new(1, 0, 0),
-        IVec3::new(-1, 0, 0),
-        IVec3::new(0, 1, 0),
-        IVec3::new(0, -1, 0),
-        IVec3::new(0, 0, 1),
-        IVec3::new(0, 0, -1),
-    ];
-
-    for offset in &six_offsets {
+    for offset in &SIX_OFFSETS {
         let neighbor_pos = global_block_pos + *offset;
 
         // Check if the block exists at the neighboring position
@@ -347,19 +250,40 @@ fn should_block_be_rendered(
 }
 
 #[derive(Event)]
-pub struct WorldRenderRequestUpdateEvent();
+pub enum WorldRenderRequestUpdateEvent {
+    ChunkToReload(IVec3),
+    BlockToReload(IVec3),
+}
 
 pub fn world_render_system(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
     mesh_resource: Res<MeshResource>,
     mut commands: Commands,
-    mut ev_event: EventReader<WorldRenderRequestUpdateEvent>,
+    mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
 ) {
-    for _ev in ev_event.read() {
+    for ev in ev_render.read() {
+        let target_chunk_pos = match ev {
+            WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
+            WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
+                // Temporary shortcut
+                &global_block_to_chunk_pos(pos)
+            }
+        };
+
+        let mut chunks_pos_to_reload = vec![*target_chunk_pos];
+        for offset in &SIX_OFFSETS {
+            chunks_pos_to_reload.push(*target_chunk_pos + *offset);
+        }
+
         let cloned_map = world_map.clone();
-        println!("iterating over {} chunks", cloned_map.map.len());
         for (chunk_pos, chunk) in world_map.map.iter_mut() {
+            if !chunks_pos_to_reload.contains(chunk_pos) {
+                continue;
+            }
+
+            println!("Reloading chunk {}", chunk_pos);
+
             for (local_cube_pos, block) in chunk {
                 let should_render =
                     should_block_be_rendered(&cloned_map, chunk_pos, local_cube_pos);
