@@ -110,6 +110,13 @@ pub struct MeshResource {
 
 pub fn setup_cube_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
     let cube_mesh = Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE));
+
+    println!(
+        "hi {:?} vertices = {}",
+        &cube_mesh,
+        &cube_mesh.count_vertices()
+    );
+
     let cube_handle = meshes.add(cube_mesh);
 
     commands.insert_resource(MeshResource {

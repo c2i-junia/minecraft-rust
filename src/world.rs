@@ -268,7 +268,7 @@ fn is_block_surrounded(world_map: &WorldMap, chunk_pos: &IVec3, local_block_pos:
 fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
-    let mut normals = Vec::new();
+    //let mut normals = Vec::new();
     let mut uvs = Vec::new();
 
     let mut indices_offset = 0;
@@ -293,37 +293,48 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
                     continue;
                 }
 
-                println!("{} {} {}", x, y, z);
-
                 // Define vertices for a cube in the range [0,1]
                 let local_vertices: Vec<[f32; 3]> = vec![
-                    // Front face
-                    [0.0, 0.0, 1.0], // 0
-                    [1.0, 0.0, 1.0], // 1
-                    [1.0, 1.0, 1.0], // 2
-                    [0.0, 1.0, 1.0], // 3
-                    // Back face
-                    [0.0, 0.0, 0.0], // 4
-                    [1.0, 0.0, 0.0], // 5
-                    [1.0, 1.0, 0.0], // 6
-                    [0.0, 1.0, 0.0], // 7
+                    [-0.5, -0.5, -0.5], // A 0
+                    [0.5, -0.5, -0.5],  // B 1
+                    [0.5, 0.5, -0.5],   // C 2
+                    [-0.5, 0.5, -0.5],  // D 3
+                    [-0.5, -0.5, 0.5],  // E 4
+                    [0.5, -0.5, 0.5],   // F 5
+                    [0.5, 0.5, 0.5],    // G 6
+                    [-0.5, 0.5, 0.5],   // H 7
+                    [-0.5, 0.5, -0.5],  // D 8
+                    [-0.5, -0.5, -0.5], // A 9
+                    [-0.5, -0.5, 0.5],  // E 10
+                    [-0.5, 0.5, 0.5],   // H 11
+                    [0.5, -0.5, -0.5],  // B 12
+                    [0.5, 0.5, -0.5],   // C 13
+                    [0.5, 0.5, 0.5],    // G 14
+                    [0.5, -0.5, 0.5],   // F 15
+                    [-0.5, -0.5, -0.5], // A 16
+                    [0.5, -0.5, -0.5],  // B 17
+                    [0.5, -0.5, 0.5],   // F 18
+                    [-0.5, -0.5, 0.5],  // E 19
+                    [0.5, 0.5, -0.5],   // C 20
+                    [-0.5, 0.5, -0.5],  // D 21
+                    [-0.5, 0.5, 0.5],   // H 22
+                    [0.5, 0.5, 0.5],    // G 23
                 ]
                 .iter()
-                .map(|v| [v[0] + x, v[1] + y, v[2] + z])
+                .map(|v| [v[0] + x + 0.5, v[1] + y + 0.5, v[2] + z + 0.5])
                 .collect();
 
                 let local_indices: Vec<u32> = vec![
-                    0, 1, 2, 0, 2, 3, // Front face
-                    1, 5, 6, 1, 6, 2, // Right face
-                    5, 4, 7, 5, 7, 6, // Back face
-                    4, 0, 3, 4, 3, 7, // Left face
-                    3, 2, 6, 3, 6, 7, // Top face
-                    4, 5, 1, 4, 1, 0, // Bottom face
+                    // front and back
+                    0, 3, 2, 2, 1, 0, 4, 5, 6, 6, 7, 4, // left and right
+                    11, 8, 9, 9, 10, 11, 12, 13, 14, 14, 15, 12, // bottom and top
+                    16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
                 ]
                 .iter()
                 .map(|x| x + indices_offset)
                 .collect();
 
+                /*
                 let local_normals = vec![
                     // Normals for each vertex
                     [0.0, 0.0, 1.0],
@@ -335,26 +346,41 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
                     [1.0, 0.0, 0.0],
                     [1.0, 0.0, 0.0], // Right face normals
                 ];
+                 */
 
                 indices_offset += local_vertices.len() as u32;
 
                 // UV coordinates
                 let local_uvs = vec![
-                    // Front face (top-left texture in atlas)
-                    [0.0, 0.0], // Bottom-left
-                    [0.5, 0.0], // Bottom-right
-                    [0.5, 0.5], // Top-right
-                    [0.0, 0.5], // Top-left
-                    // Right face (top-right texture in atlas)
-                    [0.5, 0.0], // Bottom-left (duplicated vertex with new UV)
-                    [1.0, 0.0], // Bottom-right
-                    [1.0, 0.5], // Top-right
-                    [0.5, 0.5], // Top-left (duplicated vertex with new UV)
+                    [0.0, 0.0], // A 0
+                    [1.0, 0.0], // B 1
+                    [1.0, 1.0], // C 2
+                    [0.0, 1.0], // D 3
+                    [0.0, 0.0], // E 4
+                    [1.0, 0.0], // F 5
+                    [1.0, 1.0], // G 6
+                    [0.0, 1.0], // H 7
+                    [0.0, 0.0], // D 8
+                    [1.0, 0.0], // A 9
+                    [1.0, 1.0], // E 10
+                    [0.0, 1.0], // H 11
+                    [0.0, 0.0], // B 12
+                    [1.0, 0.0], // C 13
+                    [1.0, 1.0], // G 14
+                    [0.0, 1.0], // F 15
+                    [0.0, 0.0], // A 16
+                    [1.0, 0.0], // B 17
+                    [1.0, 1.0], // F 18
+                    [0.0, 1.0], // E 19
+                    [0.0, 0.0], // C 20
+                    [1.0, 0.0], // D 21
+                    [1.0, 1.0], // H 22
+                    [0.0, 1.0], // G 23
                 ];
 
                 vertices.extend(local_vertices);
                 indices.extend(local_indices);
-                normals.extend(local_normals);
+                //normals.extend(local_normals);
                 uvs.extend(local_uvs);
             }
         }
@@ -362,7 +388,7 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices.to_vec());
-    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    //mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(Indices::U32(indices));
 
