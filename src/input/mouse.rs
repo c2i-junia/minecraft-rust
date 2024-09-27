@@ -39,11 +39,10 @@ pub fn handle_block_interactions(
             {
                 let block_pos = intersection.position() - intersection.normal() * (CUBE_SIZE / 2.);
                 let global_block_coords = IVec3::new(
-                    block_pos.x.round() as i32,
-                    block_pos.y.round() as i32,
-                    block_pos.z.round() as i32,
+                    block_pos.x.floor() as i32,
+                    block_pos.y.floor() as i32,
+                    block_pos.z.floor() as i32,
                 );
-                println!("block_pos of interaction {}", global_block_coords);
 
                 // Remove the hit block
                 let block = world_map.remove_block_by_coordinates(&global_block_coords);
@@ -67,10 +66,17 @@ pub fn handle_block_interactions(
     // Handle right-click for placing blocks
     if mouse_input.just_pressed(MouseButton::Right) {
         if let Some((_entity, intersection)) = raycast_source.intersections().first() {
+            let block_pos = intersection.position() - intersection.normal() * (CUBE_SIZE / 2.);
+            let global_block_coords = IVec3::new(
+                block_pos.x.floor() as i32,
+                block_pos.y.floor() as i32,
+                block_pos.z.floor() as i32,
+            );
+
             // Get the normal of the face where the block will be placed
             let normal = intersection.normal(); // This is already a Vec3, no need to unwrap
                                                 // Calculate the block position by adding a small offset to the intersection point
-            let mut position = intersection.position() + normal * 0.51;
+            let mut position = global_block_coords.as_vec3() + normal * 0.51;
             // Snap the position to the grid
             position = snap_to_grid(position);
 
