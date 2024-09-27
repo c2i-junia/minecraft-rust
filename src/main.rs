@@ -69,6 +69,8 @@ fn main() {
             // Can be changed per mesh using the `WireframeColor` component.
             default_color: WHITE.into(),
         })
+        .insert_resource(MaterialResource { ..default() })
+        .insert_resource(AtlasHandles { ..default() })
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             Startup,
@@ -89,6 +91,7 @@ fn main() {
         .add_systems(Startup, setup_chunk_ghost)
         .add_systems(Update, toggle_inventory)
         .add_systems(Update, set_ui_mode)
+        .add_systems(Update, build_atlas)
         .add_systems(Update, player_movement_system)
         .add_systems(Update, camera_control_system)
         .add_systems(Update, fps_text_update_system)

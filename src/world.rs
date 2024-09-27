@@ -265,6 +265,16 @@ fn is_block_surrounded(world_map: &WorldMap, chunk_pos: &IVec3, local_block_pos:
     true
 }
 
+fn get_uv_coords(block: Block) -> [f32; 4] {
+    // should be refactored later
+    match block {
+        Block::Grass => [0.0, 0.25, 0.0, 1.0],
+        Block::Dirt => [0.25, 0.5, 0.0, 1.0],
+        Block::Stone => [0.5, 0.75, 0.0, 1.0],
+        Block::Bedrock => [0.75, 1.0, 0.0, 1.0],
+    }
+}
+
 fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -293,7 +303,6 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
                     continue;
                 }
 
-                // Define vertices for a cube in the range [0,1]
                 let local_vertices: Vec<[f32; 3]> = vec![
                     [-0.5, -0.5, -0.5], // A 0
                     [0.5, -0.5, -0.5],  // B 1
@@ -325,10 +334,9 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
                 .collect();
 
                 let local_indices: Vec<u32> = vec![
-                    // front and back
-                    0, 3, 2, 2, 1, 0, 4, 5, 6, 6, 7, 4, // left and right
-                    11, 8, 9, 9, 10, 11, 12, 13, 14, 14, 15, 12, // bottom and top
-                    16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20,
+                    0, 3, 2, 2, 1, 0, 4, 5, 6, 6, 7, 4, // front and back
+                    11, 8, 9, 9, 10, 11, 12, 13, 14, 14, 15, 12, // left and right
+                    16, 17, 18, 18, 19, 16, 20, 21, 22, 22, 23, 20, // bottom and top
                 ]
                 .iter()
                 .map(|x| x + indices_offset)
@@ -350,32 +358,42 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
 
                 indices_offset += local_vertices.len() as u32;
 
+                /*
+                let u0 = 0.0;
+                let u1 = 1.0;
+
+                let v0 = 0.0;
+                let v1 = 1.0;
+                */
+
+                let [u0, u1, v0, v1] = get_uv_coords(block.unwrap().kind);
+
                 // UV coordinates
                 let local_uvs = vec![
-                    [0.0, 0.0], // A 0
-                    [1.0, 0.0], // B 1
-                    [1.0, 1.0], // C 2
-                    [0.0, 1.0], // D 3
-                    [0.0, 0.0], // E 4
-                    [1.0, 0.0], // F 5
-                    [1.0, 1.0], // G 6
-                    [0.0, 1.0], // H 7
-                    [0.0, 0.0], // D 8
-                    [1.0, 0.0], // A 9
-                    [1.0, 1.0], // E 10
-                    [0.0, 1.0], // H 11
-                    [0.0, 0.0], // B 12
-                    [1.0, 0.0], // C 13
-                    [1.0, 1.0], // G 14
-                    [0.0, 1.0], // F 15
-                    [0.0, 0.0], // A 16
-                    [1.0, 0.0], // B 17
-                    [1.0, 1.0], // F 18
-                    [0.0, 1.0], // E 19
-                    [0.0, 0.0], // C 20
-                    [1.0, 0.0], // D 21
-                    [1.0, 1.0], // H 22
-                    [0.0, 1.0], // G 23
+                    [u0, v0], // A 0
+                    [u1, v0], // B 1
+                    [u1, v1], // C 2
+                    [u0, v1], // D 3
+                    [u0, v0], // E 4
+                    [u1, v0], // F 5
+                    [u1, v1], // G 6
+                    [u0, v1], // H 7
+                    [u0, v0], // D 8
+                    [u1, v0], // A 9
+                    [u1, v1], // E 10
+                    [u0, v1], // H 11
+                    [u0, v0], // B 12
+                    [u1, v0], // C 13
+                    [u1, v1], // G 14
+                    [u0, v1], // F 15
+                    [u0, v0], // A 16
+                    [u1, v0], // B 17
+                    [u1, v1], // F 18
+                    [u0, v1], // E 19
+                    [u0, v0], // C 20
+                    [u1, v0], // D 21
+                    [u1, v1], // H 22
+                    [u0, v1], // G 23
                 ];
 
                 vertices.extend(local_vertices);
@@ -401,54 +419,69 @@ pub fn world_render_system(
     mut commands: Commands,
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut query_mesh: Query<&mut Handle<Mesh>>,
 ) {
+    if material_resource.atlas_texture.is_none() {
+        // let's wait until it's ready
+        return;
+    }
+
     for _ in ev_render.read() {
         let mut cloned_map = world_map.clone();
+        println!("ok update;");
         for (chunk_pos, chunk) in cloned_map.map.iter_mut() {
-            match chunk.entity {
-                Some(_) => {
-                    println!("skip {}", chunk_pos);
-                }
-                None => update_chunk(
-                    chunk_pos,
-                    &material_resource,
-                    &mut commands,
-                    &mut meshes,
-                    &mut world_map,
-                ),
-            };
+            update_chunk(
+                chunk,
+                chunk_pos,
+                &material_resource,
+                &mut commands,
+                &mut meshes,
+                &mut world_map,
+                &mut query_mesh,
+            );
         }
     }
 }
 
 fn update_chunk(
+    chunk: &Chunk,
     chunk_pos: &IVec3,
     material_resource: &Res<MaterialResource>,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     world_map: &mut WorldMap,
+    query_mesh: &mut Query<&mut Handle<Mesh>>,
 ) {
-    let texture = match material_resource.block_materials.get(&Block::Grass) {
-        Some(t) => t,
-        None => return,
-    };
-    println!("update_chunk {}", chunk_pos);
-    let mesh = generate_chunk_mesh(world_map, chunk_pos);
+    let texture = material_resource.atlas_texture.clone().unwrap();
+    let new_mesh = generate_chunk_mesh(world_map, chunk_pos);
 
-    // Cube
-    let new_entity = commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(mesh),
-            material: texture.clone(),
-            transform: Transform::from_xyz(
-                (chunk_pos.x * CHUNK_SIZE) as f32,
-                (chunk_pos.y * CHUNK_SIZE) as f32,
-                (chunk_pos.z * CHUNK_SIZE) as f32,
-            ),
-            ..Default::default()
-        })
-        .id();
+    if chunk.entity.is_none() {
+        println!("update_chunk {}", chunk_pos);
+        // Cube
+        let new_entity = commands
+            .spawn(PbrBundle {
+                mesh: meshes.add(new_mesh),
+                material: texture.clone(),
+                transform: Transform::from_xyz(
+                    (chunk_pos.x * CHUNK_SIZE) as f32,
+                    (chunk_pos.y * CHUNK_SIZE) as f32,
+                    (chunk_pos.z * CHUNK_SIZE) as f32,
+                ),
+                ..Default::default()
+            })
+            .id();
 
-    let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
-    ch.entity = Some(new_entity);
+        let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
+        ch.entity = Some(new_entity);
+    } else {
+        let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
+        let e = ch.entity.unwrap();
+        let mut mesh = query_mesh.get_mut(e);
+        match mesh {
+            Ok(mut mesh_handle) => {
+                *mesh_handle = meshes.add(new_mesh);
+            }
+            Err(e) => println!("entity already destroyed {:?}", e),
+        };
+    }
 }
