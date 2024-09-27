@@ -250,6 +250,21 @@ pub enum WorldRenderRequestUpdateEvent {
     BlockToReload(IVec3),
 }
 
+fn is_block_surrounded(world_map: &WorldMap, chunk_pos: &IVec3, local_block_pos: &IVec3) -> bool {
+    let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
+
+    for offset in &SIX_OFFSETS {
+        let neighbor_pos = global_block_pos + *offset;
+
+        // Check if the block exists at the neighboring position
+        if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -262,6 +277,11 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
         for y in 0..CHUNK_SIZE {
             for z in 0..CHUNK_SIZE {
                 let local_block_pos = IVec3::new(x, y, z);
+
+                if is_block_surrounded(world_map, chunk_pos, &local_block_pos) {
+                    continue;
+                }
+
                 let x = x as f32;
                 let y = y as f32;
                 let z = z as f32;
