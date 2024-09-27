@@ -254,6 +254,7 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();
+    let mut uvs = Vec::new();
 
     let mut indices_offset = 0;
 
@@ -317,9 +318,24 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
 
                 indices_offset += local_vertices.len() as u32;
 
+                // UV coordinates
+                let local_uvs = vec![
+                    // Front face (top-left texture in atlas)
+                    [0.0, 0.0], // Bottom-left
+                    [0.5, 0.0], // Bottom-right
+                    [0.5, 0.5], // Top-right
+                    [0.0, 0.5], // Top-left
+                    // Right face (top-right texture in atlas)
+                    [0.5, 0.0], // Bottom-left (duplicated vertex with new UV)
+                    [1.0, 0.0], // Bottom-right
+                    [1.0, 0.5], // Top-right
+                    [0.5, 0.5], // Top-left (duplicated vertex with new UV)
+                ];
+
                 vertices.extend(local_vertices);
                 indices.extend(local_indices);
                 normals.extend(local_normals);
+                uvs.extend(local_uvs);
             }
         }
     }
@@ -327,7 +343,7 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices.to_vec());
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    //mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(Indices::U32(indices));
 
     mesh
