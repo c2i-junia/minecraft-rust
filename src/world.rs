@@ -6,6 +6,7 @@ use bevy::prelude::Resource;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_mod_raycast::prelude::*;
+use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use std::collections::HashMap;
@@ -278,7 +279,7 @@ fn get_uv_coords(block: Block) -> [f32; 4] {
 fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
-    //let mut normals = Vec::new();
+    let mut normals = Vec::new();
     let mut uvs = Vec::new();
 
     let mut indices_offset = 0;
@@ -342,29 +343,40 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
                 .map(|x| x + indices_offset)
                 .collect();
 
-                /*
-                let local_normals = vec![
-                    // Normals for each vertex
+                let local_normals: Vec<[f32; 3]> = vec![
+                    // Front face (-Z)
+                    [0.0, 0.0, -1.0],
+                    [0.0, 0.0, -1.0],
+                    [0.0, 0.0, -1.0],
+                    [0.0, 0.0, -1.0],
+                    // Back face (+Z)
                     [0.0, 0.0, 1.0],
                     [0.0, 0.0, 1.0],
                     [0.0, 0.0, 1.0],
-                    [0.0, 0.0, 1.0], // Front face normals
+                    [0.0, 0.0, 1.0],
+                    // Left face (-X)
+                    [-1.0, 0.0, 0.0],
+                    [-1.0, 0.0, 0.0],
+                    [-1.0, 0.0, 0.0],
+                    [-1.0, 0.0, 0.0],
+                    // Right face (+X)
                     [1.0, 0.0, 0.0],
                     [1.0, 0.0, 0.0],
                     [1.0, 0.0, 0.0],
-                    [1.0, 0.0, 0.0], // Right face normals
+                    [1.0, 0.0, 0.0],
+                    // Bottom face (-Y)
+                    [0.0, -1.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    // Top face (+Y)
+                    [0.0, 1.0, 0.0],
+                    [0.0, 1.0, 0.0],
+                    [0.0, 1.0, 0.0],
+                    [0.0, 1.0, 0.0],
                 ];
-                 */
 
                 indices_offset += local_vertices.len() as u32;
-
-                /*
-                let u0 = 0.0;
-                let u1 = 1.0;
-
-                let v0 = 0.0;
-                let v1 = 1.0;
-                */
 
                 let [u0, u1, v0, v1] = get_uv_coords(block.unwrap().kind);
 
@@ -398,7 +410,7 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
 
                 vertices.extend(local_vertices);
                 indices.extend(local_indices);
-                //normals.extend(local_normals);
+                normals.extend(local_normals);
                 uvs.extend(local_uvs);
             }
         }
@@ -406,7 +418,7 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices.to_vec());
-    //mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(Indices::U32(indices));
 
@@ -444,7 +456,7 @@ pub fn world_render_system(
 }
 
 fn update_chunk(
-    chunk: &Chunk,
+    chunk: &mut Chunk,
     chunk_pos: &IVec3,
     material_resource: &Res<MaterialResource>,
     commands: &mut Commands,
@@ -455,33 +467,34 @@ fn update_chunk(
     let texture = material_resource.atlas_texture.clone().unwrap();
     let new_mesh = generate_chunk_mesh(world_map, chunk_pos);
 
+    if chunk.entity.is_some() {
+        commands
+            .get_entity(chunk.entity.unwrap())
+            .unwrap()
+            .despawn_recursive();
+        chunk.entity = None;
+    }
+
     if chunk.entity.is_none() {
         println!("update_chunk {}", chunk_pos);
         // Cube
         let new_entity = commands
-            .spawn(PbrBundle {
-                mesh: meshes.add(new_mesh),
-                material: texture.clone(),
-                transform: Transform::from_xyz(
-                    (chunk_pos.x * CHUNK_SIZE) as f32,
-                    (chunk_pos.y * CHUNK_SIZE) as f32,
-                    (chunk_pos.z * CHUNK_SIZE) as f32,
-                ),
-                ..Default::default()
-            })
+            .spawn((
+                PbrBundle {
+                    mesh: meshes.add(new_mesh),
+                    material: texture.clone(),
+                    transform: Transform::from_xyz(
+                        (chunk_pos.x * CHUNK_SIZE) as f32,
+                        (chunk_pos.y * CHUNK_SIZE) as f32,
+                        (chunk_pos.z * CHUNK_SIZE) as f32,
+                    ),
+                    ..Default::default()
+                },
+                RaycastMesh::<BlockRaycastSet>::default(),
+            ))
             .id();
 
         let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
         ch.entity = Some(new_entity);
-    } else {
-        let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
-        let e = ch.entity.unwrap();
-        let mut mesh = query_mesh.get_mut(e);
-        match mesh {
-            Ok(mut mesh_handle) => {
-                *mesh_handle = meshes.add(new_mesh);
-            }
-            Err(e) => println!("entity already destroyed {:?}", e),
-        };
     }
 }

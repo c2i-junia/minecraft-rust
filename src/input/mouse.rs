@@ -43,6 +43,7 @@ pub fn handle_block_interactions(
                     block_pos.y.round() as i32,
                     block_pos.z.round() as i32,
                 );
+                println!("block_pos of interaction {}", global_block_coords);
 
                 // Remove the hit block
                 let block = world_map.remove_block_by_coordinates(&global_block_coords);
