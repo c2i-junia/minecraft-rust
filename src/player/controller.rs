@@ -8,9 +8,9 @@ use bevy::prelude::*;
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
     world_map
         .get_block_by_coordinates(&IVec3::new(
-            position.x.round() as i32,
-            position.y.round() as i32,
-            position.z.round() as i32,
+            position.x.floor() as i32,
+            position.y.floor() as i32,
+            position.z.floor() as i32,
         ))
         .is_some()
 }
