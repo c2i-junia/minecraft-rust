@@ -1,6 +1,7 @@
 use crate::constants::MAX_ITEM_SLOTS;
 use crate::constants::MAX_ITEM_STACK;
 use crate::items;
+use crate::items::Item;
 use crate::player::Player;
 use bevy::prelude::*;
 
@@ -64,7 +65,7 @@ pub fn remove_item_from_inventory(
             continue;
         }
 
-        let existing_stack = item_option.expect("Error : empty item").clone();
+        let existing_stack = *item_option.expect("Error : empty item");
 
         if existing_stack.id != item_id {
             continue;
@@ -90,6 +91,58 @@ pub fn remove_item_from_inventory(
             break;
         }
     }
+}
+
+/// Add items to stack at specified position\
+/// Stacks cannot exceed MAX_ITEM_STACK number of items\
+/// Returns number of items really added to the stack
+pub fn add_item_to_stack(
+    player: &mut Player,
+    item_id: items::ItemsType,
+    stack: u32,
+    mut nb: u32,
+) -> u32 {
+    let item_option = player.inventory.get(&stack);
+    let mut new_item = Item { id: item_id, nb };
+
+    if let Some(item) = item_option {
+        if nb + item.nb > MAX_ITEM_STACK {
+            nb = MAX_ITEM_STACK - item.nb;
+        }
+        new_item.nb = nb + item.nb;
+    }
+    player.inventory.insert(stack, new_item);
+    nb
+}
+
+/// Removes items from stack at specified position\
+/// Stacks cannot have < 0 number of items\
+/// Returns number of items really removed from the stack
+pub fn remove_item_from_stack(
+    player: &mut Player,
+    item_id: items::ItemsType,
+    stack: u32,
+    mut nb: u32,
+) -> u32 {
+    let item_option = player.inventory.get(&stack);
+
+    if let Some(item) = item_option {
+        let item_nb = item.nb;
+        if nb > item_nb {
+            nb = item_nb;
+            player.inventory.remove(&stack);
+        } else {
+            player.inventory.insert(
+                stack,
+                Item {
+                    id: item_id,
+                    nb: item_nb - nb,
+                },
+            );
+        }
+        return nb;
+    }
+    0
 }
 
 // Retourne le nombre d'items dans l'inventaire du joueur

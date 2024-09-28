@@ -18,6 +18,7 @@ use input::*;
 use lighting::*;
 use materials::*;
 use player::*;
+use ui::{inventory::*, set_ui_mode};
 use world::*;
 
 mod block_debug_wireframe;
@@ -31,6 +32,7 @@ mod items;
 mod lighting;
 mod materials;
 mod player;
+mod ui;
 mod utils;
 mod world;
 
@@ -81,15 +83,17 @@ fn main() {
         )
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)
-        .add_systems(Startup, setup_ui)
+        .add_systems(Startup, setup_hud)
         .add_systems(Startup, setup_inventory)
         .add_systems(Startup, cursor_grab_system)
         .add_systems(Startup, setup_chunk_ghost)
+        .add_systems(Update, toggle_inventory)
+        .add_systems(Update, set_ui_mode)
         .add_systems(Update, player_movement_system)
         .add_systems(Update, camera_control_system)
         .add_systems(Update, fps_text_update_system)
         .add_systems(Update, inventory_text_update_system)
-        .add_systems(Update, inventory_grid_update_system)
+        .add_systems(Update, inventory_update_system)
         .add_systems(Update, coords_text_update_system)
         .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, block_text_update_system)
@@ -99,7 +103,8 @@ fn main() {
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)
         .add_systems(Update, world_render_system)
-        .add_systems(Update, toggle_inventory)
+        .add_systems(Update, set_cursor_visibility)
+        .add_systems(Update, inventory_cell_interaction_system)
         .add_systems(Update, update_celestial_bodies)
         .run();
 }

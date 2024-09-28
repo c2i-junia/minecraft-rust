@@ -1,6 +1,6 @@
 use crate::Block;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Item {
     pub id: ItemsType,
     pub nb: u32,

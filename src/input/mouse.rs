@@ -1,6 +1,7 @@
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
+use crate::ui::UIMode;
 use crate::world::WorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
 use crate::{camera::*, items};
@@ -23,6 +24,10 @@ pub fn handle_block_interactions(
     mut commands: Commands,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
+    if player.single().ui_mode == UIMode::Opened {
+        return;
+    }
+
     let raycast_source = raycast_source.single();
 
     // Handle left-click for breaking blocks

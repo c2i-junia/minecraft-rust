@@ -4,18 +4,18 @@ use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
 
-use super::InventoryText;
+use crate::ui::*;
 
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]
-pub struct UiRoot;
+pub struct HudRoot;
 
-pub fn setup_ui(mut commands: Commands) {
+pub fn setup_hud(mut commands: Commands) {
     // create our UI root node
     // this is the wrapper/container for the text
     let root = commands
         .spawn((
-            UiRoot,
+            HudRoot,
             NodeBundle {
                 // give it a dark background for readability
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.5)),
@@ -125,7 +125,9 @@ pub fn setup_ui(mut commands: Commands) {
         .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
-    let inventory_text = commands.spawn((InventoryText, default_text_bundle())).id();
+    let inventory_text = commands
+        .spawn((inventory::InventoryText, default_text_bundle()))
+        .id();
 
     commands.entity(root).push_children(&[
         text_fps,
@@ -139,7 +141,7 @@ pub fn setup_ui(mut commands: Commands) {
 
 /// Toggle the FPS counter when pressing F3
 pub fn toggle_hud_system(
-    mut q: Query<&mut Visibility, With<UiRoot>>,
+    mut q: Query<&mut Visibility, With<HudRoot>>,
     kbd: Res<ButtonInput<KeyCode>>,
 ) {
     let keys = get_action_keys(GameAction::ToggleFps);

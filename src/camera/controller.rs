@@ -1,3 +1,4 @@
+use crate::ui::UIMode;
 use crate::{player, Player};
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
@@ -64,6 +65,10 @@ pub fn camera_control_system(
     // accumulate mouse movements
     for event in mouse_motion_events.read() {
         delta += event.delta;
+    }
+
+    if player.single().ui_mode == UIMode::Opened {
+        return;
     }
 
     for player in player.iter_mut() {

@@ -1,12 +1,10 @@
 pub mod block;
 pub mod coords;
+pub mod debug;
 pub mod fps;
-pub mod inventory;
 mod loaded_stats;
-pub mod ui;
 
 pub use coords::*;
+pub use debug::*;
 pub use fps::*;
-pub use inventory::*;
 pub use loaded_stats::*;
-pub use ui::*;

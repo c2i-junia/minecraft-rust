@@ -8,36 +8,14 @@ use bevy::prelude::*;
 pub use controller::*;
 pub use spawn::*;
 
-use crate::items;
-
-#[macro_export]
-macro_rules! back_to_enum {
-    ($(#[$meta:meta])* $vis:vis enum $name:ident {
-        $($(#[$vmeta:meta])* $vname:ident $(= $val:expr)?,)*
-    }) => {
-        $(#[$meta])*
-        $vis enum $name {
-            $($(#[$vmeta])* $vname $(= $val)?,)*
-        }
-
-        impl std::convert::TryFrom<i32> for $name {
-            type Error = ();
-
-            fn try_from(v: i32) -> Result<Self, Self::Error> {
-                match v {
-                    $(x if x == $name::$vname as i32 => Ok($name::$vname),)*
-                    _ => Err(()),
-                }
-            }
-        }
-    }
-}
+use crate::{items, ui::UIMode};
 
 #[derive(Component)]
 pub struct Player {
     pub vertical_velocity: f32,
     pub on_ground: bool,
     pub view_mode: ViewMode,
+    pub ui_mode: UIMode,
     pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
     pub inventory: HashMap<u32, items::Item>,
@@ -57,6 +35,7 @@ impl Player {
             vertical_velocity: 0.0,
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
+            ui_mode: UIMode::Closed,
             is_chunk_debug_mode_enabled: true,
             is_flying: false,
             inventory: HashMap::new(), // No items in the inventory at the beginning
