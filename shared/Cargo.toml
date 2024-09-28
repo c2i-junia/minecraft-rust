@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+naia-bevy-shared = "0.23.0"
+bevy_ecs = { version = "0.14", default-features=false}
+log = { version = "0.4" }

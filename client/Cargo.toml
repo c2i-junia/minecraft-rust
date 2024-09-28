@@ -8,5 +8,7 @@ bevy = "0.14"
 lazy_static = "1.5.0"
 rand = "0.8.5"              # to generate the seed
 noise = "0.9"               # to generate the map
-bevy_mod_raycast = "0.18"   # pour recuperer le bloc pointé par le curseur
+bevy_mod_raycast = "0.18"   # to get the block targeted by the mouse
 shared = { path = "../shared" }
+naia-bevy-client = { version = "0.23.0", features = ["transport_webrtc"] }
+naia-client-socket = "0.23.0"

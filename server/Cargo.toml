@@ -4,4 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+shared = { path = "../shared" }
 naia-bevy-server = "0.23.0"
+bevy_app = { version = "0.14", default-features=false }
+bevy_core = { version = "0.14", default-features=false }
+bevy_ecs = { version = "0.14", default-features=false }
+bevy_log = { version = "0.14", default-features=false }
+bevy = "0.14.2"
