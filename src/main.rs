@@ -76,7 +76,6 @@ fn main() {
             Startup,
             (
                 setup_materials,
-                setup_cube_mesh,
                 setup_world,
                 spawn_player,
                 setup_main_lighting,

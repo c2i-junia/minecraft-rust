@@ -1,18 +1,14 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
-use crate::materials::{MaterialResource, MeshResource};
+use crate::materials::MaterialResource;
 use crate::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_mod_raycast::prelude::*;
-use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use std::collections::HashMap;
-
-#[derive(Component)]
-pub struct BlockMarker;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum Block {
@@ -224,25 +220,6 @@ pub fn load_chunk_around_player(
             generate_chunk(chunk_pos, seed, world_map, ev_render);
         }
     }
-}
-
-fn should_block_be_rendered(
-    world_map: &WorldMap,
-    chunk_pos: &IVec3,
-    local_block_pos: &IVec3,
-) -> bool {
-    let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
-
-    for offset in &SIX_OFFSETS {
-        let neighbor_pos = global_block_pos + *offset;
-
-        // Check if the block exists at the neighboring position
-        if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
-            return true;
-        }
-    }
-
-    false
 }
 
 #[derive(Event, Debug)]
@@ -508,7 +485,7 @@ fn update_chunk(
             ))
             .id();
 
-        let mut ch = world_map.map.get_mut(&chunk_pos).unwrap();
+        let ch = world_map.map.get_mut(chunk_pos).unwrap();
         ch.entity = Some(new_entity);
     }
 }

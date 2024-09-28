@@ -12,7 +12,7 @@ pub fn toggle_wireframe_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut settings: ResMut<BlockDebugWireframeSettings>,
     mut config: ResMut<WireframeConfig>,
-    mut material_resource: ResMut<MaterialResource>,
+    material_resource: ResMut<MaterialResource>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if is_action_just_pressed(GameAction::ToggleBlockWireframeDebugMode, &keyboard_input)

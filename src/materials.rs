@@ -1,4 +1,4 @@
-use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT, CUBE_SIZE};
+use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
 use crate::items::ItemsType;
 use crate::world::{Block, GlobalMaterial};
 use bevy::prelude::*;
@@ -121,27 +121,6 @@ pub fn setup_materials(
         .collect();
 
     atlas_handles.handles = handles;
-}
-
-#[derive(Resource)]
-pub struct MeshResource {
-    pub cube_mesh: Handle<Mesh>,
-}
-
-pub fn setup_cube_mesh(mut commands: Commands, mut meshes: ResMut<Assets<Mesh>>) {
-    let cube_mesh = Mesh::from(Cuboid::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE));
-
-    println!(
-        "hi {:?} vertices = {}",
-        &cube_mesh,
-        &cube_mesh.count_vertices()
-    );
-
-    let cube_handle = meshes.add(cube_mesh);
-
-    commands.insert_resource(MeshResource {
-        cube_mesh: cube_handle,
-    });
 }
 
 pub fn build_atlas(
