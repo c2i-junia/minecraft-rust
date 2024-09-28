@@ -9,9 +9,8 @@ use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 use block::block_text_update_system;
 use lighting::setup_main_lighting;
 
-use crate::chunk_debug_ghost::{chunk_ghost_update_system, setup_chunk_ghost};
-use block_debug_wireframe::*;
 use camera::*;
+use debug::*;
 use exit::*;
 use hud::*;
 use input::*;
@@ -21,10 +20,9 @@ use player::*;
 use ui::{inventory::*, set_ui_mode};
 use world::*;
 
-mod block_debug_wireframe;
 mod camera;
-mod chunk_debug_ghost;
 mod constants;
+mod debug;
 mod exit;
 mod hud;
 mod input;
