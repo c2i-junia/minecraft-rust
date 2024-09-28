@@ -1,46 +1,9 @@
+use crate::camera::CameraController;
 use crate::ui::UIMode;
 use crate::{player, Player};
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use bevy_mod_raycast::prelude::*;
-
-#[derive(TypePath)]
-pub struct BlockRaycastSet;
-
-#[derive(Component)]
-pub struct CameraController {
-    distance: f32,
-    angle_x: f32,
-    angle_y: f32,
-    mouse_sensitivity: f32,
-}
-
-impl Default for CameraController {
-    fn default() -> Self {
-        Self {
-            distance: 10.0,
-            angle_x: 0.0,
-            angle_y: 20.0f32.to_radians(),
-            mouse_sensitivity: 0.003,
-        }
-    }
-}
-
-pub fn spawn_camera(mut commands: Commands) {
-    commands
-        .spawn(Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 5.0, 10.0))
-                .looking_at(Vec3::new(0.0, 0.5, 0.0), Vec3::Y),
-            ..Default::default()
-        })
-        .insert(CameraController::default()) // Ajoute le CameraController
-        .insert({
-            let mut raycast_source = RaycastSource::<BlockRaycastSet>::default(); // Initialisation par défaut
-            raycast_source.cast_method = RaycastMethod::Transform; // Utilise la transformation de la caméra pour lancer le rayon
-            raycast_source // Retourne l'objet
-        });
-}
 
 // System to control the camera based on mouse movement
 pub fn camera_control_system(
