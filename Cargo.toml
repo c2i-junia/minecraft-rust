@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
     "client",
+    "shared",
 ]
 
 # Enable a small amount of optimization in the dev profile.

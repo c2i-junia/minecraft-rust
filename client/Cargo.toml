@@ -9,3 +9,4 @@ lazy_static = "1.5.0"
 rand = "0.8.5"              # to generate the seed
 noise = "0.9"               # to generate the map
 bevy_mod_raycast = "0.18"   # pour recuperer le bloc pointé par le curseur
+shared = { path = "../shared" }

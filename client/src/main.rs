@@ -32,6 +32,7 @@ mod ui;
 mod world;
 
 fn main() {
+    println!("Shared library proof-of-concept: {}", shared::add(1, 2));
     App::new()
         .add_plugins(
             DefaultPlugins
