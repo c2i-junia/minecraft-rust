@@ -245,7 +245,7 @@ fn should_block_be_rendered(
     false
 }
 
-#[derive(Event)]
+#[derive(Event, Debug)]
 pub enum WorldRenderRequestUpdateEvent {
     ChunkToReload(IVec3),
     BlockToReload(IVec3),
@@ -431,17 +431,33 @@ pub fn world_render_system(
     mut commands: Commands,
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut query_mesh: Query<&mut Handle<Mesh>>,
 ) {
     if material_resource.atlas_texture.is_none() {
         // let's wait until it's ready
         return;
     }
 
-    for _ in ev_render.read() {
+    for event in ev_render.read() {
+        println!("{:?}", event);
+        let target_chunk_pos = match event {
+            WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
+            WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
+                // Temporary shortcut
+                &global_block_to_chunk_pos(pos)
+            }
+        };
+
+        let mut chunks_pos_to_reload = vec![*target_chunk_pos];
+        for offset in &SIX_OFFSETS {
+            chunks_pos_to_reload.push(*target_chunk_pos + *offset);
+        }
+
         let mut cloned_map = world_map.clone();
-        println!("ok update;");
         for (chunk_pos, chunk) in cloned_map.map.iter_mut() {
+            if !chunks_pos_to_reload.contains(chunk_pos) {
+                continue;
+            }
+
             update_chunk(
                 chunk,
                 chunk_pos,
@@ -449,7 +465,6 @@ pub fn world_render_system(
                 &mut commands,
                 &mut meshes,
                 &mut world_map,
-                &mut query_mesh,
             );
         }
     }
@@ -462,7 +477,6 @@ fn update_chunk(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     world_map: &mut WorldMap,
-    query_mesh: &mut Query<&mut Handle<Mesh>>,
 ) {
     let texture = material_resource.atlas_texture.clone().unwrap();
     let new_mesh = generate_chunk_mesh(world_map, chunk_pos);
