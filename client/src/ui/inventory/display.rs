@@ -44,7 +44,10 @@ pub fn inventory_update_system(
     let player = player_query.single();
 
     // For each cell : Update content
-    for (children, i) in inventory_query.iter_mut().zip(MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS) {
+    for (children, i) in inventory_query
+        .iter_mut()
+        .zip(MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS)
+    {
         let stack = player.inventory.get(&i);
         let mut txt = text_query.get_mut(children[0]).unwrap();
         let mut img = image_query.get_mut(children[1]).unwrap();

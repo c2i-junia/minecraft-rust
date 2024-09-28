@@ -1,5 +1,5 @@
 use super::UiDialog;
-use crate::constants::{MAX_INVENTORY_SLOTS, MAX_HOTBAR_SLOTS};
+use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
 use bevy::{prelude::*, ui::FocusPolicy};
 

@@ -9,7 +9,6 @@ use bevy::prelude::*;
 pub struct HudRoot;
 
 pub fn setup_hud(mut commands: Commands) {
-
     // create our UI root node
     // this is the wrapper/container for the text
     let root = commands
