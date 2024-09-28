@@ -10,17 +10,17 @@ use block::block_text_update_system;
 use lighting::setup_main_lighting;
 
 use camera::*;
-use debug::*;
 use exit::*;
 use hud::*;
 use input::*;
 use lighting::*;
 use player::*;
-use ui::inventory::*;
+use ui::{inventory::*, set_ui_mode};
+use debug::*;
+
 use world::*;
 mod camera;
 mod constants;
-mod debug;
 mod exit;
 mod hud;
 mod input;
@@ -78,7 +78,7 @@ fn main() {
         .add_systems(Startup, spawn_camera)
         .add_systems(Startup, spawn_reticle)
         .add_systems(Startup, setup_hud)
-        .add_systems(Startup, setup_inventory)
+        .add_systems(Startup, (setup_hotbar, setup_inventory).chain())
         .add_systems(Startup, cursor_grab_system)
         .add_systems(Startup, setup_chunk_ghost)
         .add_systems(Update, toggle_inventory)

@@ -1,6 +1,6 @@
 use super::UiDialog;
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
-use crate::constants::MAX_ITEM_SLOTS;
+use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use bevy::{
     prelude::*, ui::FocusPolicy,
 };
@@ -13,8 +13,8 @@ pub fn setup_inventory(mut commands: Commands) {
             InventoryRoot,
             NodeBundle {
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.4)),
-                // Z-index of 1 : displayed above game, but under everything else
-                z_index: ZIndex::Global(1),
+                // Z-index of 2 : displayed above game & HUD, but under everything else
+                z_index: ZIndex::Global(2),
                 visibility: Visibility::Hidden,
                 style: Style {
                     position_type: PositionType::Absolute,
@@ -83,7 +83,7 @@ pub fn setup_inventory(mut commands: Commands) {
             ..Default::default()
         })
         .with_children(|builder| {
-            for i in 0..MAX_ITEM_SLOTS {
+            for i in MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS {
                 builder
                     .spawn((
                         InventoryCell { id: i },
@@ -118,13 +118,7 @@ pub fn setup_inventory(mut commands: Commands) {
                         });
                         btn.spawn(ImageBundle {
                             z_index: ZIndex::Local(-1),
-                            style: Style {
-                                //     left: Val::Percent(5.),
-                                //     right: Val::Percent(5.),
-                                //     bottom: Val::Percent(15.),
-                                //     top: Val::Percent(15.),
-                                ..Default::default()
-                            },
+                            style: Style::default(),
                             ..Default::default()
                         });
                     });

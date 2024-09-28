@@ -4,11 +4,14 @@ use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
 
+use super::setup_hotbar;
+
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]
 pub struct HudRoot;
 
 pub fn setup_hud(mut commands: Commands) {
+
     // create our UI root node
     // this is the wrapper/container for the text
     let root = commands

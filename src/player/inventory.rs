@@ -1,4 +1,4 @@
-use crate::constants::MAX_ITEM_SLOTS;
+use crate::constants::MAX_INVENTORY_SLOTS;
 use crate::constants::MAX_ITEM_STACK;
 use crate::player::Player;
 use bevy::prelude::*;
@@ -13,7 +13,7 @@ pub fn add_item_to_inventory(
 ) {
     let mut player = player.single_mut();
 
-    for i in 0..MAX_ITEM_SLOTS {
+    for i in 0..MAX_INVENTORY_SLOTS {
         let item_option = player.inventory.get(&i);
 
         if item_option.is_some() {
@@ -58,7 +58,7 @@ pub fn remove_item_from_inventory(
     mut nb: u32,
 ) {
     let mut player = player.single_mut();
-    for i in 0..MAX_ITEM_SLOTS {
+    for i in 0..MAX_INVENTORY_SLOTS {
         let item_option = player.inventory.get(&i);
 
         if item_option.is_none() {

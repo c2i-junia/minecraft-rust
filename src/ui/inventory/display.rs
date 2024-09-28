@@ -3,7 +3,7 @@ use bevy::input::ButtonInput;
 use bevy::prelude::{KeyCode, Query, Res, Style, Text, UiImage, Val, Visibility, Window, With};
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use bevy::window::PrimaryWindow;
-use crate::constants::MAX_ITEM_SLOTS;
+use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use crate::player::Player;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
@@ -28,7 +28,7 @@ pub fn toggle_inventory(
 
 pub fn inventory_update_system(
     player_query: Query<&Player>,
-    mut btn_query: Query<&Children, With<InventoryCell>>,
+    mut inventory_query: Query<&Children, With<InventoryCell>>,
     mut text_query: Query<&mut Text>,
     mut image_query: Query<&mut UiImage>,
     mut floating_stack_query: Query<(&mut Style, &FloatingStack, &Children), With<FloatingStack>>,
@@ -44,7 +44,7 @@ pub fn inventory_update_system(
     let player = player_query.single();
 
     // For each cell : Update content
-    for (children, i) in btn_query.iter_mut().zip(0..MAX_ITEM_SLOTS) {
+    for (children, i) in inventory_query.iter_mut().zip(MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS) {
         let stack = player.inventory.get(&i);
         let mut txt = text_query.get_mut(children[0]).unwrap();
         let mut img = image_query.get_mut(children[1]).unwrap();
