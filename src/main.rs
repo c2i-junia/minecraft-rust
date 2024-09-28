@@ -92,15 +92,16 @@ fn main() {
         .add_systems(Update, set_ui_mode)
         .add_systems(Update, build_atlas)
         .add_systems(Update, player_movement_system)
-        .add_systems(Update, camera_control_system)
+        .add_systems(
+            Update,
+            (handle_block_interactions, camera_control_system).chain(),
+        )
         .add_systems(Update, fps_text_update_system)
-        .add_systems(Update, inventory_text_update_system)
         .add_systems(Update, inventory_update_system)
         .add_systems(Update, coords_text_update_system)
         .add_systems(Update, total_blocks_text_update_system)
         .add_systems(Update, block_text_update_system)
         .add_systems(Update, toggle_hud_system)
-        .add_systems(Update, handle_block_interactions)
         .add_systems(Update, chunk_ghost_update_system)
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)

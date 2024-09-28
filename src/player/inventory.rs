@@ -126,17 +126,16 @@ pub fn remove_item_from_stack(
 ) -> u32 {
     let item_option = player.inventory.get(&stack);
 
-    if let Some(item) = item_option {
-        let item_nb = item.nb;
-        if nb > item_nb {
-            nb = item_nb;
+    if let Some(&item) = item_option {
+        if nb >= item.nb {
+            nb = item.nb;
             player.inventory.remove(&stack);
         } else {
             player.inventory.insert(
                 stack,
                 Item {
                     id: item_id,
-                    nb: item_nb - nb,
+                    nb: item.nb - nb,
                 },
             );
         }

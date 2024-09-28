@@ -4,8 +4,6 @@ use crate::hud::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
 
-use crate::ui::*;
-
 /// Marker to find the container entity so we can show/hide the FPS counter
 #[derive(Component)]
 pub struct HudRoot;
@@ -125,17 +123,12 @@ pub fn setup_hud(mut commands: Commands) {
         .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
-    let inventory_text = commands
-        .spawn((inventory::InventoryText, default_text_bundle()))
-        .id();
-
     commands.entity(root).push_children(&[
         text_fps,
         coords_text,
         blocks_number_text,
         chunks_number_text,
         block_text,
-        inventory_text,
     ]);
 }
 

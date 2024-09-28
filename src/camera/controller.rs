@@ -56,7 +56,8 @@ pub fn camera_control_system(
     let window = windows.single();
 
     // if the window is not focused, ignore camera movement
-    if !window.focused {
+    if !window.focused || player.single().ui_mode == UIMode::Opened {
+        mouse_motion_events.clear();
         return;
     }
 
@@ -65,10 +66,6 @@ pub fn camera_control_system(
     // accumulate mouse movements
     for event in mouse_motion_events.read() {
         delta += event.delta;
-    }
-
-    if player.single().ui_mode == UIMode::Opened {
-        return;
     }
 
     for player in player.iter_mut() {

@@ -10,7 +10,7 @@ use bevy::{
     prelude::*, render::texture::TRANSPARENT_IMAGE_HANDLE, ui::FocusPolicy, window::PrimaryWindow,
 };
 
-use super::BaseUiDialog;
+use super::UiDialog;
 
 /// Marker for Inventory root
 #[derive(Component)]
@@ -31,14 +31,11 @@ pub struct FloatingStack {
     items: Option<Item>,
 }
 
-#[derive(Component)]
-pub struct InventoryText;
-
 pub fn setup_inventory(mut commands: Commands) {
     // Inventory root : root container for the inventory
     let root = commands
         .spawn((
-            BaseUiDialog,
+            UiDialog,
             InventoryRoot,
             NodeBundle {
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.4)),
@@ -224,22 +221,6 @@ pub fn toggle_inventory(
     }
 }
 
-pub fn inventory_text_update_system(
-    player: Query<&Player>,
-    mut query: Query<&mut Text, With<InventoryText>>,
-) {
-    for mut text in query.iter_mut() {
-        let player = player.single();
-        // Check if inventory is empty
-        if player.inventory.is_empty() {
-            text.sections[0].value = "Inventory: Empty".to_string();
-            return;
-        }
-        // Update inventory text
-        text.sections[0].value = format!("Inventory: {:?}", player.inventory);
-    }
-}
-
 pub fn inventory_update_system(
     player_query: Query<&Player>,
     mut btn_query: Query<&Children, With<InventoryCell>>,
@@ -392,10 +373,10 @@ pub fn inventory_cell_interaction_system(
                     );
                 }
             }
-            // Else if hovering a stack : cut hovered stack in half, and push it to floating stack
+            // Else if hovering a stack : cut hovered stack in half (rounded up), and push it to floating stack
             else if stack_exists {
                 let stack = *stack.unwrap();
-                let nb = stack.nb / 2;
+                let nb = (stack.nb + 1) / 2;
                 // Get removed nb of items removed from inventory -> adds them into the floating stack
                 add_item_floating_stack(
                     &mut floating_stack,
@@ -409,9 +390,9 @@ pub fn inventory_cell_interaction_system(
     }
 }
 
-/// Removes a number of items from the floating stack\
-/// Cannot go lower than 0 items
-/// Returns number of items actually removed
+/// Removes `nb` items from the floating stack\
+/// Cannot go lower than `0` items\
+/// Returns number of items _actually_ removed
 pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -> u32 {
     if let Some(mut item) = floating_stack.items {
         if nb >= item.nb {
@@ -425,15 +406,18 @@ pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -
     0
 }
 
-/// Adds a number of items to the floating stack\
-/// Cannot go higher than MAX_ITEM_STACK items
-/// Returns number of items actually added
+/// Adds `nb` items to the floating stack\
+/// Cannot go higher than `MAX_ITEM_STACK` items\
+/// Parameter `item_type` will **ONLY BE USED** if no items are present in the floating stack\
+/// Returns number of items _actually_ added
 pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
     item_type: ItemsType,
 ) -> u32 {
-    if let Some(mut item) = floating_stack.items {
+    if nb == 0 {
+        0
+    } else if let Some(mut item) = floating_stack.items {
         if nb + item.nb > MAX_ITEM_STACK {
             nb = MAX_ITEM_STACK - item.nb;
         }
