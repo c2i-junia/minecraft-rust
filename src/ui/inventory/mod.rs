@@ -27,12 +27,12 @@ pub fn set_ui_mode(mut player: Query<&mut Player>, visibility: Query<&Visibility
     player.ui_mode = UIMode::Closed;
 }
 
+mod display;
 mod inv;
 pub mod items;
 mod setup;
-mod display;
 
+pub use display::*;
 pub use inv::*;
 use items::*;
-pub use display::*;
 pub use setup::*;

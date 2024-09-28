@@ -1,9 +1,9 @@
 use crate::constants::MAX_INVENTORY_SLOTS;
 use crate::constants::MAX_ITEM_STACK;
 use crate::player::Player;
-use bevy::prelude::*;
 use crate::ui::inventory::items;
 use crate::ui::inventory::items::Item;
+use bevy::prelude::*;
 
 // Ajoute un item à l'inventaire du joueur
 pub fn add_item_to_inventory(

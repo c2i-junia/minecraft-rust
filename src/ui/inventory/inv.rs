@@ -1,11 +1,7 @@
 use super::{add_item_floating_stack, remove_item_floating_stack};
 use crate::player::inventory::{add_item_to_stack, remove_item_from_stack};
 use crate::ui::inventory::items::Item;
-use crate::{
-    constants::MAX_ITEM_STACK
-    ,
-    player::Player,
-};
+use crate::{constants::MAX_ITEM_STACK, player::Player};
 use bevy::prelude::*;
 
 /// Marker for Inventory root
@@ -26,9 +22,6 @@ pub struct InventoryCell {
 pub struct FloatingStack {
     pub items: Option<Item>,
 }
-
-
-
 
 pub fn inventory_cell_interaction_system(
     mut cursor_query: Query<(&Interaction, &mut BorderColor, &InventoryCell), With<InventoryCell>>,
@@ -104,12 +97,7 @@ pub fn inventory_cell_interaction_system(
 
                         remove_item_floating_stack(
                             &mut floating_stack,
-                            add_item_to_stack(
-                                &mut player,
-                                floating_items.id,
-                                cell.id,
-                                1,
-                            ),
+                            add_item_to_stack(&mut player, floating_items.id, cell.id, 1),
                         );
                     }
                 } else if floating_items.nb > 0 {
@@ -136,4 +124,3 @@ pub fn inventory_cell_interaction_system(
         }
     }
 }
-

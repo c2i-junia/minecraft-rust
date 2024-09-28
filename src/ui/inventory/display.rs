@@ -1,13 +1,13 @@
-use bevy::hierarchy::Children;
-use bevy::input::ButtonInput;
-use bevy::prelude::{KeyCode, Query, Res, Style, Text, UiImage, Val, Visibility, Window, With};
-use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
-use bevy::window::PrimaryWindow;
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use crate::player::Player;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
 use crate::world::MaterialResource;
+use bevy::hierarchy::Children;
+use bevy::input::ButtonInput;
+use bevy::prelude::{KeyCode, Query, Res, Style, Text, UiImage, Val, Visibility, Window, With};
+use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
+use bevy::window::PrimaryWindow;
 
 // Open inventory when E key is pressed
 pub fn toggle_inventory(

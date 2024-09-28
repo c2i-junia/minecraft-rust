@@ -2,8 +2,8 @@ use crate::camera::CameraController;
 use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
-use crate::UIMode;
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
+use crate::UIMode;
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {

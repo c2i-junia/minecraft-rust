@@ -1,9 +1,7 @@
 use super::UiDialog;
+use crate::constants::{MAX_INVENTORY_SLOTS, MAX_HOTBAR_SLOTS};
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
-use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
-use bevy::{
-    prelude::*, ui::FocusPolicy,
-};
+use bevy::{prelude::*, ui::FocusPolicy};
 
 pub fn setup_inventory(mut commands: Commands) {
     // Inventory root : root container for the inventory

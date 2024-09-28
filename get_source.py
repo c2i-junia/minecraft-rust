@@ -1,5 +1,6 @@
 #!/bin/python
 import os
+import argparse
 
 def collect_rust_files(directory, output_file):
     with open(output_file, 'w') as outfile:
@@ -13,8 +14,15 @@ def collect_rust_files(directory, output_file):
                     outfile.write("\n\n") 
 
 if __name__ == "__main__":
-    source_directory = "./src"
-    output_file = "source_code.txt"
+    parser = argparse.ArgumentParser(description="Collect Rust source files from a directory.")
+    parser.add_argument("directory", help="The path to the source directory.")
+    parser.add_argument("-o", "--output", default="source_code.txt", help="The output file (default: source_code.txt)")
+
+    args = parser.parse_args()
+
+    source_directory = args.directory
+    output_file = args.output
 
     collect_rust_files(source_directory, output_file)
-    print(f"source code collected in {output_file}")
+    print(f"Source code collected in {output_file}")
+
