@@ -1,4 +1,5 @@
 use crate::input::keyboard::{is_action_just_pressed, GameAction};
+use crate::materials::MaterialResource;
 use bevy::pbr::wireframe::WireframeConfig;
 use bevy::prelude::*;
 
@@ -10,26 +11,28 @@ pub struct BlockDebugWireframeSettings {
 pub fn toggle_wireframe_system(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut settings: ResMut<BlockDebugWireframeSettings>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
     mut config: ResMut<WireframeConfig>,
+    mut material_resource: ResMut<MaterialResource>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if is_action_just_pressed(GameAction::ToggleBlockWireframeDebugMode, &keyboard_input)
         && !settings.is_enabled
     {
         settings.is_enabled = true;
         config.global = true;
-        for (_, material) in materials.iter_mut() {
-            material.alpha_mode = AlphaMode::Blend;
-            material.base_color.set_alpha(0.3);
-        }
+        let handle = material_resource.atlas_texture.clone().unwrap();
+        let material = materials.get_mut(&handle).unwrap();
+        material.alpha_mode = AlphaMode::Blend;
+        material.base_color.set_alpha(0.3);
         return;
     }
 
     if is_action_just_pressed(GameAction::ToggleBlockWireframeDebugMode, &keyboard_input) {
         settings.is_enabled = false;
         config.global = false;
-        for (_, material_handle) in materials.iter_mut() {
-            material_handle.base_color.set_alpha(1.0);
-        }
+        let handle = material_resource.atlas_texture.clone().unwrap();
+        let material = materials.get_mut(&handle).unwrap();
+        material.alpha_mode = AlphaMode::Opaque;
+        material.base_color.set_alpha(1.0);
     }
 }
