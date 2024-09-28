@@ -1,7 +1,7 @@
 use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
-use crate::player::Player;
+use crate::player::spawn::Player;
 use crate::world::WorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
 use crate::{items, UIMode};

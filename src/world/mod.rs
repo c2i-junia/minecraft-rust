@@ -1,6 +1,6 @@
+mod generation;
 pub mod materials;
 mod utils;
-mod world;
 
+pub use generation::*;
 pub use materials::*;
-pub use world::*;
