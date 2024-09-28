@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crate::messages::MessagesPlugin;
 use naia_bevy_shared::{LinkConditionerConfig, Protocol};
 
 // Protocol Build
@@ -9,5 +10,6 @@ pub fn protocol() -> Protocol {
         .tick_interval(Duration::from_millis(40))
         .link_condition(LinkConditionerConfig::poor_condition())
         .enable_client_authoritative_entities()
+        .add_plugin(MessagesPlugin)
         .build()
 }

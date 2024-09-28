@@ -1,9 +1,13 @@
-use std::time::Duration;
+mod resources;
+mod systems;
+
 use bevy::app::ScheduleRunnerPlugin;
 use bevy::log::LogPlugin;
-use bevy_app::App;
+use bevy_app::{App, Startup, Update};
 use bevy_core::{FrameCountPlugin, TaskPoolPlugin, TypeRegistrationPlugin};
+use std::time::Duration;
 
+use crate::systems::{events, init_server};
 use naia_bevy_server::{Plugin as ServerPlugin, ServerConfig};
 
 fn main() {
@@ -22,5 +26,7 @@ fn main() {
         .add_plugins(ScheduleRunnerPlugin::run_loop(Duration::from_millis(3)))
         .add_plugins(LogPlugin::default())
         .add_plugins(ServerPlugin::new(server_config, shared::protocol()))
+        .add_systems(Startup, init_server)
+        .add_systems(Update, events::auth_events)
         .run();
 }
