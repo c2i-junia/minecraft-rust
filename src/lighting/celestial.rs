@@ -1,6 +1,6 @@
+use crate::world::materials::MaterialResource;
 use crate::{
     constants::{CELESTIAL_DISTANCE, CELESTIAL_SIZE, DAY_DURATION},
-    materials::MaterialResource,
     world::GlobalMaterial,
     Player,
 };

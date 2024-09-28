@@ -15,11 +15,9 @@ use exit::*;
 use hud::*;
 use input::*;
 use lighting::*;
-use materials::*;
 use player::*;
 use ui::{inventory::*, set_ui_mode};
 use world::*;
-
 mod camera;
 mod constants;
 mod debug;
@@ -28,10 +26,8 @@ mod hud;
 mod input;
 mod items;
 mod lighting;
-mod materials;
 mod player;
 mod ui;
-mod utils;
 mod world;
 
 fn main() {

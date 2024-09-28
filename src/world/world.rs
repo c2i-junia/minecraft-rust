@@ -1,7 +1,7 @@
 use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
-use crate::materials::MaterialResource;
-use crate::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
+use crate::world::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
+use crate::MaterialResource;
 use bevy::prelude::Resource;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
