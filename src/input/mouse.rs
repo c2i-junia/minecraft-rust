@@ -1,10 +1,10 @@
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
 use crate::player::inventory::*;
 use crate::player::Player;
-use crate::ui::UIMode;
+use crate::{items, UIMode};
 use crate::world::WorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
-use crate::{camera::*, items};
+use crate::camera::*;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;

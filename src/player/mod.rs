@@ -8,7 +8,8 @@ use bevy::prelude::*;
 pub use controller::*;
 pub use spawn::*;
 
-use crate::{items, ui::UIMode};
+use crate::UIMode;
+use crate::items;
 
 #[derive(Component)]
 pub struct Player {

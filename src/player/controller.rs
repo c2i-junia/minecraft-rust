@@ -2,7 +2,7 @@ use crate::camera::CameraController;
 use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
-use crate::ui::UIMode;
+use crate::UIMode;
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
 use bevy::prelude::*;
 

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
 
-use crate::ui::UIMode;
+use crate::UIMode;
 use crate::Player;
 
 // System to hide and lock the cursor

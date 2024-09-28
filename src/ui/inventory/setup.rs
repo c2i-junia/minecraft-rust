@@ -1,0 +1,179 @@
+use super::UiDialog;
+use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
+use crate::constants::MAX_ITEM_SLOTS;
+use bevy::{
+    prelude::*, ui::FocusPolicy,
+};
+
+pub fn setup_inventory(mut commands: Commands) {
+    // Inventory root : root container for the inventory
+    let root = commands
+        .spawn((
+            UiDialog,
+            InventoryRoot,
+            NodeBundle {
+                background_color: BackgroundColor(Color::BLACK.with_alpha(0.4)),
+                // Z-index of 1 : displayed above game, but under everything else
+                z_index: ZIndex::Global(1),
+                visibility: Visibility::Hidden,
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    // Cover whole screen as a dark backdrop
+                    left: Val::Percent(0.),
+                    right: Val::Percent(0.),
+                    bottom: Val::Percent(0.),
+                    top: Val::Percent(0.),
+                    // Align children at its center
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Column,
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ))
+        .id();
+
+    let dialog = commands
+        .spawn((
+            InventoryDialog,
+            NodeBundle {
+                background_color: BackgroundColor(Color::srgb(0.4, 0.4, 0.4)),
+                border_radius: BorderRadius::all(Val::Percent(10.)),
+                style: Style {
+                    display: Display::Flex,
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::all(Val::Percent(7.)),
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .id();
+
+    let inventory_title = commands
+        .spawn(TextBundle {
+            text: Text::from_section(
+                "Inventory",
+                TextStyle {
+                    font_size: 24.,
+                    ..Default::default()
+                },
+            ),
+            style: Style {
+                align_content: AlignContent::Center,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .id();
+
+    let inventory_grid = commands
+        .spawn(NodeBundle {
+            style: Style {
+                display: Display::Grid,
+                grid_template_columns: RepeatedGridTrack::auto(9),
+                margin: UiRect::all(Val::Px(20.)),
+                border: UiRect::all(Val::Px(1.)),
+                position_type: PositionType::Relative,
+                ..Default::default()
+            },
+            border_color: BorderColor(Color::BLACK),
+            ..Default::default()
+        })
+        .with_children(|builder| {
+            for i in 0..MAX_ITEM_SLOTS {
+                builder
+                    .spawn((
+                        InventoryCell { id: i },
+                        ButtonBundle {
+                            border_color: BorderColor(Color::BLACK),
+                            focus_policy: FocusPolicy::Block,
+                            style: Style {
+                                width: Val::Px(50.),
+                                height: Val::Px(50.),
+                                margin: UiRect::ZERO,
+                                padding: UiRect::all(Val::Percent(10.)),
+                                border: UiRect::all(Val::Px(1.)),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        },
+                    ))
+                    .with_children(|btn| {
+                        btn.spawn(TextBundle {
+                            text: Text::from_section(
+                                "",
+                                TextStyle {
+                                    font_size: 15.,
+                                    ..Default::default()
+                                },
+                            ),
+                            style: Style {
+                                position_type: PositionType::Absolute,
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        });
+                        btn.spawn(ImageBundle {
+                            z_index: ZIndex::Local(-1),
+                            style: Style {
+                                //     left: Val::Percent(5.),
+                                //     right: Val::Percent(5.),
+                                //     bottom: Val::Percent(15.),
+                                //     top: Val::Percent(15.),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        });
+                    });
+            }
+        })
+        .id();
+
+    let floating_stack = commands
+        .spawn((
+            FloatingStack { items: None },
+            NodeBundle {
+                focus_policy: FocusPolicy::Pass,
+                style: Style {
+                    width: Val::Px(20.),
+                    height: Val::Px(20.),
+                    position_type: PositionType::Absolute,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        ))
+        .with_children(|btn| {
+            btn.spawn(TextBundle::from_section(
+                "",
+                TextStyle {
+                    font_size: 15.,
+                    ..Default::default()
+                },
+            ));
+            btn.spawn(ImageBundle {
+                z_index: ZIndex::Local(-1),
+                style: Style {
+                    position_type: PositionType::Absolute,
+                    left: Val::Percent(0.),
+                    right: Val::Percent(0.),
+                    bottom: Val::Percent(0.),
+                    top: Val::Percent(0.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+        })
+        .id();
+
+    commands
+        .entity(dialog)
+        .push_children(&[inventory_title, inventory_grid]);
+
+    commands
+        .entity(root)
+        .push_children(&[dialog, floating_stack]);
+}

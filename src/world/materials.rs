@@ -1,5 +1,5 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
-use crate::items::ItemsType;
+use crate::ui::inventory::items::ItemsType;
 use crate::world::{Block, GlobalMaterial};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
