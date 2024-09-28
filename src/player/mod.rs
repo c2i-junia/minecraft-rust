@@ -1,4 +1,5 @@
 mod controller;
+mod interactions;
 pub(crate) mod inventory;
 mod spawn;
 
@@ -6,10 +7,11 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 pub use controller::*;
+pub use interactions::*;
 pub use spawn::*;
 
-use crate::UIMode;
 use crate::items;
+use crate::UIMode;
 
 #[derive(Component)]
 pub struct Player {

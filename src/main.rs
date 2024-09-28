@@ -1,3 +1,4 @@
+use crate::debug::BlockDebugWireframeSettings;
 use bevy::color::palettes::basic::WHITE;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
@@ -6,12 +7,12 @@ use bevy::render::render_resource::WgpuFeatures;
 use bevy::render::settings::{RenderCreation, WgpuSettings};
 use bevy::render::RenderPlugin;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
-use block::block_text_update_system;
+use debug::targeted_block::block_text_update_system;
 use lighting::setup_main_lighting;
 
 use camera::*;
-use debug::*;
 use exit::*;
+use hud::debug::*;
 use hud::*;
 use input::*;
 use lighting::*;
@@ -20,7 +21,6 @@ use ui::inventory::*;
 use world::*;
 mod camera;
 mod constants;
-mod debug;
 mod exit;
 mod hud;
 mod input;
@@ -79,7 +79,7 @@ fn main() {
         .add_systems(Startup, spawn_reticle)
         .add_systems(Startup, setup_hud)
         .add_systems(Startup, setup_inventory)
-        .add_systems(Startup, cursor_grab_system)
+        .add_systems(Startup, mouse_grab_system)
         .add_systems(Startup, setup_chunk_ghost)
         .add_systems(Update, toggle_inventory)
         .add_systems(Update, set_ui_mode)
@@ -99,7 +99,7 @@ fn main() {
         .add_systems(Update, exit_system)
         .add_systems(Update, toggle_wireframe_system)
         .add_systems(Update, world_render_system)
-        .add_systems(Update, set_cursor_visibility)
+        .add_systems(Update, set_mouse_visibility)
         .add_systems(Update, inventory_cell_interaction_system)
         .add_systems(Update, update_celestial_bodies)
         .run();
