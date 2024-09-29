@@ -18,6 +18,12 @@ pub fn menu_plugin(app: &mut App) {
         // Systems to handle the main menu screen
         .add_systems(OnEnter(MenuState::Main), main_menu_setup)
         .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
+        // Systems to handle the play menu screen
+        .add_systems(OnEnter(MenuState::Play), play_menu_setup)
+        .add_systems(
+            OnExit(MenuState::Play),
+            despawn_screen::<OnPlayMenuScreen>,
+        )
         // Systems to handle the settings menu screen
         .add_systems(OnEnter(MenuState::Settings), settings_menu_setup)
         .add_systems(
@@ -58,6 +64,7 @@ pub fn menu_plugin(app: &mut App) {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum MenuState {
     Main,
+    Play,
     Settings,
     SettingsDisplay,
     SettingsSound,
@@ -72,6 +79,10 @@ struct OnMainMenuScreen;
 // Tag component used to tag entities added on the settings menu screen
 #[derive(Component)]
 struct OnSettingsMenuScreen;
+
+// Tag component used to tag entities added on the play menu screen
+#[derive(Component)]
+struct OnPlayMenuScreen;
 
 // Tag component used to tag entities added on the display settings menu screen
 #[derive(Component)]
@@ -94,6 +105,8 @@ struct SelectedOption;
 #[derive(Component)]
 enum MenuButtonAction {
     Play,
+    NewGame,
+    LoadGame,
     Settings,
     SettingsDisplay,
     SettingsSound,
@@ -195,7 +208,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     // Display the game name
                     parent.spawn(
                         TextBundle::from_section(
-                            "Bevy Game Menu UI",
+                            "minecraft-rust",
                             TextStyle {
                                 font_size: 67.0,
                                 color: TEXT_COLOR,
@@ -229,7 +242,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             });
                             parent.spawn(TextBundle::from_section(
-                                "New Game",
+                                "Play",
                                 button_text_style.clone(),
                             ));
                         });
@@ -272,6 +285,72 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             });
                             parent.spawn(TextBundle::from_section("Quit", button_text_style));
                         });
+                });
+        });
+}
+
+fn play_menu_setup(mut commands: Commands) {
+    let button_style = Style {
+        width: Val::Px(200.0),
+        height: Val::Px(65.0),
+        margin: UiRect::all(Val::Px(20.0)),
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        ..default()
+    };
+
+    let button_text_style = TextStyle {
+        font_size: 33.0,
+        color: TEXT_COLOR,
+        ..default()
+    };
+
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            },
+            OnPlayMenuScreen,
+        ))
+        .with_children(|parent| {
+            parent
+                .spawn(NodeBundle {
+                    style: Style {
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Center,
+                        ..default()
+                    },
+                    background_color: CRIMSON.into(),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    for (action, text) in [
+                        (MenuButtonAction::NewGame, "New Game"),
+                        (MenuButtonAction::LoadGame, "Load Game"),
+                    ] {
+                        parent
+                            .spawn((
+                                ButtonBundle {
+                                    style: button_style.clone(),
+                                    background_color: NORMAL_BUTTON.into(),
+                                    ..default()
+                                },
+                                action,
+                            ))
+                            .with_children(|parent| {
+                                parent.spawn(TextBundle::from_section(
+                                    text,
+                                    button_text_style.clone(),
+                                ));
+                            });
+                    }
                 });
         });
 }
@@ -551,9 +630,12 @@ fn menu_action(
                 MenuButtonAction::Quit => {
                     app_exit_events.send(AppExit::Success);
                 }
-                MenuButtonAction::Play => {
+                MenuButtonAction::Play => menu_state.set(MenuState::Play),
+                MenuButtonAction::NewGame => {
                     game_state.set(GameState::Game);
                     menu_state.set(MenuState::Disabled);
+                }
+                MenuButtonAction::LoadGame => {
                 }
                 MenuButtonAction::Settings => menu_state.set(MenuState::Settings),
                 MenuButtonAction::SettingsDisplay => {
