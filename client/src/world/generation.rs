@@ -133,7 +133,7 @@ fn generate_chunk(
 
     let scale = 0.1;
     let max_perlin_height_variation = 5.0;
-    let base_height = 10; // should be 64
+    let base_height = 64; // should be 64
 
     const WORLD_MIN_Y: i32 = 0;
 
@@ -189,8 +189,10 @@ pub fn setup_world(
     commands.insert_resource(WorldSeed(seed));
 
     for x in -1..=1 {
-        for z in -1..=1 {
-            generate_chunk(IVec3::new(x, 0, z), seed, &mut world_map, &mut ev_render);
+        for y in 0..=8 {
+            for z in -1..=1 {
+                generate_chunk(IVec3::new(x, y, z), seed, &mut world_map, &mut ev_render);
+            }
         }
     }
 }
