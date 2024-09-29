@@ -21,6 +21,8 @@ pub enum GameAction {
     FlyDown,
     ToggleBlockWireframeDebugMode,
     ToggleInventory,
+    RenderDistanceMinus,
+    RenderDistancePlus,
 }
 
 lazy_static! {
@@ -52,6 +54,8 @@ lazy_static! {
         map.insert(GameAction::FlyDown, vec![KeyCode::ShiftLeft]);
         map.insert(GameAction::ToggleBlockWireframeDebugMode, vec![KeyCode::F6]);
         map.insert(GameAction::ToggleInventory, vec![KeyCode::KeyE]);
+        map.insert(GameAction::RenderDistanceMinus, vec![KeyCode::KeyO]);
+        map.insert(GameAction::RenderDistancePlus, vec![KeyCode::KeyP]);
         map
     };
 }

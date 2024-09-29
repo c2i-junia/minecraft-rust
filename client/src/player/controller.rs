@@ -3,7 +3,7 @@ use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
-use crate::UIMode;
+use crate::{RenderDistance, UIMode};
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
@@ -66,6 +66,7 @@ pub fn player_movement_system(
     mut world_map: ResMut<WorldMap>,
     world_seed: Res<WorldSeed>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
+    render_distance: Res<RenderDistance>,
 ) {
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
@@ -88,6 +89,7 @@ pub fn player_movement_system(
         &mut world_map,
         world_seed.0,
         &mut ev_render,
+        render_distance,
     );
 
     let material_handle = &*material_handle_mut_ref;

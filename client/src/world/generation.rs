@@ -1,4 +1,4 @@
-use crate::constants::{CHUNK_RENDER_DISTANCE_RADIUS, CHUNK_SIZE};
+use crate::constants::CHUNK_SIZE;
 use crate::world::utils::{global_block_to_chunk_pos, to_global_pos, to_local_pos, SIX_OFFSETS};
 use crate::BlockRaycastSet;
 use crate::MaterialResource;
@@ -9,6 +9,8 @@ use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use std::collections::HashMap;
+
+use super::RenderDistance;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum Block {
@@ -197,6 +199,7 @@ pub fn load_chunk_around_player(
     world_map: &mut WorldMap,
     seed: u32,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
+    render_distance: Res<RenderDistance>,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -204,7 +207,7 @@ pub fn load_chunk_around_player(
         block_to_chunk_coord(player_position.z as i32),
     );
 
-    let r = CHUNK_RENDER_DISTANCE_RADIUS;
+    let r = render_distance.distance as i32;
 
     for x in -r..=r {
         for z in -r..=r {
