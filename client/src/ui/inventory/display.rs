@@ -33,7 +33,7 @@ pub fn inventory_update_system(
     mut image_query: Query<&mut UiImage>,
     mut floating_stack_query: Query<(&mut Style, &FloatingStack, &Children), With<FloatingStack>>,
     window_query: Query<&Window, With<PrimaryWindow>>,
-    vis: Query<&mut Visibility, With<InventoryRoot>>,
+    vis: Query<&Visibility, With<InventoryRoot>>,
     material_resource: Res<MaterialResource>,
 ) {
     // If inventory is hidden, do not update it

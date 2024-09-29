@@ -1,4 +1,6 @@
 use bevy::prelude::*;
+use bevy::render::Render;
+use chat::{open_chat_input, send_chat, setup_chat};
 
 use crate::debug::BlockDebugWireframeSettings;
 use bevy::color::palettes::basic::WHITE;
@@ -38,11 +40,12 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 pub fn game_plugin(app: &mut App) {
     app.add_plugins(ClientPlugin::<network::MainClient>::new(
         ClientConfig::default(),
-        shared::protocol(),
-    ))
+        shared::protocol()
+    ),)
     .add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
     .add_plugins(WireframePlugin)
+    .add_plugins(bevy_simple_text_input::TextInputPlugin)
     .insert_resource(AmbientLight {
         color: Color::WHITE,
         brightness: 400.0,
@@ -72,10 +75,11 @@ pub fn game_plugin(app: &mut App) {
             setup_main_lighting,
             spawn_camera,
             spawn_reticle,
+            setup_hud,
+            setup_chat
         )
             .chain(),
     )
-    .add_systems(OnEnter(GameState::Game), setup_hud)
     .add_systems(
         OnEnter(GameState::Game),
         (setup_hotbar, setup_inventory).chain(),
@@ -101,12 +105,16 @@ pub fn game_plugin(app: &mut App) {
             chunk_ghost_update_system,
             exit_system,
             toggle_wireframe_system,
-            world_render_system,
             set_mouse_visibility,
             inventory_cell_interaction_system,
             update_celestial_bodies,
             render_distance_update_system,
+            open_chat_input,
+            send_chat
         )
             .run_if(in_state(GameState::Game)),
-    );
+    )
+    .add_systems(PostUpdate, (
+        world_render_system,
+    ));
 }
