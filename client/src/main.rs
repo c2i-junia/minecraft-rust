@@ -16,7 +16,6 @@ use bevy::prelude::*;
 use bevy::render::render_resource::WgpuFeatures;
 use bevy::render::settings::{RenderCreation, WgpuSettings};
 use bevy::render::RenderPlugin;
-
 use camera::*;
 use hud::*;
 use input::*;
@@ -52,23 +51,22 @@ pub enum DisplayQuality {
 pub struct Volume(u32);
 
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                // Ensures that pixel-art textures will remain pixelated, and not become a blurry mess
-                .set(ImagePlugin::default_nearest())
-                .set(RenderPlugin {
-                    render_creation: RenderCreation::Automatic(WgpuSettings {
-                        // WARN this is a native only feature. It will not work with webgl or webgpu
-                        features: WgpuFeatures::POLYGON_MODE_LINE,
-                        ..default()
-                    }),
+    let mut app = App::new();
+    app.add_plugins(
+        DefaultPlugins
+            // Ensures that pixel-art textures will remain pixelated, and not become a blurry mess
+            .set(ImagePlugin::default_nearest())
+            .set(RenderPlugin {
+                render_creation: RenderCreation::Automatic(WgpuSettings {
+                    // WARN this is a native only feature. It will not work with webgl or webgpu
+                    features: WgpuFeatures::POLYGON_MODE_LINE,
                     ..default()
                 }),
-        )
-        // .add_plugins(DefaultPlugins)
-        // Insert as resource_equalsource the initial value for the settings resources
-        .insert_resource(DisplayQuality::Medium)
+                ..default()
+            }),
+    );
+    network::add_netcode_network(&mut app);
+    app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()

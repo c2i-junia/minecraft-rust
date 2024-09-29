@@ -9,14 +9,11 @@ use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 use crate::hud::debug::targeted_block::block_text_update_system;
 use crate::lighting::setup_main_lighting;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
-use naia_bevy_client::{ClientConfig, Plugin as ClientPlugin};
 
 use crate::exit::*;
 use crate::hud::debug::*;
 use crate::hud::hotbar::*;
 use crate::lighting::*;
-use crate::network;
-use crate::network::*;
 use crate::ui::set_ui_mode;
 use crate::world::*;
 
@@ -37,11 +34,7 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 // This plugin will contain the game. In this case, it's just be a screen that will
 // display the current settings for 5 seconds before returning to the menu
 pub fn game_plugin(app: &mut App) {
-    app.add_plugins(ClientPlugin::<network::MainClient>::new(
-        ClientConfig::default(),
-        shared::protocol(),
-    ))
-    .add_plugins(FrameTimeDiagnosticsPlugin)
+    app.add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
     .add_plugins(WireframePlugin)
     .add_plugins(bevy_simple_text_input::TextInputPlugin)
@@ -86,7 +79,6 @@ pub fn game_plugin(app: &mut App) {
     .add_systems(OnEnter(GameState::Game), print_settings)
     .add_systems(OnEnter(GameState::Game), mouse_grab_system)
     .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
-    .add_systems(OnEnter(GameState::Game), init_network_socket)
     .add_systems(
         Update,
         (
