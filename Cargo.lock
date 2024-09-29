@@ -1216,6 +1216,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_simple_text_input"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d79e6f678fc51aaa733c84a778f22d5374a91740467e0767025438c4b93b6c64"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_sprite"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3434,6 +3443,7 @@ version = "0.0.0"
 dependencies = [
  "bevy",
  "bevy_mod_raycast",
+ "bevy_simple_text_input",
  "lazy_static",
  "naia-bevy-client",
  "naia-client-socket",

@@ -12,6 +12,7 @@ bevy_mod_raycast = "0.18"   # to get the block targeted by the mouse
 shared = { path = "../shared" }
 naia-bevy-client = { version = "0.23.0", features = ["transport_webrtc"] }
 naia-client-socket = "0.23.0"
+bevy_simple_text_input = "0.9"
 
 [features]
 default = ["bevy/dynamic_linking"]
