@@ -25,7 +25,7 @@ struct SplashTimer(Timer);
 fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // Display the logo
     let icon = asset_server.load("./bevy_icon.png");
-    println!("splash screen");
+    // println!("splash screen");
 
     commands
         .spawn((

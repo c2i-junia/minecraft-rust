@@ -24,6 +24,7 @@ pub enum GameAction {
     OpenChat,
     RenderDistanceMinus,
     RenderDistancePlus,
+    SaveWorld,
 }
 
 lazy_static! {
@@ -58,6 +59,7 @@ lazy_static! {
         map.insert(GameAction::OpenChat, vec![KeyCode::KeyT]);
         map.insert(GameAction::RenderDistanceMinus, vec![KeyCode::KeyO]);
         map.insert(GameAction::RenderDistancePlus, vec![KeyCode::KeyP]);
+        map.insert(GameAction::SaveWorld, vec![KeyCode::KeyL]);
         map
     };
 }

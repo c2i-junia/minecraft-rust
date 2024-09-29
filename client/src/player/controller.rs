@@ -93,7 +93,6 @@ pub fn player_movement_system(
     );
 
     let material_handle = &*material_handle_mut_ref;
-
     match player.view_mode {
         ViewMode::FirstPerson => {
             // make player transparent

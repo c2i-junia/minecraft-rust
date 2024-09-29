@@ -13,4 +13,5 @@ shared = { path = "../shared" }
 naia-bevy-client = { version = "0.23.0", features = ["transport_webrtc"] }
 naia-client-socket = "0.23.0"
 bevy_simple_text_input = "0.9"
-
+serde = { version = "1.0", features = ["derive"] }
+ron = "0.6" 

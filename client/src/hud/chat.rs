@@ -32,7 +32,10 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                     max_height: Val::Px(CHAT_MAX_MESSAGES as f32 * CHAT_SIZE),
                     width: Val::Vw(20.),
                     left: Val::Percent(0.),
-                    overflow: Overflow { x: OverflowAxis::Visible, y: OverflowAxis::Hidden },
+                    overflow: Overflow {
+                        x: OverflowAxis::Visible,
+                        y: OverflowAxis::Hidden,
+                    },
                     flex_direction: FlexDirection::Column,
                     ..Default::default()
                 },
@@ -42,17 +45,21 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
         .with_children(|root| {
             root.spawn((
                 ChatDisplay,
-                    NodeBundle {
+                NodeBundle {
                     style: Style {
                         display: Display::Flex,
                         flex_direction: FlexDirection::ColumnReverse,
-                        overflow: Overflow { x: OverflowAxis::Visible, y: OverflowAxis::Hidden },
+                        overflow: Overflow {
+                            x: OverflowAxis::Visible,
+                            y: OverflowAxis::Hidden,
+                        },
                         width: Val::Percent(100.),
                         ..Default::default()
                     },
                     ..Default::default()
                 },
-            )).with_children(|d| {
+            ))
+            .with_children(|d| {
                 // DO NOT REMOVE !!!
                 // Function send_chat has a bit of a meltdown if the ChatDisplay has no children (cuz of the Query)
                 d.spawn(NodeBundle::default());
@@ -87,7 +94,7 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn open_chat_input(
     mut text_input: Query<&mut TextInputInactive, With<ChatInput>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut visibility: Query<&mut Visibility, With<ChatRoot>>
+    mut visibility: Query<&mut Visibility, With<ChatRoot>>,
 ) {
     if is_action_just_pressed(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
         let mut input_inactive = text_input.single_mut();
@@ -103,7 +110,7 @@ pub fn send_chat(
     mut root_query: Query<&mut Visibility, With<ChatRoot>>,
     parent_query: Query<(Entity, &Children), With<ChatDisplay>>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>
+    asset_server: Res<AssetServer>,
 ) {
     if event.is_empty() {
         return;
@@ -121,23 +128,25 @@ pub fn send_chat(
             println!("Message Sent : {:?}", message.value);
             let msg = commands
                 .spawn(TextBundle {
-                    text: Text::from_section(message.value.clone(), TextStyle {
-                        font: asset_server.load("fonts/gohu.ttf"),
-                        font_size: 17.,
-                        color: Color::WHITE,
-                    }.clone()),
+                    text: Text::from_section(
+                        message.value.clone(),
+                        TextStyle {
+                            font: asset_server.load("fonts/gohu.ttf"),
+                            font_size: 17.,
+                            color: Color::WHITE,
+                        }
+                        .clone(),
+                    ),
                     ..Default::default()
-                }).id();
-            
-            commands.entity(parent).push_children(&[
-                msg
-            ]);
+                })
+                .id();
+
+            commands.entity(parent).push_children(&[msg]);
 
             // Prevents history from containing more than 20 messages
             while children.len() > 20 {
                 commands.entity(children[0]).despawn();
             }
-
         }
     }
 }

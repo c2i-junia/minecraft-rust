@@ -10,9 +10,12 @@ use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use std::collections::HashMap;
 
+use crate::world::*;
+use serde::{Deserialize, Serialize};
+
 use super::RenderDistance;
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum Block {
     Grass,
     Dirt,
@@ -26,21 +29,22 @@ pub enum GlobalMaterial {
     Moon,
 }
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Serialize, Deserialize)]
 pub struct BlockWrapper {
     pub kind: Block,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Serialize, Deserialize)]
 pub struct WorldSeed(pub u32);
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Chunk {
     map: HashMap<IVec3, BlockWrapper>,
+    #[serde(skip)]
     entity: Option<Entity>,
 }
 
-#[derive(Resource, Default, Clone)]
+#[derive(Resource, Default, Clone, Serialize, Deserialize)]
 pub struct WorldMap {
     pub map: HashMap<IVec3, Chunk>,
     pub total_blocks_count: u64,
@@ -113,7 +117,7 @@ impl WorldMap {
         let sub_z = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
 
         if x == 0 && z == 0 {
-            println!("inserting y={}", y)
+            // println!("inserting y={}", y)
         }
         chunk.map.insert(
             IVec3::new(sub_x, sub_y, sub_z),
@@ -179,7 +183,7 @@ fn generate_chunk(
         pos.y = y;
         ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(pos));
     }
-    println!("sending event for {}", chunk_pos);
+    // println!("sending event for {}", chunk_pos);
 }
 
 pub fn setup_world(
@@ -187,15 +191,63 @@ pub fn setup_world(
     mut world_map: ResMut<WorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
-    let seed = rand::thread_rng().gen::<u32>();
-    println!("Generated random seed: {}", seed);
+    // Charger la graine depuis le fichier `world_seed.ron`
+    let seed = match load_world_seed("world_seed.ron") {
+        Ok(seed) => {
+            println!("Loaded existing world seed from world_seed.ron");
+            seed.0
+        }
+        Err(_) => {
+            // Si la graine n'est pas trouvée, en générer une nouvelle
+            let seed = rand::thread_rng().gen::<u32>();
+            println!("Generated random seed: {}", seed);
+            seed
+        }
+    };
 
     commands.insert_resource(WorldSeed(seed));
 
-    for x in -1..=1 {
-        for y in 0..=8 {
-            for z in -1..=1 {
-                generate_chunk(IVec3::new(x, y, z), seed, &mut world_map, &mut ev_render);
+    // Charger la carte du monde depuis le fichier `world_save.ron`
+    if let Ok(loaded_world) = load_world_map("world_save.ron") {
+        *world_map = loaded_world;
+        println!("Loaded existing world from world_save.ron");
+
+        // we need to recreate the entities because their are not
+        // saved in the world_save file
+        for (chunk_pos, chunk) in world_map.map.iter_mut() {
+            if chunk.entity.is_none() {
+                let new_entity = commands
+                    .spawn((
+                        Transform::from_xyz(
+                            (chunk_pos.x * CHUNK_SIZE) as f32,
+                            (chunk_pos.y * CHUNK_SIZE) as f32,
+                            (chunk_pos.z * CHUNK_SIZE) as f32,
+                        ),
+                        GlobalTransform::default(),
+                    ))
+                    .id();
+                chunk.entity = Some(new_entity);
+            }
+
+            // now that the entities are loaded, we need to send events to
+            // update the rendering
+            for x in -1..=1 {
+                for z in -1..=1 {
+                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(IVec3::new(
+                        x, 0, z,
+                    )));
+                }
+            }
+        }
+    } else {
+        // Si le chargement échoue, on génère un nouveau monde
+        println!("Generating a new world with seed: {}", seed);
+
+        for x in -1..=1 {
+            for y in 0..=8 {
+                for z in -1..=1 {
+                    generate_chunk(IVec3::new(x, y, z), seed, &mut world_map, &mut ev_render);
+                }
             }
         }
     }

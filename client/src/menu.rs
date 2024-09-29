@@ -20,10 +20,7 @@ pub fn menu_plugin(app: &mut App) {
         .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
         // Systems to handle the play menu screen
         .add_systems(OnEnter(MenuState::Play), play_menu_setup)
-        .add_systems(
-            OnExit(MenuState::Play),
-            despawn_screen::<OnPlayMenuScreen>,
-        )
+        .add_systems(OnExit(MenuState::Play), despawn_screen::<OnPlayMenuScreen>)
         // Systems to handle the settings menu screen
         .add_systems(OnEnter(MenuState::Settings), settings_menu_setup)
         .add_systems(
@@ -241,10 +238,8 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 image: UiImage::new(icon),
                                 ..default()
                             });
-                            parent.spawn(TextBundle::from_section(
-                                "Play",
-                                button_text_style.clone(),
-                            ));
+                            parent
+                                .spawn(TextBundle::from_section("Play", button_text_style.clone()));
                         });
                     parent
                         .spawn((
@@ -615,6 +610,31 @@ fn sound_settings_menu_setup(mut commands: Commands, volume: Res<Volume>) {
         });
 }
 
+use std::fs;
+use std::io;
+
+pub fn delete_save_files() -> Result<(), io::Error> {
+    // Supprime `world_save.ron`
+    match fs::remove_file("world_save.ron") {
+        Ok(_) => println!("Successfully deleted world_save.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_save.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_save.ron: {}", e),
+    }
+
+    // Supprime `world_seed.ron`
+    match fs::remove_file("world_seed.ron") {
+        Ok(_) => println!("Successfully deleted world_seed.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_seed.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_seed.ron: {}", e),
+    }
+
+    Ok(())
+}
+
 fn menu_action(
     interaction_query: Query<
         (&Interaction, &MenuButtonAction),
@@ -632,10 +652,15 @@ fn menu_action(
                 }
                 MenuButtonAction::Play => menu_state.set(MenuState::Play),
                 MenuButtonAction::NewGame => {
+                    if let Err(e) = delete_save_files() {
+                        println!("Error while deleting save files: {}", e);
+                    }
                     game_state.set(GameState::Game);
                     menu_state.set(MenuState::Disabled);
                 }
                 MenuButtonAction::LoadGame => {
+                    game_state.set(GameState::Game);
+                    menu_state.set(MenuState::Disabled);
                 }
                 MenuButtonAction::Settings => menu_state.set(MenuState::Settings),
                 MenuButtonAction::SettingsDisplay => {

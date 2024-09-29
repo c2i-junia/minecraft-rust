@@ -21,6 +21,9 @@ In world :
 | Toggle View Mode    | F5 (First-Person / Third-Person) |
 | Toggle Chunk Debug  | F4 |
 | Toggle Block Debug  | F6 |
+| Decrease Render Distance  | O |
+| Increase Render Distance  | P |
+| Save World  | L |
 | Exit Game           | Escape |
 
 In inventory :

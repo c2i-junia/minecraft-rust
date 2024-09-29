@@ -624,7 +624,7 @@ dependencies = [
  "blake3",
  "fixedbitset 0.5.7",
  "petgraph",
- "ron",
+ "ron 0.8.1",
  "serde",
  "thiserror",
  "thread_local",
@@ -672,7 +672,7 @@ dependencies = [
  "futures-lite 2.3.0",
  "js-sys",
  "parking_lot",
- "ron",
+ "ron 0.8.1",
  "serde",
  "thiserror",
  "uuid 1.10.0",
@@ -3439,6 +3439,8 @@ dependencies = [
  "naia-client-socket",
  "noise",
  "rand",
+ "ron 0.6.6",
+ "serde",
  "shared",
 ]
 
@@ -4729,6 +4731,17 @@ dependencies = [
  "cpal",
  "lewton",
  "thiserror",
+]
+
+[[package]]
+name = "ron"
+version = "0.6.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "86018df177b1beef6c7c8ef949969c4f7cb9a9344181b92486b23c79995bdaa4"
+dependencies = [
+ "base64 0.13.1",
+ "bitflags 1.3.2",
+ "serde",
 ]
 
 [[package]]

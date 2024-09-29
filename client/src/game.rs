@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy::render::Render;
 use chat::{open_chat_input, send_chat, setup_chat};
 
 use crate::debug::BlockDebugWireframeSettings;
@@ -40,8 +39,8 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 pub fn game_plugin(app: &mut App) {
     app.add_plugins(ClientPlugin::<network::MainClient>::new(
         ClientConfig::default(),
-        shared::protocol()
-    ),)
+        shared::protocol(),
+    ))
     .add_plugins(FrameTimeDiagnosticsPlugin)
     .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
     .add_plugins(WireframePlugin)
@@ -76,7 +75,7 @@ pub fn game_plugin(app: &mut App) {
             spawn_camera,
             spawn_reticle,
             setup_hud,
-            setup_chat
+            setup_chat,
         )
             .chain(),
     )
@@ -110,11 +109,10 @@ pub fn game_plugin(app: &mut App) {
             update_celestial_bodies,
             render_distance_update_system,
             open_chat_input,
-            send_chat
+            send_chat,
         )
             .run_if(in_state(GameState::Game)),
     )
-    .add_systems(PostUpdate, (
-        world_render_system,
-    ));
+    .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
+    .add_systems(PostUpdate, (world_render_system,));
 }
