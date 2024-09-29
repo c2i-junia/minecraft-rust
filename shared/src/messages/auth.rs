@@ -8,7 +8,6 @@ pub struct Auth {
 
 impl Auth {
     pub fn new(username: &str, password: &str) -> Self {
-        println!("instance auth {}", username);
         Self {
             username: username.to_string(),
             password: password.to_string(),
