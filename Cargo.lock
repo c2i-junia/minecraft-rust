@@ -3429,7 +3429,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
-name = "minecraft-rust"
+name = "minecraft-rust-client"
 version = "0.0.0"
 dependencies = [
  "bevy",
@@ -3439,6 +3439,19 @@ dependencies = [
  "naia-client-socket",
  "noise",
  "rand",
+ "shared",
+]
+
+[[package]]
+name = "minecraft-rust-server"
+version = "0.0.0"
+dependencies = [
+ "bevy",
+ "bevy_app",
+ "bevy_core",
+ "bevy_ecs",
+ "bevy_log",
+ "naia-bevy-server",
  "shared",
 ]
 
@@ -4994,19 +5007,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "server"
-version = "0.0.0"
-dependencies = [
- "bevy",
- "bevy_app",
- "bevy_core",
- "bevy_ecs",
- "bevy_log",
- "naia-bevy-server",
- "shared",
 ]
 
 [[package]]
