@@ -133,7 +133,7 @@ fn generate_chunk(
 
     let scale = 0.1;
     let max_perlin_height_variation = 5.0;
-    let base_height = 64; // should be 64
+    let base_height = 32; // should be 64
 
     const WORLD_MIN_Y: i32 = 0;
 
@@ -147,8 +147,8 @@ fn generate_chunk(
             let z = CHUNK_SIZE * cz + j;
 
             // Générer une hauteur en utilisant le bruit de Perlin
-            let perlin_height =
-                perlin.get([x as f64 * scale, z as f64 * scale]) * max_perlin_height_variation;
+            let perlin_height = (perlin.get([x as f64 * scale, z as f64 * scale]) - 0.5)
+                * max_perlin_height_variation;
 
             // Ajouter un offset de 64 blocs pour centrer la hauteur autour de y = 64
             let terrain_height = base_height + perlin_height.round() as i32;
@@ -174,7 +174,11 @@ fn generate_chunk(
     }
 
     world_map.total_chunks_count += 1;
-    ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(chunk_pos));
+    for y in 0..=3 {
+        let mut pos = chunk_pos.clone();
+        pos.y = y;
+        ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(pos));
+    }
     println!("sending event for {}", chunk_pos);
 }
 
