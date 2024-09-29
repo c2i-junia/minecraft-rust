@@ -175,6 +175,7 @@ fn generate_chunk(
 
     world_map.total_chunks_count += 1;
     ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(chunk_pos));
+    println!("sending event for {}", chunk_pos);
 }
 
 pub fn setup_world(
@@ -225,7 +226,7 @@ pub fn load_chunk_around_player(
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Event, Debug, Copy, Clone)]
 pub enum WorldRenderRequestUpdateEvent {
     ChunkToReload(IVec3),
     BlockToReload(IVec3),
@@ -609,20 +610,30 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     mesh
 }
 
+#[derive(Default)]
+pub struct QueuedEvents {
+    pub events: Vec<WorldRenderRequestUpdateEvent>,
+}
+
 pub fn world_render_system(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
     mut commands: Commands,
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
+    mut queued_events: Local<QueuedEvents>,
 ) {
+    for event in ev_render.read() {
+        queued_events.events.push(event.clone());
+    }
+
     if material_resource.atlas_texture.is_none() {
         // let's wait until it's ready
         return;
     }
 
-    for event in ev_render.read() {
-        //println!("event {:?}", event);
+    for event in &queued_events.events {
+        //println!("world_render_system event {:?}", event);
         let target_chunk_pos = match event {
             WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
             WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
@@ -652,6 +663,7 @@ pub fn world_render_system(
             );
         }
     }
+    queued_events.events.clear();
 }
 
 fn update_chunk(
@@ -662,6 +674,7 @@ fn update_chunk(
     meshes: &mut Assets<Mesh>,
     world_map: &mut WorldMap,
 ) {
+    //println!("update_chunk {}", chunk_pos);
     let texture = material_resource.atlas_texture.clone().unwrap();
     let new_mesh = generate_chunk_mesh(world_map, chunk_pos);
 
