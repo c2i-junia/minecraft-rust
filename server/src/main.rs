@@ -1,19 +1,18 @@
-use std::collections::HashMap;
-use std::fmt::Debug;
-use std::time::{Duration, SystemTime};
 use bevy::{
     diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
     prelude::*,
 };
 use bevy_app::ScheduleRunnerPlugin;
+use bevy_renet::renet::transport::NetcodeServerTransport;
+use bevy_renet::renet::RenetServer;
 use bevy_renet::{
     renet::{ClientId, ServerEvent},
     RenetServerPlugin,
 };
-use bevy_renet::renet::RenetServer;
-use bevy_renet::renet::transport::NetcodeServerTransport;
 use shared::{ClientChannel, ServerChannel};
-
+use std::collections::HashMap;
+use std::fmt::Debug;
+use std::time::{Duration, SystemTime};
 
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
 use bevy_renet::transport::NetcodeServerPlugin;
@@ -24,7 +23,6 @@ pub struct ServerLobby {
     pub players: HashMap<ClientId, Entity>,
 }
 
-
 fn add_netcode_network(app: &mut App) {
     app.add_plugins(NetcodeServerPlugin);
 
@@ -32,7 +30,9 @@ fn add_netcode_network(app: &mut App) {
 
     let public_addr = "127.0.0.1:5000".parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
-    let current_time: std::time::Duration = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap();
+    let current_time: std::time::Duration = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap();
     let server_config = ServerConfig {
         current_time,
         max_clients: 64,
@@ -49,10 +49,9 @@ fn add_netcode_network(app: &mut App) {
 fn main() {
     let mut app = App::new();
     app.add_plugins(
-        MinimalPlugins
-            .set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
-                1.0 / 60.0,
-            )))
+        MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
+            1.0 / 60.0,
+        ))),
     );
 
     app.add_plugins(RenetServerPlugin);

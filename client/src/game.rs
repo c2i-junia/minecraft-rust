@@ -35,76 +35,76 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 // display the current settings for 5 seconds before returning to the menu
 pub fn game_plugin(app: &mut App) {
     app.add_plugins(FrameTimeDiagnosticsPlugin)
-    .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
-    .add_plugins(WireframePlugin)
-    .add_plugins(bevy_simple_text_input::TextInputPlugin)
-    .insert_resource(AmbientLight {
-        color: Color::WHITE,
-        brightness: 400.0,
-    })
-    .insert_resource(WorldMap { ..default() })
-    .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
-    .insert_resource(WireframeConfig {
-        // The global wireframe config enables drawing of wireframes on every mesh,
-        // except those with `NoWireframe`. Meshes with `Wireframe` will always have a wireframe,
-        // regardless of the global configuration.
-        global: false,
-        // Controls the default color of all wireframes. Used as the default color for global wireframes.
-        // Can be changed per mesh using the `WireframeColor` component.
-        default_color: WHITE.into(),
-    })
-    .insert_resource(MaterialResource { ..default() })
-    .insert_resource(AtlasHandles { ..default() })
-    .insert_resource(RenderDistance { ..default() })
-    .add_event::<WorldRenderRequestUpdateEvent>()
-    .add_systems(
-        OnEnter(GameState::Game),
-        (
-            despawn_menu_camera,
-            setup_materials,
-            setup_world,
-            spawn_player,
-            setup_main_lighting,
-            spawn_camera,
-            spawn_reticle,
-            setup_hud,
-            setup_chat,
+        .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
+        .add_plugins(WireframePlugin)
+        .add_plugins(bevy_simple_text_input::TextInputPlugin)
+        .insert_resource(AmbientLight {
+            color: Color::WHITE,
+            brightness: 400.0,
+        })
+        .insert_resource(WorldMap { ..default() })
+        .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
+        .insert_resource(WireframeConfig {
+            // The global wireframe config enables drawing of wireframes on every mesh,
+            // except those with `NoWireframe`. Meshes with `Wireframe` will always have a wireframe,
+            // regardless of the global configuration.
+            global: false,
+            // Controls the default color of all wireframes. Used as the default color for global wireframes.
+            // Can be changed per mesh using the `WireframeColor` component.
+            default_color: WHITE.into(),
+        })
+        .insert_resource(MaterialResource { ..default() })
+        .insert_resource(AtlasHandles { ..default() })
+        .insert_resource(RenderDistance { ..default() })
+        .add_event::<WorldRenderRequestUpdateEvent>()
+        .add_systems(
+            OnEnter(GameState::Game),
+            (
+                despawn_menu_camera,
+                setup_materials,
+                setup_world,
+                spawn_player,
+                setup_main_lighting,
+                spawn_camera,
+                spawn_reticle,
+                setup_hud,
+                setup_chat,
+            )
+                .chain(),
         )
-            .chain(),
-    )
-    .add_systems(
-        OnEnter(GameState::Game),
-        (setup_hotbar, setup_inventory).chain(),
-    )
-    .add_systems(OnEnter(GameState::Game), print_settings)
-    .add_systems(OnEnter(GameState::Game), mouse_grab_system)
-    .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
-    .add_systems(
-        Update,
-        (
-            toggle_inventory,
-            set_ui_mode,
-            build_atlas,
-            player_movement_system,
-            (handle_block_interactions, camera_control_system).chain(),
-            fps_text_update_system,
-            inventory_update_system,
-            coords_text_update_system,
-            total_blocks_text_update_system,
-            block_text_update_system,
-            toggle_hud_system,
-            chunk_ghost_update_system,
-            exit_system,
-            toggle_wireframe_system,
-            set_mouse_visibility,
-            inventory_cell_interaction_system,
-            update_celestial_bodies,
-            render_distance_update_system,
-            open_chat_input,
-            send_chat,
+        .add_systems(
+            OnEnter(GameState::Game),
+            (setup_hotbar, setup_inventory).chain(),
         )
-            .run_if(in_state(GameState::Game)),
-    )
-    .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
-    .add_systems(PostUpdate, (world_render_system,));
+        .add_systems(OnEnter(GameState::Game), print_settings)
+        .add_systems(OnEnter(GameState::Game), mouse_grab_system)
+        .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
+        .add_systems(
+            Update,
+            (
+                toggle_inventory,
+                set_ui_mode,
+                build_atlas,
+                player_movement_system,
+                (handle_block_interactions, camera_control_system).chain(),
+                fps_text_update_system,
+                inventory_update_system,
+                coords_text_update_system,
+                total_blocks_text_update_system,
+                block_text_update_system,
+                toggle_hud_system,
+                chunk_ghost_update_system,
+                exit_system,
+                toggle_wireframe_system,
+                set_mouse_visibility,
+                inventory_cell_interaction_system,
+                update_celestial_bodies,
+                render_distance_update_system,
+                open_chat_input,
+                send_chat,
+            )
+                .run_if(in_state(GameState::Game)),
+        )
+        .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
+        .add_systems(PostUpdate, (world_render_system,));
 }

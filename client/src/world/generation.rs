@@ -8,7 +8,7 @@ use bevy::render::mesh::{Indices, PrimitiveTopology};
 use bevy_mod_raycast::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::world::*;
 use serde::{Deserialize, Serialize};
@@ -284,7 +284,7 @@ pub fn load_chunk_around_player(
     }
 }
 
-#[derive(Event, Debug, Copy, Clone)]
+#[derive(Event, Debug, Copy, Clone, Hash, Eq, PartialEq)]
 pub enum WorldRenderRequestUpdateEvent {
     ChunkToReload(IVec3),
     BlockToReload(IVec3),
@@ -668,9 +668,9 @@ fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
     mesh
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct QueuedEvents {
-    pub events: Vec<WorldRenderRequestUpdateEvent>,
+    pub events: HashSet<WorldRenderRequestUpdateEvent>,
 }
 
 pub fn world_render_system(
@@ -682,7 +682,7 @@ pub fn world_render_system(
     mut queued_events: Local<QueuedEvents>,
 ) {
     for event in ev_render.read() {
-        queued_events.events.push(event.clone());
+        queued_events.events.insert(event.clone());
     }
 
     if material_resource.atlas_texture.is_none() {
