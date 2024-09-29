@@ -586,6 +586,7 @@ version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "043c9ad4b6fc4ca52d779873a8ca792a4e37842d07fce95363c9e17e36a1d8a0"
 dependencies = [
+ "bevy_dylib",
  "bevy_internal",
 ]
 
@@ -791,6 +792,15 @@ dependencies = [
  "bevy_utils",
  "const-fnv1a-hash",
  "sysinfo",
+]
+
+[[package]]
+name = "bevy_dylib"
+version = "0.14.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c399292fac67682a72666e78872626f3c1c39b34c430b6f02c81d21da91b500"
+dependencies = [
+ "bevy_internal",
 ]
 
 [[package]]
@@ -3420,7 +3430,7 @@ checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
 
 [[package]]
 name = "minecraft-rust"
-version = "0.4.0"
+version = "0.0.0"
 dependencies = [
  "bevy",
  "bevy_mod_raycast",
@@ -4988,7 +4998,7 @@ dependencies = [
 
 [[package]]
 name = "server"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bevy",
  "bevy_app",
@@ -5047,7 +5057,7 @@ dependencies = [
 
 [[package]]
 name = "shared"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bevy_ecs",
  "log",

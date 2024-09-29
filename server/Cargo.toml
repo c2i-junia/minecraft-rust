@@ -1,6 +1,6 @@
 [package]
 name = "server"
-version = "0.1.0"
+version = "0.0.0"
 edition = "2021"
 
 [dependencies]
@@ -11,3 +11,6 @@ bevy_core = { version = "0.14", default-features=false }
 bevy_ecs = { version = "0.14", default-features=false }
 bevy_log = { version = "0.14", default-features=false }
 bevy = "0.14.2"
+
+[features]
+default = ["bevy/dynamic_linking"]
