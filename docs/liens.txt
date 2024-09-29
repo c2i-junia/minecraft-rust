@@ -15,6 +15,9 @@ https://doc.rust-lang.org/book/
 Rust By example: 
 https://doc.rust-lang.org/rust-by-example/
 
+networking library : 
+https://github.com/naia-lib/naia
+
 
 ---- BEVY ----
 Tuto bases de bevy (création d'un jeu vue de haut 2d): 
@@ -28,3 +31,6 @@ https://github.com/janhohenheim/foxtrot
 
 bevy cheatbook : 
 https://bevy-cheatbook.github.io/introduction.html
+
+best practices : 
+https://github.com/tbillington/bevy_best_practices/tree/main
