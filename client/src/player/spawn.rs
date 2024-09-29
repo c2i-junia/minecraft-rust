@@ -61,7 +61,7 @@ pub fn spawn_player(
 ) {
     let player = Player::new();
 
-    let spawn_coords = Vec3::new(7.5, 80.0, 7.5);
+    let spawn_coords = Vec3::new(7.5, 45.0, 7.5);
 
     commands
         .spawn(PbrBundle {
