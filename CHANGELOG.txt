@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4    
+Date: 28.09.2024    
+
+  Changes: 
+    - Added block textures
+    - Implemented day/night cycle
+    - Set maximum block breaking distance
+    - Added inventory UI
+    - Optimized chunk loading
+    - Optimized block rendering
+
+---------------------------------------------------------------------------------------------------
 Version: 0.3    
 Date: 25.09.2024    
 
