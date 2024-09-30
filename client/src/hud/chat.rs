@@ -1,10 +1,12 @@
-use bevy::prelude::*;
-use bevy_simple_text_input::*;
-
+use crate::network::send_chat_message;
 use crate::{
     keyboard::{is_action_just_pressed, keyboard_clear_input},
     UiDialog,
 };
+use bevy::prelude::*;
+use bevy_renet::renet::RenetClient;
+use bevy_simple_text_input::*;
+use shared::messages::ChatMessage;
 
 #[derive(Component)]
 pub struct ChatRoot;
@@ -130,6 +132,7 @@ pub fn send_chat(
     parent_query: Query<(Entity, &Children), With<ChatDisplay>>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut client: ResMut<RenetClient>,
 ) {
     if event.is_empty() {
         return;
@@ -166,10 +169,7 @@ pub fn send_chat(
 
             commands.entity(parent).push_children(&[msg]);
 
-            // Prevents history from containing more than 20 messages
-            if children.len() as i32 > CHAT_MAX_MESSAGES {
-                commands.entity(children[0]).despawn();
-            }
+            send_chat_message(&mut client, &message.value);
         }
     }
 }

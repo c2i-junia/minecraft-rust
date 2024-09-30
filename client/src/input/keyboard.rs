@@ -93,8 +93,6 @@ pub fn get_action_keys(action: GameAction) -> Vec<KeyCode> {
     KEY_MAP.get(&action).unwrap().to_vec()
 }
 
-pub fn keyboard_clear_input(
-    keyboard_input: &mut ResMut<ButtonInput<KeyCode>>
-) {
+pub fn keyboard_clear_input(keyboard_input: &mut ResMut<ButtonInput<KeyCode>>) {
     keyboard_input.reset_all();
 }
