@@ -164,12 +164,11 @@ pub fn send_chat(
                 })
                 .id();
 
-            let mut com = commands.entity(parent);
-            com.push_children(&[msg]);
+            commands.entity(parent).push_children(&[msg]);
 
             // Prevents history from containing more than 20 messages
             if children.len() as i32 > CHAT_MAX_MESSAGES {
-                com.remove_children(&[children[0]]);
+                commands.entity(children[0]).despawn();
             }
         }
     }
