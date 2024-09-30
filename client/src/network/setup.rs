@@ -1,10 +1,13 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
+use crate::network::ChatConversationBuffer;
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
 };
 use bevy_renet::transport::NetcodeClientPlugin;
+use bincode::Options;
+use shared::messages::{ChatConversation, ChatMessage};
 use std::time::UNIX_EPOCH;
 use std::{net::UdpSocket, time::SystemTime};
 
@@ -39,27 +42,45 @@ pub fn add_netcode_network(app: &mut App) {
 
     app.add_systems(Update, network_failure_handler);
 
-    app.add_systems(Update, network_send_message);
+    app.add_systems(Update, network_send_message_loop_test);
+
+    app.add_systems(Update, poll_network_messages);
+
+    app.insert_resource(ChatConversationBuffer { ..default() });
 
     println!("Network subsystem initialized");
 }
 
-pub fn network_send_message(mut client: ResMut<RenetClient>) {
+pub fn network_send_message_loop_test(mut client: ResMut<RenetClient>) {
     let timestamp_ms = std::time::SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_millis();
-    if timestamp_ms % 50 != 0 {
+    if timestamp_ms % 10 != 0 {
         return;
     }
 
-    let player_input = "hello from client";
-    println!("trying to ping the server with message: {}", player_input);
-    let input_message = bincode::serialize(player_input).unwrap();
+    let cm = ChatMessage {
+        author_name: "Test".into(),
+        date: 0,
+        content: format!("Hello from client at {}", timestamp_ms),
+    };
 
-    client.send_message(shared::ClientChannel::ChatMessage, input_message);
+    let cm_serialized = bincode::options().serialize(&cm).unwrap();
+
+    client.send_message(shared::ClientChannel::ChatMessage, cm_serialized);
 
     while let Some(message) = client.receive_message(shared::ServerChannel::ServerMessage) {
         println!("Received reply from server: {:?}", message);
+    }
+}
+
+pub fn poll_network_messages(mut client: ResMut<RenetClient>) {
+    while let Some(message) = client.receive_message(shared::ServerChannel::ServerMessage) {
+        let message = bincode::options().deserialize::<ChatConversation>(&message);
+        match message {
+            Ok(data) => println!("ok: {:?}", data),
+            Err(e) => println!("err {}", e),
+        };
     }
 }
