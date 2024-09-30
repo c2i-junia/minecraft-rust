@@ -3,7 +3,7 @@ use crate::UIMode;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Player {
     pub vertical_velocity: f32,
     pub on_ground: bool,
@@ -16,7 +16,7 @@ pub struct Player {
     pub width: f32,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum ViewMode {
     FirstPerson,
     ThirdPerson,

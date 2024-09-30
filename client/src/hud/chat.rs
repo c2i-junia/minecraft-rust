@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_simple_text_input::*;
 
-use crate::{keyboard::is_action_just_pressed, UiDialog};
+use crate::{
+    keyboard::{is_action_just_pressed, keyboard_clear_input},
+    UiDialog,
+};
 
 #[derive(Component)]
 pub struct ChatRoot;
@@ -14,7 +17,7 @@ pub struct ChatInput;
 
 const CHAT_COLOR: Color = Color::srgba(0., 0., 0., 0.6);
 const CHAT_SIZE: f32 = 17.;
-const CHAT_MAX_MESSAGES: i32 = 20;
+const CHAT_MAX_MESSAGES: i32 = 2;
 
 pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
@@ -28,8 +31,8 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                 style: Style {
                     display: Display::Flex,
                     position_type: PositionType::Absolute,
-                    bottom: Val::Vh(30.),
-                    max_height: Val::Px(CHAT_MAX_MESSAGES as f32 * CHAT_SIZE),
+                    bottom: Val::Px(0.),
+                    max_height: Val::Px((CHAT_MAX_MESSAGES + 20) as f32 * CHAT_SIZE),
                     width: Val::Vw(20.),
                     left: Val::Percent(0.),
                     overflow: Overflow {
@@ -48,7 +51,7 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                 NodeBundle {
                     style: Style {
                         display: Display::Flex,
-                        flex_direction: FlexDirection::ColumnReverse,
+                        flex_direction: FlexDirection::Column,
                         overflow: Overflow {
                             x: OverflowAxis::Visible,
                             y: OverflowAxis::Hidden,
@@ -104,6 +107,22 @@ pub fn open_chat_input(
     }
 }
 
+pub fn chat_input_check(
+    mut visibility: Query<&mut Visibility, With<ChatRoot>>,
+    mut input: ResMut<ButtonInput<KeyCode>>,
+    mut query: Query<(&mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
+) {
+    if visibility.single() == Visibility::Visible {
+        if input.just_pressed(KeyCode::Escape) {
+            let (mut inactive, mut value) = query.single_mut();
+            *visibility.single_mut() = Visibility::Hidden;
+            *value = TextInputValue("".to_string());
+            *inactive = TextInputInactive(true);
+            keyboard_clear_input(&mut input);
+        }
+    }
+}
+
 pub fn send_chat(
     mut event: EventReader<TextInputSubmitEvent>,
     mut input_query: Query<(Entity, &mut TextInputInactive), With<ChatInput>>,
@@ -125,7 +144,11 @@ pub fn send_chat(
 
     for message in event.read() {
         if entity_check == message.entity {
-            println!("Message Sent : {:?}", message.value);
+            println!(
+                "Message Sent : {:?}, total messages : {:?}",
+                message.value,
+                children.len()
+            );
             let msg = commands
                 .spawn(TextBundle {
                     text: Text::from_section(
@@ -141,11 +164,12 @@ pub fn send_chat(
                 })
                 .id();
 
-            commands.entity(parent).push_children(&[msg]);
+            let mut com = commands.entity(parent);
+            com.push_children(&[msg]);
 
             // Prevents history from containing more than 20 messages
-            while children.len() > 20 {
-                commands.entity(children[0]).despawn();
+            if children.len() as i32 > CHAT_MAX_MESSAGES {
+                com.remove_children(&[children[0]]);
             }
         }
     }

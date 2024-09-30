@@ -16,14 +16,16 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
-    mut player: Query<&mut Player>,
+    mut player_query: Query<&mut Player>,
     mut p_transform: Query<&mut Transform, With<Player>>,
     mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
     raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
     mut world_map: ResMut<WorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
-    if player.single().ui_mode == UIMode::Opened {
+    let player = player_query.single().clone();
+
+    if player.ui_mode == UIMode::Opened {
         return;
     }
 
@@ -52,7 +54,7 @@ pub fn handle_block_interactions(
                     let item_type = items::item_from_block(block);
                     // If block has corresponding item, add it to inventory
                     if let Some(item_type) = item_type {
-                        add_item_to_inventory(&mut player, item_type, 1);
+                        add_item_to_inventory(&mut player_query, item_type, 1);
                     }
 
                     ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
@@ -80,17 +82,20 @@ pub fn handle_block_interactions(
             // Snap the position to the grid
             position = snap_to_grid(position);
 
+            // Difference vector between player position and block center
+            let distance = position + (Vec3::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE) / 2.) - p_transform.single_mut().translation;
+
             // Check if target space is close enough to the player
-            // Guarantees a block cannot be placed too close to the player (which would be unable to move because of constant collision)
             if (intersection.position() - p_transform.single_mut().translation).norm()
                 <= INTERACTION_DISTANCE
-                && (position - p_transform.single_mut().translation).norm() >= CUBE_SIZE
+                // Guarantees a block cannot be placed too close to the player (which would be unable to move because of constant collision)
+                && (distance.x.abs() > (CUBE_SIZE + player.width) / 2. || distance.z.abs() > (CUBE_SIZE + player.width ) / 2. || distance.y.abs() > (CUBE_SIZE + player.height) / 2.)
             {
                 let item_type = items::ItemsType::Dirt;
                 // Check if the block is in the player's inventory
-                if has_item(&mut player, item_type) {
+                if has_item(&mut player_query, item_type) {
                     // Remove the block from the player's inventory
-                    remove_item_from_inventory(&mut player, item_type, 1);
+                    remove_item_from_inventory(&mut player_query, item_type, 1);
                 } else {
                     return;
                 }

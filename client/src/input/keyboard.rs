@@ -1,6 +1,6 @@
 use bevy::{
     input::ButtonInput,
-    prelude::{KeyCode, Res},
+    prelude::{KeyCode, Res, ResMut},
 };
 use lazy_static::lazy_static;
 use std::collections::HashMap;
@@ -91,4 +91,10 @@ pub fn is_action_just_pressed(
 
 pub fn get_action_keys(action: GameAction) -> Vec<KeyCode> {
     KEY_MAP.get(&action).unwrap().to_vec()
+}
+
+pub fn keyboard_clear_input(
+    keyboard_input: &mut ResMut<ButtonInput<KeyCode>>
+) {
+    keyboard_input.reset_all();
 }

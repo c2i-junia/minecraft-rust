@@ -10,7 +10,7 @@ use crate::Player;
 #[derive(Component)]
 pub struct UiDialog;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum UIMode {
     Opened,
     Closed,

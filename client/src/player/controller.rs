@@ -3,7 +3,7 @@ use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
-use crate::{RenderDistance, UIMode};
+use crate::RenderDistance;
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
@@ -145,7 +145,7 @@ pub fn player_movement_system(
     }
 
     // Move the player (xy plane only), only if there are no blocks and UI is closed
-    if direction.length_squared() > 0.0 && player.ui_mode == UIMode::Closed {
+    if direction.length_squared() > 0.0 {
         direction = direction.normalize();
 
         // Déplacement sur l'axe X
@@ -165,8 +165,8 @@ pub fn player_movement_system(
         }
     }
 
-    // Handle jumping (if on the ground) and gravity, only if not flying and UI is closed
-    if !player.is_flying && player.ui_mode == UIMode::Closed {
+    // Handle jumping (if on the ground) and gravity, only if not flying
+    if !player.is_flying {
         if player.on_ground && is_action_pressed(GameAction::Jump, &keyboard_input) {
             // Player can jump only when grounded
             player.vertical_velocity = jump_velocity;
