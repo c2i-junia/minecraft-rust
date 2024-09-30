@@ -5,30 +5,21 @@ use bevy::{
 use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
-use bevy_renet::{
-    renet::{ClientId, ServerEvent},
-    RenetServerPlugin,
-};
-use shared::{ClientChannel, ServerChannel};
+use bevy_renet::{renet::ClientId, RenetServerPlugin};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
 use bevy_renet::transport::NetcodeServerPlugin;
-use bincode::Options;
-use shared::messages::*;
 use std::net::UdpSocket;
+
+mod chat;
+mod dispatcher;
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
     pub players: HashMap<ClientId, Entity>,
-}
-
-#[derive(Resource)]
-struct BroadcastTimer {
-    /// How often to spawn a new bomb? (repeating timer)
-    timer: Timer,
 }
 
 fn add_netcode_network(app: &mut App) {
@@ -70,71 +61,10 @@ fn main() {
 
     add_netcode_network(&mut app);
 
-    app.insert_resource(ChatConversation { ..default() });
+    dispatcher::setup_resources(&mut app);
 
-    app.add_systems(Update, server_update_system);
-
-    app.add_systems(Update, broadcast_chat_messages);
-
-    app.insert_resource(BroadcastTimer {
-        timer: Timer::from_seconds(2.0, TimerMode::Repeating),
-    });
+    dispatcher::register_systems(&mut app);
 
     println!("Starting server on 127.0.0.1:5000");
     app.run();
-}
-
-fn server_update_system(
-    mut server_events: EventReader<ServerEvent>,
-    mut server: ResMut<RenetServer>,
-    mut chat_conversation: ResMut<ChatConversation>,
-) {
-    for event in server_events.read() {
-        println!("event received");
-        match event {
-            ServerEvent::ClientConnected { client_id } => {
-                println!("Player {} connected.", client_id);
-            }
-            ServerEvent::ClientDisconnected { client_id, reason } => {
-                println!("Player {} disconnected: {}", client_id, reason);
-            }
-        }
-    }
-
-    for client_id in server.clients_id() {
-        while let Some(message) = server.receive_message(client_id, ClientChannel::ChatMessage) {
-            let parsed_message = match bincode::options().deserialize::<ChatMessage>(&message) {
-                Ok(data) => data,
-                Err(e) => {
-                    println!(
-                        "Failed to parse incoming chat message: {} / {:?}",
-                        e, &message
-                    );
-                    continue;
-                }
-            };
-            println!("Chat message received: {:?}", &parsed_message);
-            chat_conversation.messages.push(parsed_message);
-        }
-    }
-}
-
-fn broadcast_chat_messages(
-    mut server: ResMut<RenetServer>,
-    chat_messages: Res<ChatConversation>,
-    time: Res<Time>,
-    mut timer: ResMut<BroadcastTimer>,
-) {
-    timer.timer.tick(time.delta());
-    if timer.timer.finished() {
-        println!(
-            "Broadcasting chat history, {} messages",
-            chat_messages.messages.len()
-        );
-        let cm: ChatConversation = chat_messages.into_inner().clone();
-        let serialized = bincode::options().serialize(&cm).unwrap();
-        println!("data {:?}", cm);
-        println!("serialized: {:?}", serialized);
-        server.broadcast_message(ServerChannel::ServerMessage, serialized);
-    }
 }
