@@ -6,7 +6,6 @@ use crate::{
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use bevy_simple_text_input::*;
-use shared::messages::ChatMessage;
 
 #[derive(Component)]
 pub struct ChatRoot;

@@ -1,14 +1,13 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
-use crate::network::ChatConversationBuffer;
+use crate::network::{update_cached_chat_state, CachedChatConversation};
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
 };
 use bevy_renet::transport::NetcodeClientPlugin;
 use bincode::Options;
-use shared::messages::{ChatConversation, ChatMessage};
-use std::time::UNIX_EPOCH;
+use shared::messages::ChatConversation;
 use std::{net::UdpSocket, time::SystemTime};
 
 pub fn add_netcode_network(app: &mut App) {
@@ -44,16 +43,21 @@ pub fn add_netcode_network(app: &mut App) {
 
     app.add_systems(Update, poll_network_messages);
 
-    app.insert_resource(ChatConversationBuffer { ..default() });
+    app.insert_resource(CachedChatConversation { ..default() });
 
     println!("Network subsystem initialized");
 }
 
-pub fn poll_network_messages(mut client: ResMut<RenetClient>) {
+pub fn poll_network_messages(
+    mut client: ResMut<RenetClient>,
+    mut chat_state: ResMut<CachedChatConversation>,
+) {
     while let Some(message) = client.receive_message(shared::ServerChannel::ServerMessage) {
         let message = bincode::options().deserialize::<ChatConversation>(&message);
         match message {
-            Ok(data) => println!("ok: {:?}", data),
+            Ok(data) => {
+                update_cached_chat_state(&mut chat_state, data);
+            }
             Err(e) => println!("err {}", e),
         };
     }
