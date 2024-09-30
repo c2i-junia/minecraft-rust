@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use crate::world::generation::{WorldMap, WorldSeed};
+use crate::world::data::{WorldMap, WorldSeed};
 use ron::de::from_str;
 
 pub fn load_world_map(file_path: &str) -> Result<WorldMap, Box<dyn std::error::Error>> {

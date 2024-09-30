@@ -1,6 +1,6 @@
 use crate::constants::CHUNK_SIZE;
 use crate::player::Player;
-use crate::world::block_vec3_to_chunk_v3_coord;
+use crate::world;
 use bevy::prelude::*;
 use bevy::render::mesh::PrimitiveTopology;
 use bevy::render::render_asset::RenderAssetUsages;
@@ -39,7 +39,7 @@ pub fn chunk_ghost_update_system(
     let mut ghost = ghost_query.single_mut();
     let player = player_query.single();
 
-    let mut chunk = block_vec3_to_chunk_v3_coord(player.0.translation);
+    let mut chunk = world::utils::block_vec3_to_chunk_v3_coord(player.0.translation);
     chunk.y = 0.0;
     ghost.0.translation = chunk * (CHUNK_SIZE as f32);
     *ghost.1 = if player.1.is_chunk_debug_mode_enabled {

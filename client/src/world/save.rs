@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::Path;
 
 use crate::input::keyboard::*;
-use crate::world::generation::{WorldMap, WorldSeed};
+use crate::world::data::*;
 use bevy::prelude::*;
 
 use ron::ser::PrettyConfig;
