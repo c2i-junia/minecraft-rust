@@ -1,6 +1,5 @@
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use crate::input::keyboard::{get_action_keys, GameAction};
-use crate::keyboard::keyboard_clear_input;
 use crate::player::Player;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
 use crate::world::MaterialResource;
@@ -87,5 +86,5 @@ pub fn inventory_update_system(
         style.left = Val::Px(c_pos.x);
     }
 
-    keyboard_clear_input(&mut keyboard_input);
+    keyboard_input.reset_all();
 }

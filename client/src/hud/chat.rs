@@ -1,6 +1,6 @@
 use crate::network::{send_chat_message, CachedChatConversation};
 use crate::{
-    keyboard::{is_action_just_pressed, keyboard_clear_input},
+    keyboard::is_action_just_pressed,
     UiDialog,
 };
 use bevy::prelude::*;
@@ -150,7 +150,7 @@ pub fn render_chat(
             *value = TextInputValue("".to_string());
             *inactive = TextInputInactive(true);
         }
-        keyboard_clear_input(&mut keyboard_input);
+        keyboard_input.reset_all();
     }
 
     let current_ts = std::time::SystemTime::now()
@@ -167,11 +167,9 @@ pub fn render_chat(
             *vis = Visibility::Inherited;
             *bg = BackgroundColor(Color::BLACK.with_alpha(0.));
             text.sections[0].style.color = Color::WHITE;
-
         } else if diff > ANIMATION_BEGIN_FADE {
             // Animate linear fade
-            let alpha = 1. - ((diff - ANIMATION_BEGIN_FADE) as f32
-                / ANIMATION_HIDE as f32);
+            let alpha = 1. - ((diff - ANIMATION_BEGIN_FADE) as f32 / ANIMATION_HIDE as f32);
             *bg = BackgroundColor(CHAT_COLOR.with_alpha(0.6 * alpha));
             text.sections[0].style.color = Color::WHITE.with_alpha(alpha);
         }
