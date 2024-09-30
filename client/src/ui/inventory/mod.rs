@@ -47,11 +47,9 @@ pub fn set_ui_mode(mut player: Query<&mut Player>, visibility: Query<&Visibility
 }
 
 mod display;
-mod inv;
 pub mod items;
 mod setup;
 
 pub use display::*;
-pub use inv::*;
 use items::*;
 pub use setup::*;

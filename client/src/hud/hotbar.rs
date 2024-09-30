@@ -26,6 +26,7 @@ pub fn setup_hotbar(mut commands: Commands) {
                     ..Default::default()
                 },
                 z_index: ZIndex::Global(1),
+                visibility: Visibility::Hidden,
                 ..Default::default()
             },
         ))
