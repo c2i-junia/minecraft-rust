@@ -1,4 +1,4 @@
-use crate::network::send_chat_message;
+use crate::network::{send_chat_message, CachedChatConversation};
 use crate::{
     keyboard::{is_action_just_pressed, keyboard_clear_input},
     UiDialog,
@@ -18,7 +18,7 @@ pub struct ChatInput;
 
 const CHAT_COLOR: Color = Color::srgba(0., 0., 0., 0.6);
 const CHAT_SIZE: f32 = 17.;
-const CHAT_MAX_MESSAGES: i32 = 2;
+const CHAT_MAX_MESSAGES: usize = 2;
 
 pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
@@ -33,7 +33,7 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                     display: Display::Flex,
                     position_type: PositionType::Absolute,
                     bottom: Val::Px(0.),
-                    max_height: Val::Px((CHAT_MAX_MESSAGES + 20) as f32 * CHAT_SIZE),
+                    max_height: Val::Px((CHAT_MAX_MESSAGES as f32 + 20.) * CHAT_SIZE),
                     width: Val::Vw(20.),
                     left: Val::Percent(0.),
                     overflow: Overflow {
@@ -95,66 +95,57 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-pub fn open_chat_input(
-    mut text_input: Query<&mut TextInputInactive, With<ChatInput>>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut visibility: Query<&mut Visibility, With<ChatRoot>>,
-) {
-    if is_action_just_pressed(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
-        let mut input_inactive = text_input.single_mut();
-        input_inactive.0 = false;
-        let mut vis = visibility.single_mut();
-        *vis = Visibility::Visible;
-    }
-}
-
-pub fn chat_input_check(
-    mut visibility: Query<&mut Visibility, With<ChatRoot>>,
-    mut input: ResMut<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
-) {
-    if visibility.single() == Visibility::Visible {
-        if input.just_pressed(KeyCode::Escape) {
-            let (mut inactive, mut value) = query.single_mut();
-            *visibility.single_mut() = Visibility::Hidden;
-            *value = TextInputValue("".to_string());
-            *inactive = TextInputInactive(true);
-            keyboard_clear_input(&mut input);
-        }
-    }
-}
-
-pub fn send_chat(
+pub fn render_chat(
+    resources: (
+        Res<CachedChatConversation>,
+        Res<AssetServer>,
+        ResMut<RenetClient>,
+        ResMut<ButtonInput<KeyCode>>,
+    ),
+    queries: (
+        Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
+        Query<&mut Visibility, With<ChatRoot>>,
+        Query<(Entity, &Children), With<ChatDisplay>>,
+    ),
+    mut last_render_ts: Local<u64>,
     mut event: EventReader<TextInputSubmitEvent>,
-    mut input_query: Query<(Entity, &mut TextInputInactive), With<ChatInput>>,
-    mut root_query: Query<&mut Visibility, With<ChatRoot>>,
-    parent_query: Query<(Entity, &Children), With<ChatDisplay>>,
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut client: ResMut<RenetClient>,
 ) {
-    if event.is_empty() {
-        return;
-    }
+    let (cached_conv, asset_server, mut client, mut keyboard_input) = resources;
+    let (mut text_query, mut visibility_query, parent_query) = queries;
 
-    let (entity_check, mut inactive) = input_query.single_mut();
-    let mut vis = root_query.single_mut();
+    let (entity_check, mut inactive, mut value) = text_query.single_mut();
+    let mut vis = visibility_query.single_mut();
     let (parent, children) = parent_query.single();
 
-    *vis = Visibility::Hidden;
-    *inactive = TextInputInactive(true);
+    if is_action_just_pressed(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
+        inactive.0 = false;
+        *vis = Visibility::Visible;
+    }
 
-    for message in event.read() {
-        if entity_check == message.entity {
-            println!(
-                "Message Sent : {:?}, total messages : {:?}",
-                message.value,
-                children.len()
-            );
+    if *vis == Visibility::Visible {
+        if is_action_just_pressed(crate::keyboard::GameAction::Escape, &keyboard_input) {
+            *vis = Visibility::Hidden;
+            *value = TextInputValue("".to_string());
+            *inactive = TextInputInactive(true);
+        }
+        keyboard_clear_input(&mut keyboard_input);
+    }
+
+    if let Some(conv) = &cached_conv.data {
+        for message in &conv.messages {
+
+            // If message too old, don't render
+            if message.date <= *last_render_ts {
+                continue;
+            }
+
+            *last_render_ts = message.date;
+
             let msg = commands
                 .spawn(TextBundle {
                     text: Text::from_section(
-                        message.value.clone(),
+                        format!("<{}> : {}", message.author_name, message.content),
                         TextStyle {
                             font: asset_server.load("fonts/gohu.ttf"),
                             font_size: 17.,
@@ -165,9 +156,28 @@ pub fn send_chat(
                     ..Default::default()
                 })
                 .id();
-
+        
             commands.entity(parent).push_children(&[msg]);
+        }
 
+        // Prevents too much messages from building up on screen
+        if children.len() > CHAT_MAX_MESSAGES {
+            for i in children.len()..CHAT_MAX_MESSAGES {
+                commands.entity(parent).remove_children(&[children[i]]);
+                commands.entity(children[i]).despawn();
+            }
+        }
+    }
+
+    if event.is_empty() {
+        return;
+    }
+
+    *vis = Visibility::Hidden;
+    *inactive = TextInputInactive(true);
+
+    for message in event.read() {
+        if entity_check == message.entity {
             send_chat_message(&mut client, &message.value);
         }
     }

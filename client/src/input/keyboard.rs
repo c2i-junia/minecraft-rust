@@ -64,7 +64,7 @@ lazy_static! {
     };
 }
 
-pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<ButtonInput<KeyCode>>) -> bool {
+pub fn is_action_pressed(action: GameAction, keyboard_input: &ButtonInput<KeyCode>) -> bool {
     if let Some(key_codes) = KEY_MAP.get(&action) {
         for key_code in key_codes {
             if keyboard_input.pressed(*key_code) {
@@ -77,7 +77,7 @@ pub fn is_action_pressed(action: GameAction, keyboard_input: &Res<ButtonInput<Ke
 
 pub fn is_action_just_pressed(
     action: GameAction,
-    keyboard_input: &Res<ButtonInput<KeyCode>>,
+    keyboard_input: &ButtonInput<KeyCode>,
 ) -> bool {
     if let Some(key_codes) = KEY_MAP.get(&action) {
         for key_code in key_codes {

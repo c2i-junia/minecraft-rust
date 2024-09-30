@@ -1,7 +1,7 @@
 use bevy::app::MainScheduleOrder;
 use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
-use chat::{chat_input_check, open_chat_input, send_chat, setup_chat};
+use chat::{render_chat, setup_chat};
 
 use crate::debug::BlockDebugWireframeSettings;
 use bevy::color::palettes::basic::WHITE;
@@ -93,7 +93,7 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
         .add_systems(
             UiUpdate,
-            (chat_input_check, inventory_update_system, set_ui_mode)
+            (render_chat, inventory_update_system, set_ui_mode)
                 .chain()
                 .run_if(in_state(GameState::Game)),
         )
@@ -115,8 +115,6 @@ pub fn game_plugin(app: &mut App) {
                 inventory_cell_interaction_system,
                 update_celestial_bodies,
                 render_distance_update_system,
-                open_chat_input,
-                send_chat,
             )
                 .chain()
                 .run_if(in_state(GameState::Game)),
