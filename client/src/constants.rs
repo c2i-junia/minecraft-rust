@@ -15,3 +15,7 @@ pub const DAY_DURATION: f32 = 20.; // Length of a full day/night cycle, in secon
 pub const MAX_ITEM_STACK: u32 = 64;
 pub const MAX_INVENTORY_SLOTS: u32 = 4 * 9;
 pub const MAX_HOTBAR_SLOTS: u32 = 9;
+
+pub const HOTBAR_CELL_SIZE: f32 = 50.;
+pub const HOTBAR_PADDING: f32 = 5.;
+pub const HOTBAR_BORDER: f32 = 5.;

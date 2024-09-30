@@ -1,6 +1,6 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
-use crate::{constants::MAX_HOTBAR_SLOTS, InventoryCell};
+use crate::{constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS}, InventoryCell};
 
 #[derive(Component)]
 pub struct Hotbar {
@@ -12,21 +12,20 @@ pub fn setup_hotbar(mut commands: Commands) {
         .spawn((
             Hotbar { selected: 0 },
             NodeBundle {
-                // background_color: BackgroundColor(Color::srgb(0.3, 0.3, 0.3)),
-                border_color: BorderColor(Color::srgb(0.3, 0.3, 0.3)),
-                border_radius: BorderRadius::all(Val::Px(20.)),
+                background_color: BackgroundColor(Color::srgba(0.3, 0.3, 0.3, 0.3)),
                 style: Style {
                     display: Display::Flex,
                     flex_direction: FlexDirection::Row,
                     position_type: PositionType::Absolute,
-                    top: Val::Px(70.),
+                    bottom: Val::Px(70.),
+                    // left: Val::Percent(50.),
                     width: Val::Auto,
-                    padding: UiRect::all(Val::Px(5.)),
-                    border: UiRect::all(Val::Px(5.)),
+                    padding: UiRect::ZERO,
+                    border: UiRect::ZERO,
+                    margin: UiRect::all(Val::Auto),
                     ..Default::default()
                 },
                 z_index: ZIndex::Global(1),
-                visibility: Visibility::Hidden,
                 ..Default::default()
             },
         ))
@@ -35,14 +34,15 @@ pub fn setup_hotbar(mut commands: Commands) {
                 bar.spawn((
                     InventoryCell { id: i },
                     ButtonBundle {
-                        border_color: BorderColor(Color::BLACK),
+                        border_color: BorderColor(Color::srgb(0.3, 0.3, 0.3)),
                         focus_policy: FocusPolicy::Block,
                         style: Style {
-                            width: Val::Px(50.),
-                            height: Val::Px(150.),
+                            width: Val::Px(HOTBAR_CELL_SIZE),
+                            height: Val::Px(HOTBAR_CELL_SIZE),
                             margin: UiRect::ZERO,
-                            padding: UiRect::all(Val::Percent(10.)),
-                            border: UiRect::all(Val::Px(1.)),
+                            position_type: PositionType::Relative,
+                            padding: UiRect::all(Val::Px(HOTBAR_PADDING)),
+                            border: UiRect::all(Val::Px(HOTBAR_BORDER)),
                             ..Default::default()
                         },
                         ..Default::default()
@@ -65,7 +65,12 @@ pub fn setup_hotbar(mut commands: Commands) {
                     });
                     btn.spawn(ImageBundle {
                         z_index: ZIndex::Local(-1),
-                        style: Style::default(),
+                        style: Style {
+                            width: Val::Px(HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER)),
+                            position_type: PositionType::Relative,
+                            ..Default::default()
+                        },
+                        image: UiImage::default(),
                         ..Default::default()
                     });
                 });

@@ -1,5 +1,5 @@
 use super::UiDialog;
-use crate::constants::{MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
+use crate::constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS};
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
 use bevy::{prelude::*, ui::FocusPolicy};
 
@@ -72,8 +72,7 @@ pub fn setup_inventory(mut commands: Commands) {
             style: Style {
                 display: Display::Grid,
                 grid_template_columns: RepeatedGridTrack::auto(9),
-                margin: UiRect::all(Val::Px(20.)),
-                border: UiRect::all(Val::Px(1.)),
+                margin: UiRect::all(Val::Px(10.)),
                 position_type: PositionType::Relative,
                 ..Default::default()
             },
@@ -83,43 +82,49 @@ pub fn setup_inventory(mut commands: Commands) {
         .with_children(|builder| {
             for i in MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS {
                 builder
-                    .spawn((
-                        InventoryCell { id: i },
-                        ButtonBundle {
-                            border_color: BorderColor(Color::BLACK),
-                            focus_policy: FocusPolicy::Block,
-                            style: Style {
-                                width: Val::Px(50.),
-                                height: Val::Px(50.),
-                                margin: UiRect::ZERO,
-                                padding: UiRect::all(Val::Percent(10.)),
-                                border: UiRect::all(Val::Px(1.)),
-                                ..Default::default()
-                            },
+                .spawn((
+                    InventoryCell { id: i },
+                    ButtonBundle {
+                        border_color: BorderColor(Color::srgb(0.3, 0.3, 0.3)),
+                        focus_policy: FocusPolicy::Block,
+                        style: Style {
+                            width: Val::Px(HOTBAR_CELL_SIZE),
+                            height: Val::Px(HOTBAR_CELL_SIZE),
+                            margin: UiRect::ZERO,
+                            position_type: PositionType::Relative,
+                            padding: UiRect::all(Val::Px(HOTBAR_PADDING)),
+                            border: UiRect::all(Val::Px(HOTBAR_BORDER)),
                             ..Default::default()
                         },
-                    ))
-                    .with_children(|btn| {
-                        btn.spawn(TextBundle {
-                            text: Text::from_section(
-                                "",
-                                TextStyle {
-                                    font_size: 15.,
-                                    ..Default::default()
-                                },
-                            ),
-                            style: Style {
-                                position_type: PositionType::Absolute,
+                        ..Default::default()
+                    },
+                ))
+                .with_children(|btn| {
+                    btn.spawn(TextBundle {
+                        text: Text::from_section(
+                            "Test",
+                            TextStyle {
+                                font_size: 15.,
                                 ..Default::default()
                             },
+                        ),
+                        style: Style {
+                            position_type: PositionType::Absolute,
                             ..Default::default()
-                        });
-                        btn.spawn(ImageBundle {
-                            z_index: ZIndex::Local(-1),
-                            style: Style::default(),
-                            ..Default::default()
-                        });
+                        },
+                        ..Default::default()
                     });
+                    btn.spawn(ImageBundle {
+                        z_index: ZIndex::Local(-1),
+                        style: Style {
+                            width: Val::Px(HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER)),
+                            position_type: PositionType::Relative,
+                            ..Default::default()
+                        },
+                        image: UiImage::default(),
+                        ..Default::default()
+                    });
+                });
             }
         })
         .id();

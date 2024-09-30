@@ -57,17 +57,17 @@ pub fn render_inventory_hotbar(
         }
     }
 
-    if *vis == Visibility::Hidden {
-        return;
-    }
-
     let mut player = player_query.single_mut();
 
     // For each cell : Update content
     for (children, i) in inventory_query
         .iter_mut()
-        .zip(MAX_HOTBAR_SLOTS..MAX_INVENTORY_SLOTS)
+        .zip(0..MAX_INVENTORY_SLOTS)
     {
+        if i > MAX_HOTBAR_SLOTS && *vis == Visibility::Hidden {
+            return;
+        }
+        
         let stack = player.inventory.get(&i);
         let mut txt = text_query.get_mut(children[0]).unwrap();
         let mut img = image_query.get_mut(children[1]).unwrap();
@@ -112,7 +112,7 @@ pub fn render_inventory_hotbar(
 
     for (interaction, mut border_color, cell) in &mut cursor_query {
         if *interaction == Interaction::None {
-            border_color.0 = Color::BLACK;
+            border_color.0 = Color::srgb(0.3, 0.3, 0.3);
             continue;
         }
         // Means we have an interaction with the cell, but which type of interaction ?
