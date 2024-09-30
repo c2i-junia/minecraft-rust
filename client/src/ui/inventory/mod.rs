@@ -10,6 +10,25 @@ use crate::Player;
 #[derive(Component)]
 pub struct UiDialog;
 
+// Marker for Inventory root
+#[derive(Component)]
+pub struct InventoryRoot;
+
+/// Main inventory dialog
+#[derive(Component)]
+pub struct InventoryDialog;
+
+#[derive(Component)]
+pub struct InventoryCell {
+    pub id: u32,
+}
+
+/// The current selected stack, not considered in the player's inventory
+#[derive(Component)]
+pub struct FloatingStack {
+    pub items: Option<Item>,
+}
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum UIMode {
     Opened,

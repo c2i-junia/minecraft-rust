@@ -1,6 +1,6 @@
 use bevy::{
     input::ButtonInput,
-    prelude::{KeyCode, ResMut},
+    prelude::KeyCode,
 };
 use lazy_static::lazy_static;
 use std::collections::HashMap;

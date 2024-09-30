@@ -93,7 +93,7 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
         .add_systems(
             UiUpdate,
-            (render_chat, inventory_update_system, set_ui_mode)
+            (render_chat, render_inventory_hotbar, set_ui_mode)
                 .chain()
                 .run_if(in_state(GameState::Game)),
         )
@@ -112,7 +112,6 @@ pub fn game_plugin(app: &mut App) {
                 exit_system,
                 toggle_wireframe_system,
                 set_mouse_visibility,
-                inventory_cell_interaction_system,
                 update_celestial_bodies,
                 render_distance_update_system,
             )

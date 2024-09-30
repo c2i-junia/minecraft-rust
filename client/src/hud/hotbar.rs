@@ -38,7 +38,7 @@ pub fn setup_hotbar(mut commands: Commands) {
                         focus_policy: FocusPolicy::Block,
                         style: Style {
                             width: Val::Px(50.),
-                            height: Val::Px(50.),
+                            height: Val::Px(150.),
                             margin: UiRect::ZERO,
                             padding: UiRect::all(Val::Percent(10.)),
                             border: UiRect::all(Val::Px(1.)),
