@@ -1,7 +1,7 @@
-use crate::network::api::{send_network_message, NetworkAction};
+use crate::network::api::{send_network_action, NetworkAction};
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
-use shared::messages::ChatConversation;
+use shared::messages::{ChatConversation, ChatMessage};
 
 #[derive(Resource, Default)]
 pub struct ChatConversationBuffer {
@@ -9,12 +9,10 @@ pub struct ChatConversationBuffer {
     pub buffer: Option<ChatConversation>,
 }
 
-pub fn send_chat_message(client: ResMut<RenetClient>, msg: String) {
-    send_network_message(client, NetworkAction::ChatMessage(msg));
+pub fn send_chat_message(client: &mut ResMut<RenetClient>, msg: &str) {
+    send_network_action(client, NetworkAction::ChatMessage(msg.into()));
 }
 
-pub fn get_chat_messages_from_buffer(
-    buffer: &Res<ChatConversationBuffer>,
-) -> Option<ChatConversation> {
-    None
+pub fn get_chat_messages_from_buffer(buffer: &Res<ChatConversationBuffer>) -> Vec<ChatMessage> {
+    vec![]
 }

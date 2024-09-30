@@ -23,7 +23,6 @@ pub fn inventory_update_system(
     mut visibility: Query<&mut Visibility, With<InventoryRoot>>,
     material_resource: Res<MaterialResource>,
 ) {
-    
     let mut vis = visibility.single_mut();
     let keys = get_action_keys(GameAction::ToggleInventory);
     for key in keys {

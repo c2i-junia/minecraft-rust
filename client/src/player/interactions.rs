@@ -83,7 +83,8 @@ pub fn handle_block_interactions(
             position = snap_to_grid(position);
 
             // Difference vector between player position and block center
-            let distance = position + (Vec3::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE) / 2.) - p_transform.single_mut().translation;
+            let distance = position + (Vec3::new(CUBE_SIZE, CUBE_SIZE, CUBE_SIZE) / 2.)
+                - p_transform.single_mut().translation;
 
             // Check if target space is close enough to the player
             if (intersection.position() - p_transform.single_mut().translation).norm()
