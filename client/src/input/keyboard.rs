@@ -83,6 +83,17 @@ pub fn is_action_just_pressed(action: GameAction, keyboard_input: &ButtonInput<K
     false
 }
 
+pub fn is_action_just_released(action: GameAction, keyboard_input: &ButtonInput<KeyCode>) -> bool {
+    if let Some(key_codes) = KEY_MAP.get(&action) {
+        for key_code in key_codes {
+            if keyboard_input.just_released(*key_code) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 pub fn get_action_keys(action: GameAction) -> Vec<KeyCode> {
     KEY_MAP.get(&action).unwrap().to_vec()
 }

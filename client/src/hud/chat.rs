@@ -1,3 +1,4 @@
+use crate::input::keyboard::is_action_just_released;
 use crate::network::{send_chat_message, CachedChatConversation};
 use crate::{keyboard::is_action_just_pressed, UiDialog};
 use bevy::prelude::*;
@@ -136,7 +137,7 @@ pub fn render_chat(
     let mut visibility = visibility_query.single_mut();
     let (parent, children) = parent_query.single();
 
-    if is_action_just_pressed(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
+    if is_action_just_released(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
         inactive.0 = false;
         *visibility = Visibility::Visible;
     }
