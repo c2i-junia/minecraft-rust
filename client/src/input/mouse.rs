@@ -1,4 +1,3 @@
-use crate::player::Player;
 use crate::UIMode;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, PrimaryWindow};
@@ -12,9 +11,8 @@ pub fn mouse_grab_system(mut windows: Query<&mut Window, With<PrimaryWindow>>) {
 
 pub fn set_mouse_visibility(
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
-    player: Query<&Player>,
+    ui_mode: Res<UIMode>
 ) {
     let mut window = windows.single_mut();
-    let player = player.single();
-    window.cursor.visible = player.ui_mode == UIMode::Opened;
+    window.cursor.visible = *ui_mode == UIMode::Opened;
 }

@@ -72,10 +72,10 @@ pub fn render_inventory_hotbar(
     for sc in scroll.read() {
         match sc.unit {
             MouseScrollUnit::Line => {
-                stack_scrolling += sc.y as i32;
+                stack_scrolling -= sc.y as i32;
             }
             MouseScrollUnit::Pixel => {
-                stack_scrolling += sc.y as i32 / 20;
+                stack_scrolling -= sc.y as i32 / 20;
             }
         }
     }
@@ -215,7 +215,7 @@ pub fn render_inventory_hotbar(
                 // Get removed nb of items removed from inventory -> adds them into the floating stack
                 add_item_floating_stack(
                     &mut floating_stack,
-                    remove_item_from_stack(&mut player, stack.id, cell.id, nb),
+                    remove_item_from_stack(&mut player, cell.id, nb),
                     stack.id,
                 );
             }

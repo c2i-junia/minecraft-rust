@@ -1,5 +1,6 @@
 use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
+use crate::hotbar::Hotbar;
 use crate::player::inventory::*;
 use crate::player::spawn::Player;
 use crate::world::WorldMap;
@@ -9,6 +10,8 @@ use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 
+use super::inventory;
+
 // Helper function to snap a Vec3 position to the grid
 fn snap_to_grid(position: Vec3) -> Vec3 {
     Vec3::new(position.x.round(), position.y.round(), position.z.round())
@@ -16,16 +19,21 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
-    mut player_query: Query<&mut Player>,
-    mut p_transform: Query<&mut Transform, With<Player>>,
-    mouse_input: Res<ButtonInput<MouseButton>>, // to handle mouse input
-    raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast from the camera
-    mut world_map: ResMut<WorldMap>,
+    queries: (
+        Query<&mut Player>,
+        Query<&mut Transform, With<Player>>,
+        Query<&RaycastSource<BlockRaycastSet>>,
+        Query<&Hotbar>,
+    ),
+    resources: (ResMut<WorldMap>, Res<ButtonInput<MouseButton>>, Res<UIMode>),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
+    let (mut player_query, mut p_transform, raycast_source, hotbar) = queries;
+    let (mut world_map, mouse_input, ui_mode) = resources;
+
     let player = player_query.single().clone();
 
-    if player.ui_mode == UIMode::Opened {
+    if *ui_mode == UIMode::Opened {
         return;
     }
 
@@ -52,6 +60,7 @@ pub fn handle_block_interactions(
                 if let Some(block) = block {
                     // add the block to the player's inventory
                     let item_type = items::item_from_block(block);
+
                     // If block has corresponding item, add it to inventory
                     if let Some(item_type) = item_type {
                         add_item_to_inventory(&mut player_query, item_type, 1);
@@ -92,20 +101,21 @@ pub fn handle_block_interactions(
                 // Guarantees a block cannot be placed too close to the player (which would be unable to move because of constant collision)
                 && (distance.x.abs() > (CUBE_SIZE + player.width) / 2. || distance.z.abs() > (CUBE_SIZE + player.width ) / 2. || distance.y.abs() > (CUBE_SIZE + player.height) / 2.)
             {
-                let item_type = items::ItemsType::Dirt;
-                // Check if the block is in the player's inventory
-                if has_item(&mut player_query, item_type) {
-                    // Remove the block from the player's inventory
-                    remove_item_from_inventory(&mut player_query, item_type, 1);
-                } else {
-                    return;
+                // Try to get item currently selected in player hotbar
+                if let Some(item) = player.inventory.get(&hotbar.single().selected) {
+
+                    inventory::remove_item_from_stack(&mut player_query.single_mut(), hotbar.single().selected, 1);
+
+                    // Check if the item has a block counterpart
+                    if let Some(block) = items::block_from_item(item.id) {
+                        let block_pos =
+                            IVec3::new(position.x as i32, position.y as i32, position.z as i32);
+
+                        world_map.set_block(&block_pos, block);
+
+                        ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
+                    }
                 }
-
-                let block_pos = IVec3::new(position.x as i32, position.y as i32, position.z as i32);
-
-                world_map.set_block(&block_pos, items::block_from_item(item_type).unwrap());
-
-                ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
             }
         }
     }

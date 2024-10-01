@@ -1,6 +1,4 @@
-use bevy::prelude::{Component, Query, Visibility, With};
-
-use crate::Player;
+use bevy::prelude::{Component, Query, ResMut, Resource, Visibility, With};
 
 /// All UI dialogs toggling mouse visibility MUST use this in their bundle list\
 /// They must also possess the `visibility` attribute\
@@ -29,21 +27,20 @@ pub struct FloatingStack {
     pub items: Option<Item>,
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Resource)]
 pub enum UIMode {
     Opened,
     Closed,
 }
 
-pub fn set_ui_mode(mut player: Query<&mut Player>, visibility: Query<&Visibility, With<UiDialog>>) {
-    let mut player = player.single_mut();
+pub fn set_ui_mode(mut ui_mode: ResMut<UIMode>, visibility: Query<&Visibility, With<UiDialog>>) {
     for vis in visibility.iter() {
         if vis == Visibility::Visible {
-            player.ui_mode = UIMode::Opened;
+            *ui_mode = UIMode::Opened;
             return;
         }
     }
-    player.ui_mode = UIMode::Closed;
+    *ui_mode = UIMode::Closed;
 }
 
 mod display;

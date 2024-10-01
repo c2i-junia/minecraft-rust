@@ -1,5 +1,4 @@
 use crate::items;
-use crate::UIMode;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -8,7 +7,6 @@ pub struct Player {
     pub vertical_velocity: f32,
     pub on_ground: bool,
     pub view_mode: ViewMode,
-    pub ui_mode: UIMode,
     pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
     pub inventory: HashMap<u32, items::Item>,
@@ -28,7 +26,6 @@ impl Player {
             vertical_velocity: 0.0,
             on_ground: true,
             view_mode: ViewMode::FirstPerson,
-            ui_mode: UIMode::Closed,
             is_chunk_debug_mode_enabled: true,
             is_flying: false,
             inventory: HashMap::new(), // No items in the inventory at the beginning

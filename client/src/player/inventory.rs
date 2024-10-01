@@ -120,7 +120,6 @@ pub fn add_item_to_stack(
 /// Returns number of items really removed from the stack
 pub fn remove_item_from_stack(
     player: &mut Player,
-    item_id: items::ItemsType,
     stack: u32,
     mut nb: u32,
 ) -> u32 {
@@ -134,7 +133,7 @@ pub fn remove_item_from_stack(
             player.inventory.insert(
                 stack,
                 Item {
-                    id: item_id,
+                    id: item.id,
                     nb: item.nb - nb,
                 },
             );

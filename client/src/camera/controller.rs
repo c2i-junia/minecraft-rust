@@ -15,11 +15,12 @@ pub fn camera_control_system(
     >,
     player_query: Query<&Transform, With<Player>>,
     mut player: Query<&mut Player>,
+    ui_mode: Res<UIMode>
 ) {
     let window = windows.single();
 
     // if the window is not focused, ignore camera movement
-    if !window.focused || player.single().ui_mode == UIMode::Opened {
+    if !window.focused || *ui_mode == UIMode::Opened {
         mouse_motion_events.clear();
     }
 

@@ -68,6 +68,7 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(MaterialResource { ..default() })
         .insert_resource(AtlasHandles { ..default() })
         .insert_resource(RenderDistance { ..default() })
+        .insert_resource(UIMode::Closed)
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_systems(
             OnEnter(GameState::Game),
