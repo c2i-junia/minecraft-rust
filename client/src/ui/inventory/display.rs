@@ -1,8 +1,8 @@
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_ITEM_STACK};
-use crate::ui::hotbar::Hotbar;
 use crate::input::keyboard::{get_action_keys, GameAction};
 use crate::inventory::{add_item_to_stack, remove_item_from_stack};
 use crate::player::Player;
+use crate::ui::hotbar::Hotbar;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
 use crate::world::MaterialResource;
 use bevy::color::Color;
@@ -10,8 +10,8 @@ use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, Style, Text, UiImage, Val, Visibility,
-    Window, With,
+    EventReader, KeyCode, MouseButton, Query, Res, Style, Text, UiImage, Val, Visibility, Window,
+    With,
 };
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use bevy::ui::{BorderColor, Interaction};
@@ -223,5 +223,4 @@ pub fn render_inventory_hotbar(
             border_color.0 = Color::WHITE;
         }
     }
-
 }

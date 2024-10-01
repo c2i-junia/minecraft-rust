@@ -65,7 +65,7 @@ pub fn world_render_system(
     mut queued_events: Local<QueuedEvents>,
 ) {
     for event in ev_render.read() {
-        queued_events.events.insert(event.clone());
+        queued_events.events.insert(*event);
     }
 
     if material_resource.atlas_texture.is_none() {

@@ -1,8 +1,8 @@
+use crate::ui::chat::{render_chat, setup_chat};
 use bevy::app::MainScheduleOrder;
 use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
-use crate::ui::chat::{render_chat, setup_chat};
 
 use crate::ui::debug::BlockDebugWireframeSettings;
 use crate::ui::pause::{render_pause_menu, setup_pause_menu};
@@ -11,13 +11,13 @@ use bevy::color::palettes::basic::WHITE;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 
-use crate::ui::debug::targeted_block::block_text_update_system;
 use crate::lighting::setup_main_lighting;
+use crate::ui::debug::targeted_block::block_text_update_system;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
+use crate::lighting::*;
 use crate::ui::debug::*;
 use crate::ui::hotbar::*;
-use crate::lighting::*;
 use crate::ui::set_ui_mode;
 use crate::world::*;
 

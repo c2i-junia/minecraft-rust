@@ -144,12 +144,12 @@ pub fn render_chat(
         *visibility = Visibility::Visible;
     }
 
-    if *visibility == Visibility::Visible {
-        if is_action_just_pressed(crate::keyboard::GameAction::Escape, &keyboard_input) {
-            *visibility = Visibility::Hidden;
-            *value = TextInputValue("".to_string());
-            *inactive = TextInputInactive(true);
-        }
+    if *visibility == Visibility::Visible
+        && is_action_just_pressed(crate::keyboard::GameAction::Escape, &keyboard_input)
+    {
+        *visibility = Visibility::Hidden;
+        *value = TextInputValue("".to_string());
+        *inactive = TextInputInactive(true);
     }
 
     let current_ts = std::time::SystemTime::now()

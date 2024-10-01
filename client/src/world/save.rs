@@ -17,13 +17,13 @@ pub fn save_world_system(
     // Vérifie si l'action `GameAction::SaveWorld` est pressée (associe cela à la touche `L`)
     if is_action_pressed(GameAction::SaveWorld, &keyboard_input) {
         // Sauvegarde le monde et la graine dans leurs fichiers respectifs
-        if let Err(e) = save_world_map(&*world_map, "world_save.ron") {
+        if let Err(e) = save_world_map(&world_map, "world_save.ron") {
             eprintln!("Failed to save world: {}", e);
         } else {
             println!("World saved successfully!");
         }
 
-        if let Err(e) = save_world_seed(&*world_seed, "world_seed.ron") {
+        if let Err(e) = save_world_seed(&world_seed, "world_seed.ron") {
             eprintln!("Failed to save world seed: {}", e);
         } else {
             println!("World seed saved successfully!");
@@ -42,7 +42,7 @@ pub fn save_world_map(
         .with_enumerate_arrays(true);
     let serialized = ron::ser::to_string_pretty(world_map, pretty_config)?; // Sérialise avec un format lisible
     let path = Path::new(file_path);
-    let mut file = File::create(&path)?;
+    let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
     println!("WorldMap saved to {}", file_path);
     Ok(())
@@ -58,7 +58,7 @@ pub fn save_world_seed(
         .with_enumerate_arrays(true);
     let serialized = ron::ser::to_string_pretty(world_seed, pretty_config)?; // Sérialise avec un format lisible
     let path = Path::new(file_path);
-    let mut file = File::create(&path)?;
+    let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
     println!("WorldSeed saved to {}", file_path);
     Ok(())

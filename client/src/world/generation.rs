@@ -62,7 +62,7 @@ fn generate_chunk(
 
     world_map.total_chunks_count += 1;
     for y in 0..=3 {
-        let mut pos = chunk_pos.clone();
+        let mut pos = chunk_pos;
         pos.y = y;
         ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(pos));
     }

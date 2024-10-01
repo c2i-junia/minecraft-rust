@@ -63,7 +63,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 0, 3, 2, 2, 1, 0,
-        local_indices.extend(vec![0, 3, 2, 2, 1, 0].iter().map(|x| x + *indices_offset));
+        local_indices.extend([0, 3, 2, 2, 1, 0].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
@@ -98,7 +98,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 4, 5, 6, 6, 7, 4,
-        local_indices.extend(vec![0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
+        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
@@ -133,7 +133,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 11, 8, 9, 9, 10, 11,
-        local_indices.extend(vec![3, 0, 1, 1, 2, 3].iter().map(|x| x + *indices_offset));
+        local_indices.extend([3, 0, 1, 1, 2, 3].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
@@ -168,7 +168,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 12, 13, 14, 14, 15, 12
-        local_indices.extend(vec![0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
+        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
@@ -203,7 +203,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 16, 17, 18, 18, 19, 16,
-        local_indices.extend(vec![0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
+        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
@@ -238,7 +238,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
         ]);
 
         // 20, 21, 22, 22, 23, 20,
-        local_indices.extend(vec![0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
+        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
         *indices_offset += 4;
 
         local_normals.extend(vec![
