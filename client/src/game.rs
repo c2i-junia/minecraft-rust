@@ -94,7 +94,12 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
         .add_systems(
             UiUpdate,
-            (render_pause_menu, render_chat, render_inventory_hotbar, set_ui_mode)
+            (
+                render_pause_menu,
+                render_chat,
+                render_inventory_hotbar,
+                set_ui_mode,
+            )
                 .chain()
                 .run_if(in_state(GameState::Game)),
         )

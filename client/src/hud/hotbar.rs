@@ -1,6 +1,9 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
-use crate::{constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS}, InventoryCell};
+use crate::{
+    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS},
+    InventoryCell,
+};
 
 #[derive(Component)]
 pub struct Hotbar {
@@ -65,7 +68,9 @@ pub fn setup_hotbar(mut commands: Commands) {
                     btn.spawn(ImageBundle {
                         z_index: ZIndex::Local(-1),
                         style: Style {
-                            width: Val::Px(HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER)),
+                            width: Val::Px(
+                                HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER),
+                            ),
                             position_type: PositionType::Relative,
                             ..Default::default()
                         },

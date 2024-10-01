@@ -1,8 +1,5 @@
 use crate::network::{send_chat_message, CachedChatConversation};
-use crate::{
-    keyboard::is_action_just_pressed,
-    UiDialog,
-};
+use crate::{keyboard::is_action_just_pressed, UiDialog};
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use bevy_simple_text_input::*;

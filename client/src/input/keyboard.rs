@@ -1,7 +1,4 @@
-use bevy::{
-    input::ButtonInput,
-    prelude::KeyCode,
-};
+use bevy::{input::ButtonInput, prelude::KeyCode};
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 

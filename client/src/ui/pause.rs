@@ -1,9 +1,18 @@
 use bevy::{
-    app::AppExit, asset::AssetServer, color::{Alpha, Color}, core::Name, input::ButtonInput, prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NodeBundle, Query, Res, ResMut, StateScoped, TextBundle, Visibility, With
-    }, text::{Text, TextStyle}, ui::{
-        AlignItems, BackgroundColor, BorderColor, Display, FlexDirection, FocusPolicy, Interaction, JustifyContent, Style, UiRect, Val, ZIndex
-    }
+    app::AppExit,
+    asset::AssetServer,
+    color::{Alpha, Color},
+    core::Name,
+    input::ButtonInput,
+    prelude::{
+        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NodeBundle, Query,
+        Res, ResMut, StateScoped, TextBundle, Visibility, With,
+    },
+    text::{Text, TextStyle},
+    ui::{
+        AlignItems, BackgroundColor, BorderColor, Display, FlexDirection, FocusPolicy, Interaction,
+        JustifyContent, Style, UiRect, Val, ZIndex,
+    },
 };
 
 use crate::{keyboard::is_action_just_pressed, GameState};
@@ -56,7 +65,6 @@ pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
                 ..Default::default()
             })
             .with_children(|wrapper| {
-
                 for (msg, action) in [
                     ("Resume", PauseButtonAction::Resume),
                     ("Quit", PauseButtonAction::Quit),
@@ -81,11 +89,14 @@ pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
                         ))
                         .with_children(|btn| {
                             btn.spawn(TextBundle {
-                                text: Text::from_section(msg, TextStyle {
-                                    font: assets.load("fonts/gohu.ttf"),
-                                    font_size: 20.,
-                                    color: Color::WHITE,
-                                }),
+                                text: Text::from_section(
+                                    msg,
+                                    TextStyle {
+                                        font: assets.load("fonts/gohu.ttf"),
+                                        font_size: 20.,
+                                        color: Color::WHITE,
+                                    },
+                                ),
                                 ..Default::default()
                             });
                         });
