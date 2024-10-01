@@ -1,7 +1,6 @@
 mod camera;
 mod constants;
 mod game;
-mod hud;
 mod input;
 mod lighting;
 mod menu;
@@ -16,7 +15,6 @@ use bevy::render::render_resource::WgpuFeatures;
 use bevy::render::settings::{RenderCreation, WgpuSettings};
 use bevy::render::RenderPlugin;
 use camera::*;
-use hud::*;
 use input::*;
 use player::*;
 use ui::inventory::*;

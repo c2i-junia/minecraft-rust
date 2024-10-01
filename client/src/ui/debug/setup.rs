@@ -1,6 +1,6 @@
-use crate::hud::debug::loaded_stats::{BlocksNumberText, ChunksNumberText};
-use crate::hud::debug::targeted_block::BlockText;
-use crate::hud::debug::{CoordsText, FpsText};
+use super::loaded_stats::{BlocksNumberText, ChunksNumberText};
+use super::targeted_block::BlockText;
+use super::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
 use bevy::prelude::*;
 

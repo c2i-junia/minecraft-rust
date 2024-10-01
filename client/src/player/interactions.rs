@@ -1,6 +1,6 @@
 use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
-use crate::hotbar::Hotbar;
+use crate::ui::hotbar::Hotbar;
 use crate::player::inventory::*;
 use crate::player::spawn::Player;
 use crate::world::WorldMap;

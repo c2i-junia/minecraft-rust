@@ -2,26 +2,26 @@ use bevy::app::MainScheduleOrder;
 use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
-use chat::{render_chat, setup_chat};
+use crate::ui::chat::{render_chat, setup_chat};
 
-use crate::debug::BlockDebugWireframeSettings;
+use crate::ui::debug::BlockDebugWireframeSettings;
 use crate::ui::pause::{render_pause_menu, setup_pause_menu};
+use crate::ui::reticle::spawn_reticle;
 use bevy::color::palettes::basic::WHITE;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 
-use crate::hud::debug::targeted_block::block_text_update_system;
+use crate::ui::debug::targeted_block::block_text_update_system;
 use crate::lighting::setup_main_lighting;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
-use crate::hud::debug::*;
-use crate::hud::hotbar::*;
+use crate::ui::debug::*;
+use crate::ui::hotbar::*;
 use crate::lighting::*;
 use crate::ui::set_ui_mode;
 use crate::world::*;
 
 use crate::camera::*;
-use crate::hud::*;
 use crate::input::*;
 use crate::player::*;
 use crate::ui::inventory::*;

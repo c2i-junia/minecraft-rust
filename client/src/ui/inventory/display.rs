@@ -1,5 +1,5 @@
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_ITEM_STACK};
-use crate::hotbar::Hotbar;
+use crate::ui::hotbar::Hotbar;
 use crate::input::keyboard::{get_action_keys, GameAction};
 use crate::inventory::{add_item_to_stack, remove_item_from_stack};
 use crate::player::Player;
