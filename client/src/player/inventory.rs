@@ -51,48 +51,6 @@ pub fn add_item_to_inventory(
     // Problem : if inventory full, items disappear
 }
 
-// Retire un item de l'inventaire du joueur
-pub fn remove_item_from_inventory(
-    player: &mut Query<&mut Player>,
-    item_id: items::ItemsType,
-    mut nb: u32,
-) {
-    let mut player = player.single_mut();
-    for i in 0..MAX_INVENTORY_SLOTS {
-        let item_option = player.inventory.get(&i);
-
-        if item_option.is_none() {
-            continue;
-        }
-
-        let existing_stack = *item_option.expect("Error : empty item");
-
-        if existing_stack.id != item_id {
-            continue;
-        }
-
-        if existing_stack.nb - nb == 0 {
-            player.inventory.remove(&i);
-            nb -= existing_stack.nb;
-        } else {
-            // Push inserted items in right inventory slot
-            player.inventory.insert(
-                i,
-                items::Item {
-                    id: item_id,
-                    nb: existing_stack.nb - nb,
-                },
-            );
-            nb = 0;
-        }
-
-        // If no more items to remove, end loop
-        if nb == 0 {
-            break;
-        }
-    }
-}
-
 /// Add items to stack at specified position\
 /// Stacks cannot exceed MAX_ITEM_STACK number of items\
 /// Returns number of items really added to the stack
@@ -149,13 +107,12 @@ pub fn remove_item_from_stack(player: &mut Player, stack: u32, mut nb: u32) -> u
 //     return 0;
 // }
 
-// Retourne true si le joueur possède l'item
-pub fn has_item(player: &mut Query<&mut Player>, item_id: items::ItemsType) -> bool {
-    let player = player.single_mut();
+/// Renvoie l'emplacement d'un stack de l'item donné dans l'inventaire, ou None s'il n'existe pas
+pub fn find_item_in_inventory(player: &Player, item_id: items::ItemsType) -> Option<Item> {
     for item in player.inventory.values() {
         if item.id == item_id {
-            return true;
+            return Some(*item);
         }
     }
-    false
+    None
 }
