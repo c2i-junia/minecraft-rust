@@ -103,8 +103,11 @@ pub fn handle_block_interactions(
             {
                 // Try to get item currently selected in player hotbar
                 if let Some(item) = player.inventory.get(&hotbar.single().selected) {
-
-                    inventory::remove_item_from_stack(&mut player_query.single_mut(), hotbar.single().selected, 1);
+                    inventory::remove_item_from_stack(
+                        &mut player_query.single_mut(),
+                        hotbar.single().selected,
+                        1,
+                    );
 
                     // Check if the item has a block counterpart
                     if let Some(block) = items::block_from_item(item.id) {

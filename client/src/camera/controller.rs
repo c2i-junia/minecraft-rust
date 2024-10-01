@@ -15,7 +15,7 @@ pub fn camera_control_system(
     >,
     player_query: Query<&Transform, With<Player>>,
     mut player: Query<&mut Player>,
-    ui_mode: Res<UIMode>
+    ui_mode: Res<UIMode>,
 ) {
     let window = windows.single();
 

@@ -118,11 +118,7 @@ pub fn add_item_to_stack(
 /// Removes items from stack at specified position\
 /// Stacks cannot have < 0 number of items\
 /// Returns number of items really removed from the stack
-pub fn remove_item_from_stack(
-    player: &mut Player,
-    stack: u32,
-    mut nb: u32,
-) -> u32 {
+pub fn remove_item_from_stack(player: &mut Player, stack: u32, mut nb: u32) -> u32 {
     let item_option = player.inventory.get(&stack);
 
     if let Some(&item) = item_option {
