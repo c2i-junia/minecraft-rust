@@ -1,6 +1,4 @@
 use crate::ui::chat::{render_chat, setup_chat};
-use bevy::app::MainScheduleOrder;
-use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
 
@@ -34,18 +32,9 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
     println!("Current Volume: {:?}", *volume);
 }
 
-#[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
-struct UiUpdate;
-
 // This plugin will contain the game. In this case, it's just be a screen that will
 // display the current settings for 5 seconds before returning to the menu
 pub fn game_plugin(app: &mut App) {
-    // Adds the `UiUpdate` schedule, to run before the Update
-    app.init_schedule(UiUpdate);
-
-    app.world_mut()
-        .resource_mut::<MainScheduleOrder>()
-        .insert_after(StateTransition, UiUpdate);
 
     app.add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
@@ -92,18 +81,18 @@ pub fn game_plugin(app: &mut App) {
             OnEnter(GameState::Game),
             (setup_hotbar, setup_inventory).chain(),
         )
-        .add_systems(OnEnter(GameState::Game), print_settings)
-        .add_systems(OnEnter(GameState::Game), mouse_grab_system)
-        .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
         .add_systems(
-            UiUpdate,
+            OnEnter(GameState::Game),
+            (print_settings, mouse_grab_system, setup_chunk_ghost),
+        )
+        .add_systems(
+            Update,
             (
                 render_pause_menu,
                 render_chat,
                 render_inventory_hotbar,
                 set_ui_mode,
             )
-                .chain()
                 .run_if(in_state(GameState::Game)),
         )
         .add_systems(
