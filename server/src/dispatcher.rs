@@ -1,5 +1,5 @@
 use crate::chat;
-use crate::chat::setup_chat_resources;
+use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use bevy::prelude::*;
 use bevy_renet::renet::{RenetServer, ServerEvent};
 use bincode::Options;
@@ -11,7 +11,7 @@ pub struct BroadcastTimer {
     pub timer: Timer,
 }
 
-pub fn setup_resources(app: &mut App) {
+pub fn setup_resources_and_events(app: &mut App) {
     app.insert_resource(BroadcastTimer {
         timer: Timer::from_seconds(2.0, TimerMode::Repeating),
     });
@@ -29,6 +29,7 @@ fn server_update_system(
     mut server_events: EventReader<ServerEvent>,
     mut server: ResMut<RenetServer>,
     mut chat_conversation: ResMut<ChatConversation>,
+    mut ev_chat: EventWriter<ChatMessageEvent>,
 ) {
     for event in server_events.read() {
         println!("event received");
@@ -56,6 +57,7 @@ fn server_update_system(
             };
             println!("Chat message received: {:?}", &parsed_message);
             chat_conversation.messages.push(parsed_message);
+            ev_chat.send(ChatMessageEvent);
         }
     }
 }

@@ -61,7 +61,7 @@ fn main() {
 
     add_netcode_network(&mut app);
 
-    dispatcher::setup_resources(&mut app);
+    dispatcher::setup_resources_and_events(&mut app);
 
     dispatcher::register_systems(&mut app);
 
