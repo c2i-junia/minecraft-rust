@@ -1,6 +1,7 @@
 use bevy::app::MainScheduleOrder;
 use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
+use bevy_atmosphere::prelude::*;
 use chat::{render_chat, setup_chat};
 
 use crate::debug::BlockDebugWireframeSettings;
@@ -50,6 +51,7 @@ pub fn game_plugin(app: &mut App) {
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
         .add_plugins(WireframePlugin)
         .add_plugins(bevy_simple_text_input::TextInputPlugin)
+        .add_plugins(AtmospherePlugin)
         .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 400.0,
