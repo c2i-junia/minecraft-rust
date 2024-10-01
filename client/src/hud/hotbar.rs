@@ -7,7 +7,7 @@ use crate::{
 
 #[derive(Component)]
 pub struct Hotbar {
-    selected: u32,
+    pub selected: u32,
 }
 
 pub fn setup_hotbar(mut commands: Commands) {
