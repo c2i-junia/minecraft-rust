@@ -1,14 +1,12 @@
 pub mod messages;
 
-use std::time::Duration;
-
 use bevy::prelude::*;
-use bevy_renet::renet::{ChannelConfig, ClientId, ConnectionConfig, SendType};
+use bevy_renet::renet::{ClientId, ConnectionConfig};
 use serde::{Deserialize, Serialize};
 
 pub const PRIVATE_KEY: &[u8; bevy_renet::renet::transport::NETCODE_KEY_BYTES] =
     b"an example very very secret key."; // 32-bytes
-pub const PROTOCOL_ID: u64 = 7;
+pub const PROTOCOL_ID: u64 = 0;
 
 #[derive(Debug, Component)]
 pub struct Player {
@@ -27,12 +25,6 @@ pub struct PlayerInput {
 pub enum PlayerCommand {
     BasicAttack { cast_at: Vec3 },
 }
-pub enum ClientChannel {
-    ChatMessage,
-}
-pub enum ServerChannel {
-    ServerMessage,
-}
 
 #[derive(Debug, Default, Component)]
 pub struct Velocity(pub Vec3);
@@ -42,50 +34,10 @@ pub enum ServerMessages {
     ChatMessage { message: String },
 }
 
-impl From<ClientChannel> for u8 {
-    fn from(channel_id: ClientChannel) -> Self {
-        match channel_id {
-            ClientChannel::ChatMessage => 0,
-        }
-    }
-}
-
-impl ClientChannel {
-    pub fn channels_config() -> Vec<ChannelConfig> {
-        vec![ChannelConfig {
-            channel_id: Self::ChatMessage.into(),
-            max_memory_usage_bytes: 5 * 1024 * 1024,
-            send_type: SendType::ReliableOrdered {
-                resend_time: Duration::ZERO,
-            },
-        }]
-    }
-}
-
-impl From<ServerChannel> for u8 {
-    fn from(channel_id: ServerChannel) -> Self {
-        match channel_id {
-            ServerChannel::ServerMessage => 0,
-        }
-    }
-}
-
-impl ServerChannel {
-    pub fn channels_config() -> Vec<ChannelConfig> {
-        vec![ChannelConfig {
-            channel_id: Self::ServerMessage.into(),
-            max_memory_usage_bytes: 10 * 1024 * 1024,
-            send_type: SendType::ReliableOrdered {
-                resend_time: Duration::from_millis(200),
-            },
-        }]
-    }
-}
-
 pub fn connection_config() -> ConnectionConfig {
     ConnectionConfig {
         available_bytes_per_tick: 1024 * 1024,
-        client_channels_config: ClientChannel::channels_config(),
-        server_channels_config: ServerChannel::channels_config(),
+        server_channels_config: default(),
+        client_channels_config: default(),
     }
 }

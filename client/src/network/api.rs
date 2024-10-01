@@ -1,5 +1,5 @@
 use bevy::prelude::ResMut;
-use bevy_renet::renet::RenetClient;
+use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
 use shared::messages::ChatMessage;
 
@@ -22,7 +22,7 @@ pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkActi
                 })
                 .unwrap();
 
-            client.send_message(shared::ClientChannel::ChatMessage, input_message);
+            client.send_message(DefaultChannel::ReliableOrdered, input_message);
         }
     }
 }

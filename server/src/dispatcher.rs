@@ -1,10 +1,9 @@
 use crate::chat;
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use bevy::prelude::*;
-use bevy_renet::renet::{RenetServer, ServerEvent};
+use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
 use shared::messages::{ChatConversation, ChatMessage};
-use shared::ClientChannel;
 
 #[derive(Resource)]
 pub struct BroadcastTimer {
@@ -44,7 +43,8 @@ fn server_update_system(
     }
 
     for client_id in server.clients_id() {
-        while let Some(message) = server.receive_message(client_id, ClientChannel::ChatMessage) {
+        while let Some(message) = server.receive_message(client_id, DefaultChannel::ReliableOrdered)
+        {
             let parsed_message = match bincode::options().deserialize::<ChatMessage>(&message) {
                 Ok(data) => data,
                 Err(e) => {

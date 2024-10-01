@@ -25,7 +25,7 @@ pub struct ServerLobby {
 fn add_netcode_network(app: &mut App) {
     app.add_plugins(NetcodeServerPlugin);
 
-    let server = RenetServer::new(shared::connection_config());
+    let server = RenetServer::new(default());
 
     let public_addr = "127.0.0.1:5000".parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();

@@ -1,9 +1,8 @@
 use crate::dispatcher::BroadcastTimer;
 use bevy::prelude::*;
-use bevy_renet::renet::RenetServer;
+use bevy_renet::renet::{DefaultChannel, RenetServer};
 use bincode::Options;
 use shared::messages::ChatConversation;
-use shared::ServerChannel;
 
 #[derive(Event)]
 pub struct ChatMessageEvent;
@@ -30,7 +29,7 @@ pub fn broadcast_chat_messages(
         let serialized = bincode::options().serialize(&cm).unwrap();
         println!("data {:?}", cm);
         println!("serialized: {:?}", serialized);
-        server.broadcast_message(ServerChannel::ServerMessage, serialized);
+        server.broadcast_message(DefaultChannel::ReliableOrdered, serialized);
         ev_chat.clear();
         timer.timer.reset();
     }

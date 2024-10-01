@@ -5,6 +5,7 @@ use crate::network::{update_cached_chat_state, CachedChatConversation};
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
 };
+use bevy_renet::renet::DefaultChannel;
 use bevy_renet::transport::NetcodeClientPlugin;
 use bincode::Options;
 use shared::messages::ChatConversation;
@@ -13,7 +14,7 @@ use std::{net::UdpSocket, time::SystemTime};
 pub fn add_netcode_network(app: &mut App) {
     app.add_plugins(RenetClientPlugin);
 
-    let client = RenetClient::new(shared::connection_config());
+    let client = RenetClient::new(default());
     app.insert_resource(client);
 
     // Setup the transport layer
@@ -52,7 +53,7 @@ pub fn poll_network_messages(
     mut client: ResMut<RenetClient>,
     mut chat_state: ResMut<CachedChatConversation>,
 ) {
-    while let Some(message) = client.receive_message(shared::ServerChannel::ServerMessage) {
+    while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         let message = bincode::options().deserialize::<ChatConversation>(&message);
         match message {
             Ok(data) => {
