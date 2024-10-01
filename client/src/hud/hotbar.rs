@@ -18,7 +18,6 @@ pub fn setup_hotbar(mut commands: Commands) {
                     flex_direction: FlexDirection::Row,
                     position_type: PositionType::Absolute,
                     bottom: Val::Px(70.),
-                    // left: Val::Percent(50.),
                     width: Val::Auto,
                     padding: UiRect::ZERO,
                     border: UiRect::ZERO,

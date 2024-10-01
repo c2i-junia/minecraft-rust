@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use chat::{render_chat, setup_chat};
 
 use crate::debug::BlockDebugWireframeSettings;
+use crate::ui::pause::{render_pause_menu, setup_pause_menu};
 use bevy::color::palettes::basic::WHITE;
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
@@ -12,7 +13,6 @@ use crate::hud::debug::targeted_block::block_text_update_system;
 use crate::lighting::setup_main_lighting;
 use bevy_mod_raycast::deferred::DeferredRaycastingPlugin;
 
-use crate::exit::*;
 use crate::hud::debug::*;
 use crate::hud::hotbar::*;
 use crate::lighting::*;
@@ -81,6 +81,7 @@ pub fn game_plugin(app: &mut App) {
                 spawn_reticle,
                 setup_hud,
                 setup_chat,
+                setup_pause_menu,
             )
                 .chain(),
         )
@@ -93,7 +94,7 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(OnEnter(GameState::Game), setup_chunk_ghost)
         .add_systems(
             UiUpdate,
-            (render_chat, render_inventory_hotbar, set_ui_mode)
+            (render_pause_menu, render_chat, render_inventory_hotbar, set_ui_mode)
                 .chain()
                 .run_if(in_state(GameState::Game)),
         )
@@ -109,7 +110,6 @@ pub fn game_plugin(app: &mut App) {
                 block_text_update_system,
                 toggle_hud_system,
                 chunk_ghost_update_system,
-                exit_system,
                 toggle_wireframe_system,
                 set_mouse_visibility,
                 update_celestial_bodies,
