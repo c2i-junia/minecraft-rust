@@ -6,7 +6,7 @@ use bevy::{
     input::ButtonInput,
     prelude::{
         BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NodeBundle, Query,
-        Res, ResMut, StateScoped, TextBundle, Visibility, With,
+        Res, StateScoped, TextBundle, Visibility, With,
     },
     text::{Text, TextStyle},
     ui::{
@@ -110,7 +110,7 @@ pub fn render_pause_menu(
         Query<(&PauseButtonAction, &mut BorderColor, &Interaction)>,
         Query<&mut Visibility, With<PauseMenu>>,
     ),
-    mut input: ResMut<ButtonInput<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     mut exit: EventWriter<AppExit>,
 ) {
     let (mut button, mut visibility) = queries;
@@ -145,6 +145,4 @@ pub fn render_pause_menu(
             }
         }
     }
-
-    input.reset_all();
 }

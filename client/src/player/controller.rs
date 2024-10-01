@@ -3,7 +3,7 @@ use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
-use crate::RenderDistance;
+use crate::{RenderDistance, UIMode};
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
@@ -58,30 +58,41 @@ fn check_player_collision(player_position: Vec3, player: &Player, world_map: &Wo
 
 // System to move the player based on keyboard input
 pub fn player_movement_system(
-    time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
-    camera_query: Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    mut world_map: ResMut<WorldMap>,
-    world_seed: Res<WorldSeed>,
+    queries: (
+        Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
+        Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
+    ),
+    resources: (
+        Res<Time>,
+        Res<ButtonInput<KeyCode>>,
+        Res<WorldSeed>,
+        Res<RenderDistance>,
+        Res<UIMode>,
+        ResMut<Assets<StandardMaterial>>,
+        ResMut<WorldMap>,
+    ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
-    render_distance: Res<RenderDistance>,
 ) {
+    let (mut player_query, camera_query) = queries;
+    let (time, keyboard_input, world_seed, render_distance, ui_mode, mut materials, mut world_map) =
+        resources;
+
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
 
-    if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
-        player.toggle_view_mode();
-    }
+    if *ui_mode == UIMode::Closed {
+        if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
+            player.toggle_view_mode();
+        }
 
-    if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
-        player.toggle_chunk_debug_mode();
-    }
+        if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
+            player.toggle_chunk_debug_mode();
+        }
 
-    // fly mode (f key)
-    if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input) {
-        player.toggle_fly_mode();
+        // fly mode (f key)
+        if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input) {
+            player.toggle_fly_mode();
+        }
     }
 
     load_chunk_around_player(
@@ -112,7 +123,7 @@ pub fn player_movement_system(
     let jump_velocity = 10.0;
 
     // flying mode
-    if player.is_flying {
+    if player.is_flying && *ui_mode == UIMode::Closed {
         if is_action_pressed(GameAction::FlyUp, &keyboard_input) {
             player_transform.translation.y += speed * 2.0 * time.delta_seconds();
         }
@@ -130,18 +141,20 @@ pub fn player_movement_system(
 
     let mut direction = Vec3::ZERO;
 
-    // Adjust direction based on key presses
-    if is_action_pressed(GameAction::MoveBackward, &keyboard_input) {
-        direction -= forward;
-    }
-    if is_action_pressed(GameAction::MoveForward, &keyboard_input) {
-        direction += forward;
-    }
-    if is_action_pressed(GameAction::MoveLeft, &keyboard_input) {
-        direction -= right;
-    }
-    if is_action_pressed(GameAction::MoveRight, &keyboard_input) {
-        direction += right;
+    if *ui_mode == UIMode::Closed {
+        // Adjust direction based on key presses
+        if is_action_pressed(GameAction::MoveBackward, &keyboard_input) {
+            direction -= forward;
+        }
+        if is_action_pressed(GameAction::MoveForward, &keyboard_input) {
+            direction += forward;
+        }
+        if is_action_pressed(GameAction::MoveLeft, &keyboard_input) {
+            direction -= right;
+        }
+        if is_action_pressed(GameAction::MoveRight, &keyboard_input) {
+            direction += right;
+        }
     }
 
     // Move the player (xy plane only), only if there are no blocks and UI is closed

@@ -10,7 +10,7 @@ use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, UiImage, Val, Visibility,
+    EventReader, KeyCode, MouseButton, Query, Res, Style, Text, UiImage, Val, Visibility,
     Window, With,
 };
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
@@ -31,7 +31,7 @@ pub fn render_inventory_hotbar(
         Query<&mut Hotbar>,
     ),
     resources: (
-        ResMut<ButtonInput<KeyCode>>,
+        Res<ButtonInput<KeyCode>>,
         Res<ButtonInput<MouseButton>>,
         Res<MaterialResource>,
     ),
@@ -48,7 +48,7 @@ pub fn render_inventory_hotbar(
         mut hotbar_query,
     ) = queries;
 
-    let (mut keyboard_input, mouse_input, material_resource) = resources;
+    let (keyboard_input, mouse_input, material_resource) = resources;
 
     let mut vis = visibility_query.single_mut();
     let keys = get_action_keys(GameAction::ToggleInventory);
@@ -224,5 +224,4 @@ pub fn render_inventory_hotbar(
         }
     }
 
-    keyboard_input.reset_all();
 }

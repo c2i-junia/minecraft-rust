@@ -97,12 +97,13 @@ pub fn remove_item_from_stack(player: &mut Player, stack: u32, mut nb: u32) -> u
     0
 }
 
-/// Renvoie l'emplacement d'un stack de l'item donné dans l'inventaire, ou None s'il n'existe pas
-pub fn find_item_in_inventory(player: &Player, item_id: items::ItemsType) -> Option<Item> {
-    for item in player.inventory.values() {
-        if item.id == item_id {
-            return Some(*item);
-        }
-    }
-    None
-}
+// ! ------- UNUSED CODE ------------
+// Renvoie l'emplacement d'un stack de l'item donné dans l'inventaire, ou None s'il n'existe pas
+// pub fn find_item_in_inventory(player: &Player, item_id: items::ItemsType) -> Option<Item> {
+//     for item in player.inventory.values() {
+//         if item.id == item_id {
+//             return Some(*item);
+//         }
+//     }
+//     None
+// }

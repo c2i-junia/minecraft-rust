@@ -62,6 +62,8 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                     style: Style {
                         display: Display::Flex,
                         flex_direction: FlexDirection::Column,
+                        justify_content: JustifyContent::End,
+                        column_gap: Val::Px(0.),
                         overflow: Overflow {
                             x: OverflowAxis::Visible,
                             y: OverflowAxis::Hidden,
@@ -109,7 +111,7 @@ pub fn render_chat(
         Res<CachedChatConversation>,
         Res<AssetServer>,
         ResMut<RenetClient>,
-        ResMut<ButtonInput<KeyCode>>,
+        Res<ButtonInput<KeyCode>>,
     ),
     queries: (
         Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
@@ -130,7 +132,7 @@ pub fn render_chat(
     mut event: EventReader<TextInputSubmitEvent>,
     mut commands: Commands,
 ) {
-    let (cached_conv, asset_server, mut client, mut keyboard_input) = resources;
+    let (cached_conv, asset_server, mut client, keyboard_input) = resources;
     let (mut text_query, mut visibility_query, parent_query, mut animation_query) = queries;
 
     let (entity_check, mut inactive, mut value) = text_query.single_mut();
@@ -148,7 +150,6 @@ pub fn render_chat(
             *value = TextInputValue("".to_string());
             *inactive = TextInputInactive(true);
         }
-        keyboard_input.reset_all();
     }
 
     let current_ts = std::time::SystemTime::now()
