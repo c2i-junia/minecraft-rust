@@ -15,7 +15,7 @@ use bevy::{
     },
 };
 
-use crate::{keyboard::is_action_just_pressed, GameState};
+use crate::{input::keyboard::is_action_just_pressed, GameState};
 
 use super::UiDialog;
 
@@ -116,7 +116,7 @@ pub fn render_pause_menu(
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
 
-    if is_action_just_pressed(crate::keyboard::GameAction::Escape, &input) {
+    if is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &input) {
         *vis = match *vis {
             Visibility::Visible | Visibility::Inherited => Visibility::Hidden,
             Visibility::Hidden => Visibility::Visible,

@@ -1,4 +1,4 @@
-use crate::items;
+use crate::ui::items;
 use bevy::prelude::*;
 use std::collections::HashMap;
 

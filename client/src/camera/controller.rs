@@ -1,9 +1,11 @@
 use crate::camera::CameraController;
 use crate::ui::UIMode;
-use crate::{player, Player};
-use bevy::input::mouse::MouseMotion;
-use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
+use crate::player::*;
+use bevy::{
+    input::mouse::MouseMotion,
+    prelude::*,
+    window::PrimaryWindow
+};
 
 // System to control the camera based on mouse movement
 pub fn camera_control_system(
@@ -35,7 +37,7 @@ pub fn camera_control_system(
     for player in player.iter_mut() {
         for (mut camera_transform, mut controller) in camera_query.iter_mut() {
             // first-person view
-            if player.view_mode == player::ViewMode::FirstPerson {
+            if player.view_mode == ViewMode::FirstPerson {
                 // distance is set to 0 for first-person view
                 controller.distance = 0.0;
 
@@ -65,7 +67,7 @@ pub fn camera_control_system(
 
                 // apply the combined rotations
                 camera_transform.rotation = rotation_x * rotation_y;
-            } else if player.view_mode == player::ViewMode::ThirdPerson {
+            } else if player.view_mode == ViewMode::ThirdPerson {
                 // in third-person view, place the camera behind the player
                 controller.distance = 10.0;
 

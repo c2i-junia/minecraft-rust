@@ -3,7 +3,8 @@ use crate::constants::GRAVITY;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
-use crate::{RenderDistance, UIMode};
+use crate::world::RenderDistance;
+use crate::ui::UIMode;
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {

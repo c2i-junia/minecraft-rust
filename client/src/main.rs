@@ -12,16 +12,14 @@ mod splash_screen;
 mod ui;
 mod world;
 
-use bevy::prelude::*;
-use bevy::render::render_resource::WgpuFeatures;
-use bevy::render::settings::{RenderCreation, WgpuSettings};
-use bevy::render::RenderPlugin;
-use camera::*;
-use input::*;
-use player::*;
-use ui::inventory::*;
-
-use crate::world::*;
+use bevy::{
+    prelude::*,
+    render::{
+        render_resource::WgpuFeatures,
+        settings::{RenderCreation, WgpuSettings},
+        RenderPlugin,
+    },
+};
 
 #[derive(Component)]
 pub struct MenuCamera;

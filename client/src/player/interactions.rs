@@ -5,7 +5,7 @@ use crate::player::spawn::Player;
 use crate::ui::hotbar::Hotbar;
 use crate::world::WorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
-use crate::{items, UIMode};
+use crate::ui::{items, UIMode};
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;

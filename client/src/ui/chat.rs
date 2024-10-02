@@ -1,6 +1,7 @@
 use crate::input::keyboard::is_action_just_released;
 use crate::network::{send_chat_message, CachedChatConversation};
-use crate::{keyboard::is_action_just_pressed, UiDialog};
+use crate::input::keyboard::is_action_just_pressed;
+use crate::ui::UiDialog;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use bevy_simple_text_input::*;
@@ -139,13 +140,13 @@ pub fn render_chat(
     let mut visibility = visibility_query.single_mut();
     let (parent, children) = parent_query.single();
 
-    if is_action_just_released(crate::keyboard::GameAction::OpenChat, &keyboard_input) {
+    if is_action_just_released(crate::input::keyboard::GameAction::OpenChat, &keyboard_input) {
         inactive.0 = false;
         *visibility = Visibility::Visible;
     }
 
     if *visibility == Visibility::Visible
-        && is_action_just_pressed(crate::keyboard::GameAction::Escape, &keyboard_input)
+        && is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &keyboard_input)
     {
         *visibility = Visibility::Hidden;
         *value = TextInputValue("".to_string());

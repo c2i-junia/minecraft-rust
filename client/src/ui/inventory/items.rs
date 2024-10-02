@@ -1,6 +1,6 @@
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
-use crate::Block;
+use crate::world::Block;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Item {
