@@ -14,3 +14,12 @@ bevy_renet = { version = "0.0.12", features = ["serde", "transport"] }
 bincode = { version = "1.3.3" }
 serde = { version = "1.0.210", features = ["derive"] }
 
+# Define the library target
+[lib]
+name = "server"
+path = "src/lib.rs"
+
+# Define the binary target
+[[bin]]
+name = "server"
+path = "src/main.rs"

@@ -2,6 +2,4 @@ mod chat;
 mod dispatcher;
 mod init;
 
-fn main() {
-    init::init();
-}
+pub use init::init;
