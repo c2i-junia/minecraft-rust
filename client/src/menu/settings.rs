@@ -1,4 +1,14 @@
-use bevy::{color::palettes::css::CRIMSON, prelude::{BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle, Query, Res, ResMut, Resource, TextBundle, With}, text::TextStyle, ui::{AlignItems, BackgroundColor, FlexDirection, Interaction, JustifyContent, Style, UiRect, Val}};
+use bevy::{
+    color::palettes::css::CRIMSON,
+    prelude::{
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle,
+        Query, Res, ResMut, Resource, TextBundle, With,
+    },
+    text::TextStyle,
+    ui::{
+        AlignItems, BackgroundColor, FlexDirection, Interaction, JustifyContent, Style, UiRect, Val,
+    },
+};
 
 use crate::{DisplayQuality, Volume, TEXT_COLOR};
 
@@ -61,7 +71,7 @@ pub fn settings_menu_setup(mut commands: Commands) {
                     for (action, text) in [
                         (MenuButtonAction::SettingsDisplay, "Display"),
                         (MenuButtonAction::SettingsSound, "Sound"),
-                        (MenuButtonAction::BackToMainMenu, "Back")
+                        (MenuButtonAction::BackToMainMenu, "Back"),
                     ] {
                         parent
                             .spawn((

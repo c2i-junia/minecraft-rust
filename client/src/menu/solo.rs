@@ -1,4 +1,9 @@
-use bevy::{color::palettes::css::CRIMSON, prelude::{BuildChildren, ButtonBundle, Commands, Component, NodeBundle, TextBundle}, text::TextStyle, ui::{AlignItems, FlexDirection, JustifyContent, Style, UiRect, Val}};
+use bevy::{
+    color::palettes::css::CRIMSON,
+    prelude::{BuildChildren, ButtonBundle, Commands, Component, NodeBundle, TextBundle},
+    text::TextStyle,
+    ui::{AlignItems, FlexDirection, JustifyContent, Style, UiRect, Val},
+};
 
 use super::{MenuButtonAction, NORMAL_BUTTON};
 

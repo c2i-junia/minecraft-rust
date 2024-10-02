@@ -2,9 +2,8 @@ use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
     prelude::{
-        BuildChildren, Button, ButtonBundle, Changed, Commands, Component,
-        DespawnRecursiveExt, Entity, ImageBundle, NodeBundle, Query, Res, TextBundle, With,
-        Without,
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt,
+        Entity, ImageBundle, NodeBundle, Query, Res, TextBundle, With, Without,
     },
     text::{Font, Text, TextSection, TextStyle},
     ui::{
@@ -362,7 +361,13 @@ pub fn multiplayer_action(
 
                         commands.entity(entity).push_children(&[server]);
 
-                        list.servers.insert(server, ServerItem { name: name.0.clone(), ip: ip.0.clone() });
+                        list.servers.insert(
+                            server,
+                            ServerItem {
+                                name: name.0.clone(),
+                                ip: ip.0.clone(),
+                            },
+                        );
 
                         name.0 = "".into();
                         ip.0 = "".into();

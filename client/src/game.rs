@@ -35,7 +35,6 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 // This plugin will contain the game. In this case, it's just be a screen that will
 // display the current settings for 5 seconds before returning to the menu
 pub fn game_plugin(app: &mut App) {
-
     app.add_plugins(FrameTimeDiagnosticsPlugin)
         .add_plugins(DeferredRaycastingPlugin::<BlockRaycastSet>::default()) // Ajout du plugin raycasting
         .add_plugins(WireframePlugin)

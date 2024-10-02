@@ -1,8 +1,8 @@
 use crate::world::materials::MaterialResource;
 use crate::{
     constants::{CELESTIAL_DISTANCE, CELESTIAL_SIZE, DAY_DURATION},
+    player::Player,
     world::GlobalMaterial,
-    player::Player
 };
 use bevy::{
     pbr::{NotShadowCaster, NotShadowReceiver},

@@ -43,7 +43,8 @@ pub fn menu_plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            (settings::setting_button::<DisplayQuality>.run_if(in_state(MenuState::SettingsDisplay)),),
+            (settings::setting_button::<DisplayQuality>
+                .run_if(in_state(MenuState::SettingsDisplay)),),
         )
         .add_systems(
             OnExit(MenuState::SettingsDisplay),

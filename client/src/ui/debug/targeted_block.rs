@@ -1,9 +1,9 @@
 use crate::{
+    camera::BlockRaycastSet,
     constants::{CUBE_SIZE, INTERACTION_DISTANCE},
-    world::WorldMap,
-    world::Block, 
-    camera::BlockRaycastSet, 
     player::Player,
+    world::Block,
+    world::WorldMap,
 };
 use bevy::{math::NormedVectorSpace, prelude::*};
 use bevy_mod_raycast::prelude::RaycastSource;
