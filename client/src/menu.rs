@@ -1,5 +1,3 @@
-use bevy::a11y::accesskit::{NodeBuilder, Role};
-use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
@@ -418,6 +416,7 @@ struct ServerItem {
 
 #[derive(Component, Default)]
 struct ServerList {
+    #[allow(dead_code)]
     pub position: f32,
 }
 
