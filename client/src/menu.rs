@@ -1,6 +1,12 @@
+use bevy::a11y::accesskit::{NodeBuilder, Role};
+use bevy::a11y::AccessibilityNode;
 use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
+use bevy_simple_text_input::{
+    TextInputBundle, TextInputInactive, TextInputPlaceholder, TextInputSettings,
+    TextInputTextStyle, TextInputValue,
+};
 
 use crate::{despawn_screen, DisplayQuality, GameState, Volume, TEXT_COLOR};
 
@@ -19,8 +25,8 @@ pub fn menu_plugin(app: &mut App) {
         .add_systems(OnEnter(MenuState::Main), main_menu_setup)
         .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
         // Systems to handle the play menu screen
-        .add_systems(OnEnter(MenuState::Play), play_menu_setup)
-        .add_systems(OnExit(MenuState::Play), despawn_screen::<OnPlayMenuScreen>)
+        .add_systems(OnEnter(MenuState::Solo), play_menu_setup)
+        .add_systems(OnExit(MenuState::Solo), despawn_screen::<OnSoloMenuScreen>)
         // Systems to handle the settings menu screen
         .add_systems(OnEnter(MenuState::Settings), settings_menu_setup)
         .add_systems(
@@ -54,6 +60,11 @@ pub fn menu_plugin(app: &mut App) {
         .add_systems(
             Update,
             (menu_action, button_system).run_if(in_state(GameState::Menu)),
+        )
+        .add_systems(OnEnter(MenuState::Multi), multiplayer_menu_setup)
+        .add_systems(
+            OnExit(MenuState::Multi),
+            despawn_screen::<OnMultiMenuScreen>,
         );
 }
 
@@ -61,7 +72,8 @@ pub fn menu_plugin(app: &mut App) {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 enum MenuState {
     Main,
-    Play,
+    Solo,
+    Multi,
     Settings,
     SettingsDisplay,
     SettingsSound,
@@ -79,7 +91,10 @@ struct OnSettingsMenuScreen;
 
 // Tag component used to tag entities added on the play menu screen
 #[derive(Component)]
-struct OnPlayMenuScreen;
+struct OnSoloMenuScreen;
+
+#[derive(Component)]
+struct OnMultiMenuScreen;
 
 // Tag component used to tag entities added on the display settings menu screen
 #[derive(Component)]
@@ -101,7 +116,8 @@ struct SelectedOption;
 // All actions that can be triggered from a button click
 #[derive(Component)]
 enum MenuButtonAction {
-    Play,
+    Solo,
+    Multi,
     NewGame,
     LoadGame,
     Settings,
@@ -109,6 +125,9 @@ enum MenuButtonAction {
     SettingsSound,
     BackToMainMenu,
     BackToSettings,
+    ServerAdd,
+    ServerConnect(usize),
+    ServerDelete(usize),
     Quit,
 }
 
@@ -118,6 +137,11 @@ fn button_system(
         (&Interaction, &mut BackgroundColor, Option<&SelectedOption>),
         (Changed<Interaction>, With<Button>),
     >,
+    input_click_query: Query<
+        (Entity, &Interaction),
+        (Changed<Interaction>, With<TextInputInactive>),
+    >,
+    mut text_input_query: Query<(Entity, &mut TextInputInactive)>,
 ) {
     for (interaction, mut background_color, selected) in &mut interaction_query {
         *background_color = match (*interaction, selected) {
@@ -125,6 +149,18 @@ fn button_system(
             (Interaction::Hovered, Some(_)) => HOVERED_PRESSED_BUTTON.into(),
             (Interaction::Hovered, None) => HOVERED_BUTTON.into(),
             (Interaction::None, None) => NORMAL_BUTTON.into(),
+        }
+    }
+
+    for (interaction_entity, interaction) in &input_click_query {
+        if *interaction == Interaction::Pressed {
+            for (entity, mut inactive) in &mut text_input_query {
+                if entity == interaction_entity {
+                    inactive.0 = false;
+                } else {
+                    inactive.0 = true;
+                }
+            }
         }
     }
 }
@@ -229,7 +265,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 background_color: NORMAL_BUTTON.into(),
                                 ..default()
                             },
-                            MenuButtonAction::Play,
+                            MenuButtonAction::Solo,
                         ))
                         .with_children(|parent| {
                             let icon = asset_server.load("./right.png");
@@ -239,8 +275,31 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 ..default()
                             });
                             parent
-                                .spawn(TextBundle::from_section("Play", button_text_style.clone()));
+                                .spawn(TextBundle::from_section("Solo", button_text_style.clone()));
                         });
+
+                    parent
+                        .spawn((
+                            ButtonBundle {
+                                style: button_style.clone(),
+                                background_color: NORMAL_BUTTON.into(),
+                                ..default()
+                            },
+                            MenuButtonAction::Multi,
+                        ))
+                        .with_children(|parent| {
+                            let icon = asset_server.load("./multi.png");
+                            parent.spawn(ImageBundle {
+                                style: button_icon_style.clone(),
+                                image: UiImage::new(icon),
+                                ..default()
+                            });
+                            parent.spawn(TextBundle::from_section(
+                                "Multi",
+                                button_text_style.clone(),
+                            ));
+                        });
+
                     parent
                         .spawn((
                             ButtonBundle {
@@ -312,7 +371,7 @@ fn play_menu_setup(mut commands: Commands) {
                 },
                 ..default()
             },
-            OnPlayMenuScreen,
+            OnSoloMenuScreen,
         ))
         .with_children(|parent| {
             parent
@@ -329,6 +388,7 @@ fn play_menu_setup(mut commands: Commands) {
                     for (action, text) in [
                         (MenuButtonAction::NewGame, "New Game"),
                         (MenuButtonAction::LoadGame, "Load Game"),
+                        (MenuButtonAction::BackToMainMenu, "Back"),
                     ] {
                         parent
                             .spawn((
@@ -347,6 +407,199 @@ fn play_menu_setup(mut commands: Commands) {
                             });
                     }
                 });
+        });
+}
+
+#[derive(Component)]
+struct ServerItem {
+    pub name: String,
+    pub ip: String,
+}
+
+#[derive(Component, Default)]
+struct ServerList {
+    pub position: f32,
+}
+
+#[derive(Component)]
+struct ServerIpInput;
+
+#[derive(Component)]
+struct ServerNameInput;
+
+const BACKGROUND_COLOR: Color = Color::srgb(0.5, 0.5, 0.5);
+
+fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
+    let font: Handle<Font> = assets.load("fonts/gohu.ttf");
+    let txt_style = TextStyle {
+        font: font.clone(),
+        font_size: 20.,
+        color: Color::WHITE,
+    };
+
+    let txt_style_inactive = TextStyle {
+        font,
+        font_size: 20.,
+        color: Color::srgb(0.3, 0.3, 0.3),
+    };
+
+    let btn_style = Style {
+        display: Display::Flex,
+        flex_direction: FlexDirection::Column,
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        border: UiRect::all(Val::Px(2.)),
+        ..Default::default()
+    };
+
+    commands
+        .spawn((
+            OnMultiMenuScreen,
+            NodeBundle {
+                style: Style {
+                    width: Val::Vw(100.0),
+                    height: Val::Vh(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    padding: UiRect::horizontal(Val::Percent(20.)),
+                    row_gap: Val::Percent(2.),
+                    ..default()
+                },
+                ..default()
+            },
+        ))
+        .with_children(|root| {
+            root.spawn(TextBundle {
+                text: Text::from_section("Server list", txt_style.clone()),
+                style: Style {
+                    border: UiRect::all(Val::Px(1.)),
+                    flex_direction: FlexDirection::Column,
+                    align_content: AlignContent::Center,
+                    display: Display::Flex,
+                    ..Default::default()
+                },
+                ..Default::default()
+            });
+
+            root.spawn((
+                NodeBundle {
+                    border_color: BorderColor(BACKGROUND_COLOR),
+                    style: Style {
+                        width: Val::Percent(100.),
+                        height: Val::Vh(50.),
+                        flex_direction: FlexDirection::Column,
+                        align_items: AlignItems::Start,
+                        justify_content: JustifyContent::Start,
+                        border: UiRect::all(Val::Px(2.)),
+                        padding: UiRect::all(Val::Px(5.)),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+                ServerList { position: 0. },
+            ));
+
+            root.spawn(NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.),
+                    display: Display::Grid,
+                    grid_template_columns: vec![GridTrack::flex(1.), GridTrack::flex(1.)],
+                    row_gap: Val::Px(5.),
+                    column_gap: Val::Px(5.),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })
+            .with_children(|wrapper| {
+                wrapper.spawn((
+                    NodeBundle {
+                        border_color: BorderColor(BACKGROUND_COLOR),
+                        background_color: BackgroundColor(Color::BLACK),
+                        style: {
+                            let mut style = btn_style.clone();
+                            style.grid_column = GridPlacement::span(2);
+                            style
+                        },
+                        ..Default::default()
+                    },
+                    ServerNameInput,
+                    TextInputBundle {
+                        settings: TextInputSettings {
+                            retain_on_submit: true,
+                            mask_character: None,
+                        },
+                        placeholder: TextInputPlaceholder {
+                            value: "Server name".into(),
+                            text_style: Some(txt_style_inactive.clone()),
+                        },
+                        inactive: TextInputInactive(true),
+                        text_style: TextInputTextStyle(txt_style.clone()),
+                        ..Default::default()
+                    },
+                ));
+
+                wrapper.spawn((
+                    NodeBundle {
+                        border_color: BorderColor(BACKGROUND_COLOR),
+                        background_color: BackgroundColor(Color::BLACK),
+                        style: btn_style.clone(),
+                        ..Default::default()
+                    },
+                    TextInputBundle {
+                        settings: TextInputSettings {
+                            retain_on_submit: true,
+                            mask_character: None,
+                        },
+                        placeholder: TextInputPlaceholder {
+                            value: "Server IP".into(),
+                            text_style: Some(txt_style_inactive.clone()),
+                        },
+                        inactive: TextInputInactive(true),
+                        text_style: TextInputTextStyle(txt_style.clone()),
+                        ..Default::default()
+                    },
+                    ServerIpInput,
+                ));
+
+                wrapper
+                    .spawn((
+                        ButtonBundle {
+                            border_color: BorderColor(Color::BLACK),
+                            background_color: BackgroundColor(BACKGROUND_COLOR),
+                            style: btn_style.clone(),
+                            ..Default::default()
+                        },
+                        MenuButtonAction::ServerAdd,
+                    ))
+                    .with_children(|btn| {
+                        btn.spawn(TextBundle {
+                            text: Text::from_section("Add server", txt_style.clone()),
+                            ..Default::default()
+                        });
+                    });
+
+                wrapper
+                    .spawn((
+                        ButtonBundle {
+                            border_color: BorderColor(Color::BLACK),
+                            background_color: BackgroundColor(BACKGROUND_COLOR),
+                            style: {
+                                let mut style = btn_style.clone();
+                                style.grid_column = GridPlacement::span(2);
+                                style
+                            },
+                            ..Default::default()
+                        },
+                        MenuButtonAction::BackToMainMenu,
+                    ))
+                    .with_children(|btn| {
+                        btn.spawn(TextBundle {
+                            text: Text::from_section("Back to menu", txt_style.clone()),
+                            ..Default::default()
+                        });
+                    });
+            });
         });
 }
 
@@ -395,7 +648,6 @@ fn settings_menu_setup(mut commands: Commands) {
                     for (action, text) in [
                         (MenuButtonAction::SettingsDisplay, "Display"),
                         (MenuButtonAction::SettingsSound, "Sound"),
-                        (MenuButtonAction::BackToMainMenu, "Back"),
                     ] {
                         parent
                             .spawn((
@@ -640,9 +892,15 @@ fn menu_action(
         (&Interaction, &MenuButtonAction),
         (Changed<Interaction>, With<Button>),
     >,
+    mut name_query: Query<&mut TextInputValue, (With<ServerNameInput>, Without<ServerIpInput>)>,
+    mut ip_query: Query<&mut TextInputValue, (With<ServerIpInput>, Without<ServerNameInput>)>,
+    list_query: Query<(Entity, Option<&Children>), With<ServerList>>,
+    server_query: Query<&ServerItem>,
     mut app_exit_events: EventWriter<AppExit>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -650,7 +908,7 @@ fn menu_action(
                 MenuButtonAction::Quit => {
                     app_exit_events.send(AppExit::Success);
                 }
-                MenuButtonAction::Play => menu_state.set(MenuState::Play),
+                MenuButtonAction::Solo => menu_state.set(MenuState::Solo),
                 MenuButtonAction::NewGame => {
                     if let Err(e) = delete_save_files() {
                         println!("Error while deleting save files: {}", e);
@@ -672,6 +930,131 @@ fn menu_action(
                 MenuButtonAction::BackToMainMenu => menu_state.set(MenuState::Main),
                 MenuButtonAction::BackToSettings => {
                     menu_state.set(MenuState::Settings);
+                }
+                MenuButtonAction::Multi => menu_state.set(MenuState::Multi),
+                MenuButtonAction::ServerAdd => {
+                    if !name_query.is_empty() && !ip_query.is_empty() && !list_query.is_empty() {
+                        let (list, servers) = list_query.single();
+                        let mut name = name_query.single_mut();
+                        let mut ip = ip_query.single_mut();
+
+                        let child_id = if servers.is_some() {
+                            servers.unwrap().len()
+                        } else {
+                            0
+                        };
+
+                        println!(
+                            "Adding server to list : name = {:?}, ip = {:?}",
+                            name.0, ip.0
+                        );
+
+                        let btn_style = Style {
+                            display: Display::Flex,
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            border: UiRect::all(Val::Px(2.)),
+                            height: Val::Percent(80.),
+                            ..Default::default()
+                        };
+
+                        let img_style = Style {
+                            height: Val::Percent(100.),
+                            ..Default::default()
+                        };
+
+                        let server = commands
+                            .spawn(NodeBundle {
+                                border_color: BorderColor(BACKGROUND_COLOR),
+                                style: Style {
+                                    flex_direction: FlexDirection::Row,
+                                    align_items: AlignItems::Center,
+                                    column_gap: Val::Px(5.),
+                                    width: Val::Percent(100.),
+                                    height: Val::Vh(10.),
+                                    padding: UiRect::horizontal(Val::Percent(2.)),
+                                    border: UiRect::all(Val::Px(2.)),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            })
+                            .with_children(|serv| {
+                                serv.spawn((
+                                    MenuButtonAction::ServerConnect(child_id),
+                                    ButtonBundle {
+                                        style: btn_style.clone(),
+                                        ..Default::default()
+                                    },
+                                ))
+                                .with_children(|btn| {
+                                    let icon = asset_server.load("./play.png");
+                                    btn.spawn(ImageBundle {
+                                        image: UiImage::new(icon),
+                                        style: img_style.clone(),
+                                        ..default()
+                                    });
+                                });
+
+                                serv.spawn((
+                                    MenuButtonAction::ServerDelete(child_id),
+                                    ButtonBundle {
+                                        style: btn_style.clone(),
+                                        ..Default::default()
+                                    },
+                                ))
+                                .with_children(|btn| {
+                                    let icon = asset_server.load("./trash.png");
+                                    btn.spawn(ImageBundle {
+                                        image: UiImage::new(icon),
+                                        style: img_style.clone(),
+                                        ..default()
+                                    });
+                                });
+
+                                serv.spawn(TextBundle {
+                                    text: Text::from_section(
+                                        name.0.clone(),
+                                        TextStyle {
+                                            font: asset_server.load("fonts/gohu.ttf"),
+                                            font_size: 20.,
+                                            color: Color::WHITE,
+                                        },
+                                    ),
+                                    ..Default::default()
+                                });
+                            })
+                            .id();
+
+                        commands.entity(list).push_children(&[server]);
+
+                        name.0 = "".into();
+                        ip.0 = "".into();
+                    }
+                }
+                MenuButtonAction::ServerConnect(serv_nb) => {
+                    if !list_query.is_empty() {
+                        let (_list, servers) = list_query.single();
+                        if let Some(servers) = servers {
+                            if let Some(srv) = servers.get(*serv_nb) {
+                                if let Ok(srv) = server_query.get(*srv) {
+                                    println!("Connecting to server : name={:?}, ip={:?}", srv.name, srv.ip);
+                                }
+                            }
+                        }
+                    }
+                    // TODO : Retrieve ip + port in UI elements using server number, then connect user to server using ip
+                }
+                MenuButtonAction::ServerDelete(serv_nb) => {
+                    if !list_query.is_empty() {
+                        let (list, servers) = list_query.single();
+                        if let Some(servers) = servers {
+                            if let Some(srv) = servers.get(*serv_nb) {
+                                commands.entity(list).remove_children(&[*srv]);
+                                commands.entity(*srv).despawn_recursive();
+                            }
+                        }
+                    }
                 }
             }
         }
