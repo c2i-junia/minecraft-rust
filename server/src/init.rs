@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime};
 use crate::dispatcher;
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
 use bevy_renet::transport::NetcodeServerPlugin;
-use std::net::UdpSocket;
+use std::net::{SocketAddr, UdpSocket};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
@@ -42,7 +42,7 @@ pub fn add_netcode_network(app: &mut App) {
     app.insert_resource(transport);
 }
 
-pub fn init() {
+pub fn init(addr: SocketAddr) {
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -62,6 +62,6 @@ pub fn init() {
 
     dispatcher::register_systems(&mut app);
 
-    println!("Starting server on 127.0.0.1:5000");
+    println!("Starting server on {}", addr);
     app.run();
 }
