@@ -161,8 +161,6 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
     };
 
-    println!("-------------- MAIN MENU SETUP ------------------");
-
     commands
         .spawn((
             NodeBundle {

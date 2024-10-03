@@ -103,10 +103,8 @@ pub fn setup_world(
 
     commands.insert_resource(WorldSeed(seed));
 
-    let test = load_world_map(world_name, &mut player, &mut transform.translation);
-
     // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
-    if let Ok(loaded_world) = test {
+    if let Ok(loaded_world) = load_world_map(world_name, &mut player, &mut transform.translation) {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
 
@@ -133,10 +131,12 @@ pub fn setup_world(
             // now that the entities are loaded, we need to send events to
             // update the rendering
             for x in -1..=1 {
-                for z in -1..=1 {
-                    ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(IVec3::new(
-                        x, 0, z,
-                    )));
+                for y in 0..=8 {
+                    for z in -1..=1 {
+                        ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(IVec3::new(
+                            x, y, z,
+                        )));
+                    }
                 }
             }
         }
