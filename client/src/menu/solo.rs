@@ -215,7 +215,13 @@ pub fn list_worlds(
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
-    let paths = fs::read_dir(Path::new(SAVE_PATH)).unwrap();
+    let path = Path::new(SAVE_PATH);
+
+    if !fs::exists(path).unwrap() && fs::create_dir_all(path).is_ok() {
+        println!("Successfully created the saves folder : {}", path.display());
+    }
+
+    let paths = fs::read_dir(path).unwrap();
 
     for path in paths {
         let path_str = path.unwrap().file_name().into_string().unwrap();
