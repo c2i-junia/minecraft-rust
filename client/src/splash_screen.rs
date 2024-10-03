@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{despawn_screen, GameState};
+use crate::GameState;
 
 // This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
 pub fn splash_plugin(app: &mut App) {
@@ -9,14 +9,8 @@ pub fn splash_plugin(app: &mut App) {
         // When entering the state, spawn everything needed for this screen
         .add_systems(OnEnter(GameState::Splash), splash_setup)
         // While in this state, run the `countdown` system
-        .add_systems(Update, countdown.run_if(in_state(GameState::Splash)))
-        // When exiting the state, despawn everything that was spawned for this screen
-        .add_systems(OnExit(GameState::Splash), despawn_screen::<OnSplashScreen>);
+        .add_systems(Update, countdown.run_if(in_state(GameState::Splash)));
 }
-
-// Tag component used to tag entities added on the splash screen
-#[derive(Component)]
-struct OnSplashScreen;
 
 // Newtype to use a `Timer` for this screen as a resource
 #[derive(Resource, Deref, DerefMut)]
@@ -39,7 +33,7 @@ fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..default()
             },
-            OnSplashScreen,
+            StateScoped(GameState::Splash),
         ))
         .with_children(|parent| {
             parent.spawn(ImageBundle {

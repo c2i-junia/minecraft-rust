@@ -1,11 +1,11 @@
-use crate::constants::CHUNK_SIZE;
+use crate::constants::{CHUNK_SIZE, SAVE_PATH};
 use crate::world::utils::{block_to_chunk_coord, to_global_pos, SIX_OFFSETS};
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use std::collections::HashSet;
 
-use crate::world::*;
+use crate::{world::*, GameState, LoadWorldEvent};
 
 use super::RenderDistance;
 
@@ -73,11 +73,21 @@ pub fn setup_world(
     mut commands: Commands,
     mut world_map: ResMut<WorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
+    mut ev_load: EventReader<LoadWorldEvent>
 ) {
-    // Charger la graine depuis le fichier `world_seed.ron`
-    let seed = match load_world_seed("world_seed.ron") {
+    let mut world_name = "default";
+
+    // Get loaded world name
+    for ev in ev_load.read() {
+        world_name = &ev.world_name;
+    }
+
+    world_map.name = world_name.into();
+
+    // Charger la graine depuis le fichier `{world_name}_seed.ron`
+    let seed = match load_world_seed(&format!("{}{}_seed.ron", SAVE_PATH, world_name)) {
         Ok(seed) => {
-            println!("Loaded existing world seed from world_seed.ron");
+            println!("Loaded existing world seed from {}_seed.ron", world_name);
             seed.0
         }
         Err(_) => {
@@ -90,10 +100,10 @@ pub fn setup_world(
 
     commands.insert_resource(WorldSeed(seed));
 
-    // Charger la carte du monde depuis le fichier `world_save.ron`
-    if let Ok(loaded_world) = load_world_map("world_save.ron") {
+    // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
+    if let Ok(loaded_world) = load_world_map(&format!("{}{}_save.ron", SAVE_PATH, world_name)) {
         *world_map = loaded_world;
-        println!("Loaded existing world from world_save.ron");
+        println!("Loaded existing world from {}_save.ron", world_name);
 
         // we need to recreate the entities because their are not
         // saved in the world_save file
@@ -101,6 +111,7 @@ pub fn setup_world(
             if chunk.entity.is_none() {
                 let new_entity = commands
                     .spawn((
+                        StateScoped(GameState::Game),
                         Transform::from_xyz(
                             (chunk_pos.x * CHUNK_SIZE) as f32,
                             (chunk_pos.y * CHUNK_SIZE) as f32,

@@ -19,3 +19,5 @@ pub const MAX_HOTBAR_SLOTS: u32 = 9;
 pub const HOTBAR_CELL_SIZE: f32 = 50.;
 pub const HOTBAR_PADDING: f32 = 5.;
 pub const HOTBAR_BORDER: f32 = 5.;
+
+pub const SAVE_PATH:&str = "./saves/";

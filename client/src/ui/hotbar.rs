@@ -2,7 +2,7 @@ use bevy::{prelude::*, ui::FocusPolicy};
 
 use crate::{
     constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS},
-    ui::InventoryCell,
+    ui::InventoryCell, GameState,
 };
 
 #[derive(Component)]
@@ -14,6 +14,7 @@ pub fn setup_hotbar(mut commands: Commands) {
     commands
         .spawn((
             Hotbar { selected: 0 },
+            StateScoped(GameState::Game),
             NodeBundle {
                 background_color: BackgroundColor(Color::srgba(0.3, 0.3, 0.3, 0.3)),
                 style: Style {

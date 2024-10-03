@@ -1,4 +1,5 @@
 use crate::world::materials::MaterialResource;
+use crate::GameState;
 use crate::{
     constants::{CELESTIAL_DISTANCE, CELESTIAL_SIZE, DAY_DURATION},
     player::Player,
@@ -30,7 +31,7 @@ pub fn setup_main_lighting(
 ) {
     // No fancy stuff ; Only acts as an anchor to move celestial bodies easily
     let celestial_root = commands
-        .spawn((CelestialRoot, SpatialBundle::default()))
+        .spawn((CelestialRoot, SpatialBundle::default(), StateScoped(GameState::Game)))
         .id();
 
     let mut light_transform = Transform::from_translation(Vec3::new(0., 0., 0.));

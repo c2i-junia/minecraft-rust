@@ -1,8 +1,7 @@
 use bevy::{
     color::palettes::css::CRIMSON,
     prelude::{
-        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle,
-        Query, Res, ResMut, Resource, TextBundle, With,
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle, Query, Res, ResMut, Resource, StateScoped, TextBundle, With
     },
     text::TextStyle,
     ui::{
@@ -10,21 +9,21 @@ use bevy::{
     },
 };
 
-use crate::{DisplayQuality, Volume, TEXT_COLOR};
+use crate::TEXT_COLOR;
 
-use super::{MenuButtonAction, SelectedOption, NORMAL_BUTTON};
+use super::{MenuButtonAction, MenuState, SelectedOption, NORMAL_BUTTON};
 
-// Tag component used to tag entities added on the settings menu screen
-#[derive(Component)]
-pub struct OnSettingsMenuScreen;
+// One of the two settings that can be set through the menu. It will be a resource in the app
+#[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
+pub enum DisplayQuality {
+    Low,
+    Medium,
+    High,
+}
 
-// Tag component used to tag entities added on the display settings menu screen
-#[derive(Component)]
-pub struct OnDisplaySettingsMenuScreen;
-
-// Tag component used to tag entities added on the sound settings menu screen
-#[derive(Component)]
-pub struct OnSoundSettingsMenuScreen;
+// One of the two settings that can be set through the menu. It will be a resource in the app
+#[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
+pub struct Volume(pub u32);
 
 pub fn settings_menu_setup(mut commands: Commands) {
     let button_style = Style {
@@ -54,7 +53,7 @@ pub fn settings_menu_setup(mut commands: Commands) {
                 },
                 ..Default::default()
             },
-            OnSettingsMenuScreen,
+            StateScoped(MenuState::Settings)
         ))
         .with_children(|parent| {
             parent
@@ -120,7 +119,7 @@ pub fn display_settings_menu_setup(mut commands: Commands, display_quality: Res<
                 },
                 ..Default::default()
             },
-            OnDisplaySettingsMenuScreen,
+            StateScoped(MenuState::SettingsDisplay)
         ))
         .with_children(|parent| {
             parent
@@ -224,7 +223,7 @@ pub fn sound_settings_menu_setup(mut commands: Commands, volume: Res<Volume>) {
                 },
                 ..Default::default()
             },
-            OnSoundSettingsMenuScreen,
+            StateScoped(MenuState::SettingsSound)
         ))
         .with_children(|parent| {
             parent

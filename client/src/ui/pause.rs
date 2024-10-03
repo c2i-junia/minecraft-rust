@@ -1,12 +1,10 @@
 use bevy::{
-    app::AppExit,
     asset::AssetServer,
     color::{Alpha, Color},
     core::Name,
     input::ButtonInput,
     prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NodeBundle, Query,
-        Res, StateScoped, TextBundle, Visibility, With,
+        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NextState, NodeBundle, Query, Res, ResMut, StateScoped, TextBundle, Visibility, With
     },
     text::{Text, TextStyle},
     ui::{
@@ -15,7 +13,7 @@ use bevy::{
     },
 };
 
-use crate::{input::keyboard::is_action_just_pressed, GameState};
+use crate::{input::keyboard::is_action_just_pressed, world::SaveRequestEvent, GameState};
 
 use super::UiDialog;
 
@@ -25,7 +23,8 @@ pub struct PauseMenu;
 #[derive(Component)]
 pub enum PauseButtonAction {
     Resume,
-    Quit,
+    Save,
+    Menu,
 }
 
 pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
@@ -67,7 +66,8 @@ pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
             .with_children(|wrapper| {
                 for (msg, action) in [
                     ("Resume", PauseButtonAction::Resume),
-                    ("Quit", PauseButtonAction::Quit),
+                    ("Save", PauseButtonAction::Save),
+                    ("Back to menu", PauseButtonAction::Menu),
                 ] {
                     wrapper
                         .spawn((
@@ -82,6 +82,7 @@ pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
                                     flex_direction: FlexDirection::Row,
                                     align_items: AlignItems::Center,
                                     justify_content: JustifyContent::Center,
+                                    padding: UiRect::all(Val::Px(7.)),
                                     ..Default::default()
                                 },
                                 ..Default::default()
@@ -111,7 +112,8 @@ pub fn render_pause_menu(
         Query<&mut Visibility, With<PauseMenu>>,
     ),
     input: Res<ButtonInput<KeyCode>>,
-    mut exit: EventWriter<AppExit>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut save_event: EventWriter<SaveRequestEvent>
 ) {
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
@@ -130,11 +132,14 @@ pub fn render_pause_menu(
     for (action, mut bcolor, interaction) in button.iter_mut() {
         match *interaction {
             Interaction::Pressed => match *action {
-                PauseButtonAction::Quit => {
-                    exit.send(AppExit::Success);
+                PauseButtonAction::Menu => {
+                    game_state.set(GameState::Menu);
                 }
                 PauseButtonAction::Resume => {
                     *vis = Visibility::Hidden;
+                },
+                PauseButtonAction::Save => {
+                    save_event.send(SaveRequestEvent);
                 }
             },
             Interaction::Hovered => {

@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use bevy_atmosphere::prelude::AtmosphereCamera;
 use bevy_mod_raycast::prelude::*;
 
+use crate::GameState;
+
 #[derive(TypePath)]
 pub struct BlockRaycastSet;
 
@@ -37,5 +39,6 @@ pub fn spawn_camera(mut commands: Commands) {
             raycast_source.cast_method = RaycastMethod::Transform; // Utilise la transformation de la caméra pour lancer le rayon
             raycast_source // Retourne l'objet
         })
-        .insert(AtmosphereCamera::default());
+        .insert(AtmosphereCamera::default())
+        .insert(StateScoped(GameState::Game));
 }

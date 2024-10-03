@@ -1,6 +1,7 @@
 use crate::constants::CHUNK_SIZE;
 use crate::player::Player;
-use crate::world;
+use crate::{world, GameState};
+use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy::render::mesh::PrimitiveTopology;
 use bevy::render::render_asset::RenderAssetUsages;
@@ -13,8 +14,11 @@ pub fn setup_chunk_ghost(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    commands
-        .spawn(PbrBundle {
+    commands.spawn((
+        ChunkGhost,
+        StateScoped(GameState::Game),
+        NotShadowCaster,
+        PbrBundle {
             mesh: meshes.add(create_repeated_wireframe_mesh(
                 CHUNK_SIZE as f32,
                 (CHUNK_SIZE as f32) * 16.0,
@@ -28,8 +32,8 @@ pub fn setup_chunk_ghost(
             }),
             visibility: Visibility::Visible,
             ..default()
-        })
-        .insert(ChunkGhost);
+        },
+    ));
 }
 
 pub fn chunk_ghost_update_system(

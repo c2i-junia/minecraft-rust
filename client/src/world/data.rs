@@ -35,6 +35,7 @@ pub struct Chunk {
 
 #[derive(Resource, Default, Clone, Serialize, Deserialize)]
 pub struct WorldMap {
+    pub name: String,
     pub map: HashMap<IVec3, Chunk>,
     pub total_blocks_count: u64,
     pub total_chunks_count: u64,

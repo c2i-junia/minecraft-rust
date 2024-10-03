@@ -3,6 +3,7 @@ use crate::constants::{
     HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS,
 };
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
+use crate::GameState;
 use bevy::{prelude::*, ui::FocusPolicy};
 
 pub fn setup_inventory(mut commands: Commands) {
@@ -11,6 +12,7 @@ pub fn setup_inventory(mut commands: Commands) {
         .spawn((
             UiDialog,
             InventoryRoot,
+            StateScoped(GameState::Game),
             NodeBundle {
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.4)),
                 // Z-index of 2 : displayed above game & HUD, but under everything else

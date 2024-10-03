@@ -1,29 +1,42 @@
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
+use std::{fs, io};
 
-use crate::input::keyboard::*;
+
+use crate::constants::SAVE_PATH;
 use crate::world::data::*;
 use bevy::prelude::*;
 
 use ron::ser::PrettyConfig;
 
+#[derive(Event)]
+pub struct SaveRequestEvent;
+
 // Système pour sauvegarder le monde lorsque "L" est pressé
 pub fn save_world_system(
-    keyboard_input: Res<ButtonInput<KeyCode>>, // Corrigé pour `Input<KeyCode>`
     world_map: Res<WorldMap>,
     world_seed: Res<WorldSeed>, // Ajoute `WorldSeed` comme ressource ici
+    mut event: EventReader<SaveRequestEvent>
 ) {
-    // Vérifie si l'action `GameAction::SaveWorld` est pressée (associe cela à la touche `L`)
-    if is_action_pressed(GameAction::SaveWorld, &keyboard_input) {
+    let mut save_requested = false;
+
+    // Reads all events to prevent them from being queued forever and repeatedly request a save
+    for _ in event.read() {
+        save_requested = true;
+    }
+
+    // If a save was requested by the user
+    if save_requested {
+
         // Sauvegarde le monde et la graine dans leurs fichiers respectifs
-        if let Err(e) = save_world_map(&world_map, "world_save.ron") {
+        if let Err(e) = save_world_map(&world_map, &format!("{}{}_save.ron", SAVE_PATH, world_map.name)) {
             eprintln!("Failed to save world: {}", e);
         } else {
             println!("World saved successfully!");
         }
 
-        if let Err(e) = save_world_seed(&world_seed, "world_seed.ron") {
+        if let Err(e) = save_world_seed(&world_seed, &format!("{}{}_seed.ron", SAVE_PATH, world_map.name)) {
             eprintln!("Failed to save world seed: {}", e);
         } else {
             println!("World seed saved successfully!");
@@ -61,5 +74,27 @@ pub fn save_world_seed(
     let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
     println!("WorldSeed saved to {}", file_path);
+    Ok(())
+}
+
+pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
+    // Supprime `world_save.ron`
+    match fs::remove_file(&format!("{}{}_save.ron", SAVE_PATH, world_name)) {
+        Ok(_) => println!("Successfully deleted world_save.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_save.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_save.ron: {}", e),
+    }
+
+    // Supprime `world_seed.ron`
+    match fs::remove_file(&format!("{}_seed.ron", world_name)) {
+        Ok(_) => println!("Successfully deleted world_seed.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_seed.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_seed.ron: {}", e),
+    }
+
     Ok(())
 }

@@ -1,6 +1,6 @@
 use crate::camera::BlockRaycastSet;
 use crate::constants::CHUNK_SIZE;
-use crate::world;
+use crate::{world, GameState};
 use crate::world::utils::{global_block_to_chunk_pos, SIX_OFFSETS};
 use crate::world::{
     Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent,
@@ -37,6 +37,7 @@ fn update_chunk(
         // Cube
         let new_entity = commands
             .spawn((
+                StateScoped(GameState::Game),
                 PbrBundle {
                     mesh: meshes.add(new_mesh),
                     material: texture.clone(),

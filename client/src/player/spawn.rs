@@ -1,4 +1,4 @@
-use crate::ui::items;
+use crate::{ui::items, GameState};
 use bevy::prelude::*;
 use std::collections::HashMap;
 
@@ -61,15 +61,18 @@ pub fn spawn_player(
     let spawn_coords = Vec3::new(7.5, 45.0, 7.5);
 
     commands
-        .spawn(PbrBundle {
-            mesh: meshes.add(Mesh::from(Cuboid::new(
-                player.width,
-                player.height,
-                player.width,
-            ))),
-            material: materials.add(Color::srgba(1.0, 0.0, 0.0, 0.0)),
-            transform: Transform::from_translation(spawn_coords),
-            ..Default::default()
-        })
+        .spawn((
+            StateScoped(GameState::Game),
+            PbrBundle {
+                mesh: meshes.add(Mesh::from(Cuboid::new(
+                    player.width,
+                    player.height,
+                    player.width,
+                ))),
+                material: materials.add(Color::srgba(1.0, 0.0, 0.0, 0.0)),
+                transform: Transform::from_translation(spawn_coords),
+                ..Default::default()
+            },
+        ))
         .insert(player);
 }

@@ -2,6 +2,7 @@ use super::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use super::targeted_block::BlockText;
 use super::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
+use crate::GameState;
 use bevy::prelude::*;
 
 /// Marker to find the container entity so we can show/hide the FPS counter
@@ -14,6 +15,7 @@ pub fn setup_hud(mut commands: Commands) {
     let root = commands
         .spawn((
             HudRoot,
+            StateScoped(GameState::Game),
             NodeBundle {
                 // give it a dark background for readability
                 background_color: BackgroundColor(Color::BLACK.with_alpha(0.5)),

@@ -4,7 +4,7 @@ use bevy::{app::AppExit, color::palettes::css::CRIMSON};
 use bevy_simple_text_input::TextInputInactive;
 use multi::multiplayer_action;
 
-use crate::{despawn_screen, DisplayQuality, GameState, Volume, TEXT_COLOR};
+use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
 pub mod multi;
 pub mod settings;
@@ -20,22 +20,18 @@ pub fn menu_plugin(app: &mut App) {
         // entering the `GameState::Menu` state.
         // Current screen in the menu is handled by an independent state from `GameState`
         .init_state::<MenuState>()
+        .enable_state_scoped_entities::<MenuState>()
         .add_systems(OnEnter(GameState::Menu), menu_setup)
         // Systems to handle the main menu screen
         .add_systems(OnEnter(MenuState::Main), main_menu_setup)
-        .add_systems(OnExit(MenuState::Main), despawn_screen::<OnMainMenuScreen>)
         // Systems to handle the play menu screen
-        .add_systems(OnEnter(MenuState::Solo), solo::play_menu_setup)
         .add_systems(
-            OnExit(MenuState::Solo),
-            despawn_screen::<solo::OnSoloMenuScreen>,
+            OnEnter(MenuState::Solo),
+            (solo::solo_menu_setup, solo::list_worlds).chain(),
         )
+        .add_systems(Update, solo::solo_action.run_if(in_state(MenuState::Solo)))
         // Systems to handle the settings menu screen
         .add_systems(OnEnter(MenuState::Settings), settings::settings_menu_setup)
-        .add_systems(
-            OnExit(MenuState::Settings),
-            despawn_screen::<settings::OnSettingsMenuScreen>,
-        )
         // Systems to handle the display settings screen
         .add_systems(
             OnEnter(MenuState::SettingsDisplay),
@@ -46,10 +42,6 @@ pub fn menu_plugin(app: &mut App) {
             (settings::setting_button::<DisplayQuality>
                 .run_if(in_state(MenuState::SettingsDisplay)),),
         )
-        .add_systems(
-            OnExit(MenuState::SettingsDisplay),
-            despawn_screen::<settings::OnDisplaySettingsMenuScreen>,
-        )
         // Systems to handle the sound settings screen
         .add_systems(
             OnEnter(MenuState::SettingsSound),
@@ -59,29 +51,21 @@ pub fn menu_plugin(app: &mut App) {
             Update,
             settings::setting_button::<Volume>.run_if(in_state(MenuState::SettingsSound)),
         )
+        .add_systems(OnEnter(MenuState::Multi), multi::multiplayer_menu_setup)
         .add_systems(
-            OnExit(MenuState::SettingsSound),
-            despawn_screen::<settings::OnSoundSettingsMenuScreen>,
+            Update,
+            (multiplayer_action).run_if(in_state(MenuState::Multi)),
         )
         // Common systems to all screens that handles buttons behavior
         .add_systems(
             Update,
             (menu_action, button_system).run_if(in_state(GameState::Menu)),
-        )
-        .add_systems(OnEnter(MenuState::Multi), multi::multiplayer_menu_setup)
-        .add_systems(
-            OnExit(MenuState::Multi),
-            despawn_screen::<multi::OnMultiMenuScreen>,
-        )
-        .add_systems(
-            Update,
-            (multiplayer_action).run_if(in_state(MenuState::Multi)),
         );
 }
 
 // State used for the current menu screen
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
-enum MenuState {
+pub enum MenuState {
     Main,
     Solo,
     Multi,
@@ -91,10 +75,6 @@ enum MenuState {
     #[default]
     Disabled,
 }
-
-// Tag component used to tag entities added on the main menu screen
-#[derive(Component)]
-struct OnMainMenuScreen;
 
 pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
@@ -110,8 +90,6 @@ pub struct SelectedOption;
 enum MenuButtonAction {
     Solo,
     Multi,
-    NewGame,
-    LoadGame,
     Settings,
     SettingsDisplay,
     SettingsSound,
@@ -154,8 +132,13 @@ fn button_system(
     }
 }
 
-fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>) {
+fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>, mut commands: Commands) {
     menu_state.set(MenuState::Main);
+    commands.spawn((
+        Camera2dBundle::default(),
+        MenuCamera,
+        StateScoped(GameState::Menu),
+    ));
 }
 
 fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -182,6 +165,8 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..Default::default()
     };
 
+    println!("-------------- MAIN MENU SETUP ------------------");
+
     commands
         .spawn((
             NodeBundle {
@@ -194,7 +179,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 },
                 ..Default::default()
             },
-            OnMainMenuScreen,
+            StateScoped(MenuState::Main),
         ))
         .with_children(|parent| {
             parent
@@ -313,31 +298,6 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-use std::fs;
-use std::io;
-
-pub fn delete_save_files() -> Result<(), io::Error> {
-    // Supprime `world_save.ron`
-    match fs::remove_file("world_save.ron") {
-        Ok(_) => println!("Successfully deleted world_save.ron"),
-        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-            println!("world_save.ron not found, skipping.")
-        }
-        Err(e) => println!("Failed to delete world_save.ron: {}", e),
-    }
-
-    // Supprime `world_seed.ron`
-    match fs::remove_file("world_seed.ron") {
-        Ok(_) => println!("Successfully deleted world_seed.ron"),
-        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-            println!("world_seed.ron not found, skipping.")
-        }
-        Err(e) => println!("Failed to delete world_seed.ron: {}", e),
-    }
-
-    Ok(())
-}
-
 fn menu_action(
     interaction_query: Query<
         (&Interaction, &MenuButtonAction),
@@ -345,7 +305,6 @@ fn menu_action(
     >,
     mut app_exit_events: EventWriter<AppExit>,
     mut menu_state: ResMut<NextState<MenuState>>,
-    mut game_state: ResMut<NextState<GameState>>,
 ) {
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
@@ -354,17 +313,6 @@ fn menu_action(
                     app_exit_events.send(AppExit::Success);
                 }
                 MenuButtonAction::Solo => menu_state.set(MenuState::Solo),
-                MenuButtonAction::NewGame => {
-                    if let Err(e) = delete_save_files() {
-                        println!("Error while deleting save files: {}", e);
-                    }
-                    game_state.set(GameState::Game);
-                    menu_state.set(MenuState::Disabled);
-                }
-                MenuButtonAction::LoadGame => {
-                    game_state.set(GameState::Game);
-                    menu_state.set(MenuState::Disabled);
-                }
                 MenuButtonAction::Settings => menu_state.set(MenuState::Settings),
                 MenuButtonAction::SettingsDisplay => {
                     menu_state.set(MenuState::SettingsDisplay);

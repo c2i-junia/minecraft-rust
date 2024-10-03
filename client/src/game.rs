@@ -24,7 +24,7 @@ use crate::input::*;
 use crate::player::*;
 use crate::ui::inventory::*;
 
-use crate::{despawn_menu_camera, DisplayQuality, GameState, Volume};
+use crate::{DisplayQuality, GameState, Volume};
 
 fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
     println!("Entering GameState::Game");
@@ -60,10 +60,10 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(RenderDistance { ..default() })
         .insert_resource(UIMode::Closed)
         .add_event::<WorldRenderRequestUpdateEvent>()
+        .add_event::<SaveRequestEvent>()
         .add_systems(
             OnEnter(GameState::Game),
             (
-                despawn_menu_camera,
                 setup_materials,
                 setup_world,
                 spawn_player,

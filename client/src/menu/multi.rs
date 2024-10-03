@@ -2,8 +2,7 @@ use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
     prelude::{
-        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt,
-        Entity, ImageBundle, NodeBundle, Query, Res, TextBundle, With, Without,
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt, Entity, ImageBundle, NodeBundle, Query, Res, StateScoped, TextBundle, With, Without
     },
     text::{Font, Text, TextSection, TextStyle},
     ui::{
@@ -17,10 +16,7 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 
-use super::MenuButtonAction;
-
-#[derive(Component)]
-pub struct OnMultiMenuScreen;
+use super::{MenuButtonAction, MenuState};
 
 pub struct ServerItem {
     pub name: String,
@@ -73,7 +69,7 @@ pub fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) 
 
     commands
         .spawn((
-            OnMultiMenuScreen,
+            StateScoped(MenuState::Multi),
             NodeBundle {
                 style: Style {
                     width: Val::Vw(100.0),

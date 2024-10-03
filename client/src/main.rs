@@ -20,6 +20,7 @@ use bevy::{
         RenderPlugin,
     },
 };
+use menu::settings::{DisplayQuality, Volume};
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -35,17 +36,10 @@ pub enum GameState {
     Game,
 }
 
-// One of the two settings that can be set through the menu. It will be a resource in the app
-#[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
-pub enum DisplayQuality {
-    Low,
-    Medium,
-    High,
+#[derive(Event)]
+pub struct LoadWorldEvent {
+    pub world_name: String
 }
-
-// One of the two settings that can be set through the menu. It will be a resource in the app
-#[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
-pub struct Volume(u32);
 
 fn main() {
     let mut app = App::new();
@@ -62,12 +56,14 @@ fn main() {
                 ..default()
             }),
     );
+    app.add_event::<LoadWorldEvent>();
+
     network::add_netcode_network(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()
-        .add_systems(Startup, setup)
+        .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state
         .add_plugins((
             splash_screen::splash_plugin,
@@ -75,24 +71,4 @@ fn main() {
             game::game_plugin,
         ))
         .run();
-}
-
-fn setup(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), MenuCamera));
-}
-
-fn despawn_menu_camera(
-    mut commands: Commands,
-    query: Query<Entity, With<MenuCamera>>, // Filtre pour les entités marquées avec `MenuCamera`
-) {
-    for entity in &query {
-        commands.entity(entity).despawn_recursive(); // Supprimer l'entité et tous ses enfants
-    }
-}
-
-// Generic system that takes a component as a parameter, and will despawn all entities with that component
-fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
-    for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
-    }
 }
