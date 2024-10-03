@@ -21,6 +21,7 @@ use bevy::{
     },
 };
 use menu::settings::{DisplayQuality, Volume};
+use std::thread;
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -58,7 +59,9 @@ fn main() {
     );
     app.add_event::<LoadWorldEvent>();
 
-    server::init("127.0.0.0:0".parse().unwrap());
+    thread::spawn(|| {
+        server::init("127.0.0.0:0".parse().unwrap());
+    });
 
     network::add_netcode_network(&mut app);
     app.insert_resource(DisplayQuality::Medium)
