@@ -2,7 +2,8 @@ use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
     prelude::{
-        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt, Entity, ImageBundle, NodeBundle, Query, Res, StateScoped, TextBundle, With, Without
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt,
+        Entity, ImageBundle, NodeBundle, Query, Res, StateScoped, TextBundle, With, Without,
     },
     text::{Font, Text, TextSection, TextStyle},
     ui::{
@@ -31,9 +32,9 @@ pub struct ServerList {
 
 #[derive(Component)]
 pub enum MultiplayerButtonAction {
-    ServerAdd,
-    ServerConnect(Entity),
-    ServerDelete(Entity),
+    Add,
+    Connect(Entity),
+    Delete(Entity),
 }
 
 #[derive(Component)]
@@ -188,7 +189,7 @@ pub fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) 
                             style: btn_style.clone(),
                             ..Default::default()
                         },
-                        MultiplayerButtonAction::ServerAdd,
+                        MultiplayerButtonAction::Add,
                     ))
                     .with_children(|btn| {
                         btn.spawn(TextBundle {
@@ -241,7 +242,7 @@ pub fn multiplayer_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match *menu_button_action {
-                MultiplayerButtonAction::ServerAdd => {
+                MultiplayerButtonAction::Add => {
                     if !name_query.is_empty() && !ip_query.is_empty() {
                         let mut name = name_query.single_mut();
                         let mut ip = ip_query.single_mut();
@@ -285,7 +286,7 @@ pub fn multiplayer_action(
 
                         let play_btn = commands
                             .spawn((
-                                MultiplayerButtonAction::ServerConnect(server),
+                                MultiplayerButtonAction::Connect(server),
                                 ButtonBundle {
                                     style: btn_style.clone(),
                                     ..Default::default()
@@ -303,7 +304,7 @@ pub fn multiplayer_action(
 
                         let delete_btn = commands
                             .spawn((
-                                MultiplayerButtonAction::ServerDelete(server),
+                                MultiplayerButtonAction::Delete(server),
                                 ButtonBundle {
                                     style: btn_style.clone(),
                                     ..Default::default()
@@ -369,7 +370,7 @@ pub fn multiplayer_action(
                         ip.0 = "".into();
                     }
                 }
-                MultiplayerButtonAction::ServerConnect(serv_entity) => {
+                MultiplayerButtonAction::Connect(serv_entity) => {
                     if let Some(srv) = list.servers.get(&serv_entity) {
                         println!(
                             "Server : name={}, ip={} {}",
@@ -379,7 +380,7 @@ pub fn multiplayer_action(
                         // TODO : try to connect player with srv.ip provided
                     }
                 }
-                MultiplayerButtonAction::ServerDelete(serv_entity) => {
+                MultiplayerButtonAction::Delete(serv_entity) => {
                     commands.entity(entity).remove_children(&[serv_entity]);
                     commands.entity(serv_entity).despawn_recursive();
                 }

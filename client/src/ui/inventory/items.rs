@@ -1,14 +1,16 @@
+use serde::{Deserialize, Serialize};
+
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
 use crate::world::Block;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Item {
     pub id: ItemsType,
     pub nb: u32,
 }
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum ItemsType {
     Grass,
     Dirt,

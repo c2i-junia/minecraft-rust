@@ -31,7 +31,11 @@ pub fn setup_main_lighting(
 ) {
     // No fancy stuff ; Only acts as an anchor to move celestial bodies easily
     let celestial_root = commands
-        .spawn((CelestialRoot, SpatialBundle::default(), StateScoped(GameState::Game)))
+        .spawn((
+            CelestialRoot,
+            SpatialBundle::default(),
+            StateScoped(GameState::Game),
+        ))
         .id();
 
     let mut light_transform = Transform::from_translation(Vec3::new(0., 0., 0.));

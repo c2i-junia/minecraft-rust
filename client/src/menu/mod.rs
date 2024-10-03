@@ -122,23 +122,19 @@ fn button_system(
     for (interaction_entity, interaction) in &input_click_query {
         if *interaction == Interaction::Pressed {
             for (entity, mut inactive) in &mut text_input_query {
-                if entity == interaction_entity {
-                    inactive.0 = false;
-                } else {
-                    inactive.0 = true;
-                }
+                inactive.0 = entity != interaction_entity;
             }
         }
     }
 }
 
 fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>, mut commands: Commands) {
-    menu_state.set(MenuState::Main);
     commands.spawn((
         Camera2dBundle::default(),
         MenuCamera,
         StateScoped(GameState::Menu),
     ));
+    menu_state.set(MenuState::Main);
 }
 
 fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {

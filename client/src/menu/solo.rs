@@ -2,7 +2,8 @@ use std::{fs, path::Path};
 
 use bevy::{
     prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, NextState, NodeBundle, ResMut, StateScoped, TextBundle
+        BuildChildren, ButtonBundle, Commands, Component, EventWriter, NextState, NodeBundle,
+        ResMut, StateScoped, TextBundle,
     },
     text::TextStyle,
     ui::{AlignItems, FlexDirection, JustifyContent, Style, UiRect, Val},
@@ -39,9 +40,9 @@ pub struct WorldList {
 
 #[derive(Component)]
 pub enum MultiplayerButtonAction {
-    WorldAdd,
-    WorldLoad(Entity),
-    WorldDelete(Entity),
+    Add,
+    Load(Entity),
+    Delete(Entity),
 }
 
 #[derive(Component)]
@@ -174,7 +175,7 @@ pub fn solo_menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
                             },
                             ..Default::default()
                         },
-                        MultiplayerButtonAction::WorldAdd,
+                        MultiplayerButtonAction::Add,
                     ))
                     .with_children(|btn| {
                         btn.spawn(TextBundle {
@@ -217,18 +218,16 @@ pub fn list_worlds(
     let paths = fs::read_dir(Path::new(SAVE_PATH)).unwrap();
 
     for path in paths {
-        if let Ok(path) = path {
-            let path_str = path.file_name().into_string().unwrap();
+        let path_str = path.unwrap().file_name().into_string().unwrap();
 
-            if path_str.ends_with("_save.ron") {
-                add_world_item(
-                    path_str.replace("_save.ron", ""),
-                    &mut commands,
-                    &assets,
-                    &mut list,
-                    list_entity,
-                );
-            }
+        if path_str.ends_with("_save.ron") {
+            add_world_item(
+                path_str.replace("_save.ron", ""),
+                &mut commands,
+                &assets,
+                &mut list,
+                list_entity,
+            );
         }
     }
 }
@@ -276,7 +275,7 @@ fn add_world_item(
 
     let play_btn = commands
         .spawn((
-            MultiplayerButtonAction::WorldLoad(world),
+            MultiplayerButtonAction::Load(world),
             ButtonBundle {
                 style: btn_style.clone(),
                 ..Default::default()
@@ -294,7 +293,7 @@ fn add_world_item(
 
     let delete_btn = commands
         .spawn((
-            MultiplayerButtonAction::WorldDelete(world),
+            MultiplayerButtonAction::Delete(world),
             ButtonBundle {
                 style: btn_style.clone(),
                 ..Default::default()
@@ -363,7 +362,7 @@ pub fn solo_action(
     for (interaction, menu_button_action) in &interaction_query {
         if *interaction == Interaction::Pressed {
             match *menu_button_action {
-                MultiplayerButtonAction::WorldAdd => {
+                MultiplayerButtonAction::Add => {
                     if !name_query.is_empty() {
                         let mut name = name_query.single_mut();
 
@@ -378,7 +377,7 @@ pub fn solo_action(
                         name.0 = "".into();
                     }
                 }
-                MultiplayerButtonAction::WorldLoad(world_entity) => {
+                MultiplayerButtonAction::Load(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
                         println!("World : name={}, {}", world.name, list.position);
 
@@ -389,7 +388,7 @@ pub fn solo_action(
                         menu_state.set(MenuState::Disabled);
                     }
                 }
-                MultiplayerButtonAction::WorldDelete(world_entity) => {
+                MultiplayerButtonAction::Delete(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
                         if let Err(e) = delete_save_files(&world.name) {
                             println!("Error while deleting save files: {}", e);

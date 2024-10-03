@@ -38,7 +38,7 @@ pub enum GameState {
 
 #[derive(Event)]
 pub struct LoadWorldEvent {
-    pub world_name: String
+    pub world_name: String,
 }
 
 fn main() {

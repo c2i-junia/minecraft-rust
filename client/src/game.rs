@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::ui::chat::{render_chat, setup_chat};
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
@@ -65,8 +67,8 @@ pub fn game_plugin(app: &mut App) {
             OnEnter(GameState::Game),
             (
                 setup_materials,
-                setup_world,
                 spawn_player,
+                setup_world,
                 setup_main_lighting,
                 spawn_camera,
                 spawn_reticle,
@@ -115,5 +117,16 @@ pub fn game_plugin(app: &mut App) {
                 .run_if(in_state(GameState::Game)),
         )
         .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
-        .add_systems(PostUpdate, (world_render_system,));
+        .add_systems(
+            PostUpdate,
+            (world_render_system,).run_if(in_state(GameState::Game)),
+        )
+        .add_systems(OnExit(GameState::Game), clear_resources);
+}
+
+fn clear_resources(mut world_map: ResMut<WorldMap>) {
+    world_map.map = HashMap::new();
+    world_map.total_blocks_count = 0;
+    world_map.total_chunks_count = 0;
+    world_map.name = "".into();
 }

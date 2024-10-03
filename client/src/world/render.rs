@@ -1,10 +1,10 @@
 use crate::camera::BlockRaycastSet;
 use crate::constants::CHUNK_SIZE;
-use crate::{world, GameState};
 use crate::world::utils::{global_block_to_chunk_pos, SIX_OFFSETS};
 use crate::world::{
     Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent,
 };
+use crate::{world, GameState};
 use bevy::asset::Assets;
 use bevy::math::IVec3;
 use bevy::pbr::PbrBundle;

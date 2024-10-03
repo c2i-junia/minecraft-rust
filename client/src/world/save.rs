@@ -1,23 +1,34 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::{fs, io};
 
-
 use crate::constants::SAVE_PATH;
+use crate::player::Player;
+use crate::ui::items::Item;
 use crate::world::data::*;
 use bevy::prelude::*;
 
 use ron::ser::PrettyConfig;
+use serde::{Deserialize, Serialize};
 
 #[derive(Event)]
 pub struct SaveRequestEvent;
+
+#[derive(Serialize, Deserialize)]
+pub struct Save {
+    pub map: HashMap<IVec3, Chunk>,
+    pub player_pos: Vec3,
+    pub inventory: HashMap<u32, Item>,
+}
 
 // Système pour sauvegarder le monde lorsque "L" est pressé
 pub fn save_world_system(
     world_map: Res<WorldMap>,
     world_seed: Res<WorldSeed>, // Ajoute `WorldSeed` comme ressource ici
-    mut event: EventReader<SaveRequestEvent>
+    player_query: Query<(&Transform, &Player)>,
+    mut event: EventReader<SaveRequestEvent>,
 ) {
     let mut save_requested = false;
 
@@ -28,15 +39,26 @@ pub fn save_world_system(
 
     // If a save was requested by the user
     if save_requested {
+        let (transform, player) = player_query.single();
+
+        let data = Save {
+            map: world_map.map.clone(),
+            player_pos: transform.translation,
+            inventory: player.inventory.clone(),
+        };
 
         // Sauvegarde le monde et la graine dans leurs fichiers respectifs
-        if let Err(e) = save_world_map(&world_map, &format!("{}{}_save.ron", SAVE_PATH, world_map.name)) {
+        if let Err(e) = save_world_map(&data, &format!("{}{}_save.ron", SAVE_PATH, world_map.name))
+        {
             eprintln!("Failed to save world: {}", e);
         } else {
             println!("World saved successfully!");
         }
 
-        if let Err(e) = save_world_seed(&world_seed, &format!("{}{}_seed.ron", SAVE_PATH, world_map.name)) {
+        if let Err(e) = save_world_seed(
+            &world_seed,
+            &format!("{}{}_seed.ron", SAVE_PATH, world_map.name),
+        ) {
             eprintln!("Failed to save world seed: {}", e);
         } else {
             println!("World seed saved successfully!");
@@ -44,16 +66,13 @@ pub fn save_world_system(
     }
 }
 
-pub fn save_world_map(
-    world_map: &WorldMap,
-    file_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_world_map(save: &Save, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Utilise RON pour sérialiser `WorldMap`
     let pretty_config = PrettyConfig::new()
         .with_depth_limit(3)
         .with_separate_tuple_members(true)
         .with_enumerate_arrays(true);
-    let serialized = ron::ser::to_string_pretty(world_map, pretty_config)?; // Sérialise avec un format lisible
+    let serialized = ron::ser::to_string_pretty(save, pretty_config)?; // Sérialise avec un format lisible
     let path = Path::new(file_path);
     let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
@@ -79,7 +98,7 @@ pub fn save_world_seed(
 
 pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
     // Supprime `world_save.ron`
-    match fs::remove_file(&format!("{}{}_save.ron", SAVE_PATH, world_name)) {
+    match fs::remove_file(format!("{}{}_save.ron", SAVE_PATH, world_name)) {
         Ok(_) => println!("Successfully deleted world_save.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             println!("world_save.ron not found, skipping.")
@@ -88,7 +107,7 @@ pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
     }
 
     // Supprime `world_seed.ron`
-    match fs::remove_file(&format!("{}_seed.ron", world_name)) {
+    match fs::remove_file(format!("{}{}_seed.ron", SAVE_PATH, world_name)) {
         Ok(_) => println!("Successfully deleted world_seed.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             println!("world_seed.ron not found, skipping.")

@@ -1,4 +1,5 @@
-use crate::constants::{CHUNK_SIZE, SAVE_PATH};
+use crate::constants::CHUNK_SIZE;
+use crate::player::Player;
 use crate::world::utils::{block_to_chunk_coord, to_global_pos, SIX_OFFSETS};
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
@@ -73,10 +74,10 @@ pub fn setup_world(
     mut commands: Commands,
     mut world_map: ResMut<WorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
-    mut ev_load: EventReader<LoadWorldEvent>
+    mut ev_load: EventReader<LoadWorldEvent>,
+    mut player_query: Query<(&mut Transform, &mut Player)>,
 ) {
     let mut world_name = "default";
-
     // Get loaded world name
     for ev in ev_load.read() {
         world_name = &ev.world_name;
@@ -84,8 +85,10 @@ pub fn setup_world(
 
     world_map.name = world_name.into();
 
+    let (mut transform, mut player) = player_query.single_mut();
+
     // Charger la graine depuis le fichier `{world_name}_seed.ron`
-    let seed = match load_world_seed(&format!("{}{}_seed.ron", SAVE_PATH, world_name)) {
+    let seed = match load_world_seed(world_name) {
         Ok(seed) => {
             println!("Loaded existing world seed from {}_seed.ron", world_name);
             seed.0
@@ -100,10 +103,14 @@ pub fn setup_world(
 
     commands.insert_resource(WorldSeed(seed));
 
+    let test = load_world_map(world_name, &mut player, &mut transform.translation);
+
     // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
-    if let Ok(loaded_world) = load_world_map(&format!("{}{}_save.ron", SAVE_PATH, world_name)) {
+    if let Ok(loaded_world) = test {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
+
+        world_map.name = world_name.into();
 
         // we need to recreate the entities because their are not
         // saved in the world_save file

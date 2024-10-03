@@ -4,7 +4,8 @@ use bevy::{
     core::Name,
     input::ButtonInput,
     prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NextState, NodeBundle, Query, Res, ResMut, StateScoped, TextBundle, Visibility, With
+        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NextState,
+        NodeBundle, Query, Res, ResMut, StateScoped, TextBundle, Visibility, With,
     },
     text::{Text, TextStyle},
     ui::{
@@ -113,7 +114,7 @@ pub fn render_pause_menu(
     ),
     input: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,
-    mut save_event: EventWriter<SaveRequestEvent>
+    mut save_event: EventWriter<SaveRequestEvent>,
 ) {
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
@@ -137,7 +138,7 @@ pub fn render_pause_menu(
                 }
                 PauseButtonAction::Resume => {
                     *vis = Visibility::Hidden;
-                },
+                }
                 PauseButtonAction::Save => {
                     save_event.send(SaveRequestEvent);
                 }

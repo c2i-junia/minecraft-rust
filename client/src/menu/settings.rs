@@ -1,7 +1,8 @@
 use bevy::{
     color::palettes::css::CRIMSON,
     prelude::{
-        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle, Query, Res, ResMut, Resource, StateScoped, TextBundle, With
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, Entity, NodeBundle,
+        Query, Res, ResMut, Resource, StateScoped, TextBundle, With,
     },
     text::TextStyle,
     ui::{
@@ -53,7 +54,7 @@ pub fn settings_menu_setup(mut commands: Commands) {
                 },
                 ..Default::default()
             },
-            StateScoped(MenuState::Settings)
+            StateScoped(MenuState::Settings),
         ))
         .with_children(|parent| {
             parent
@@ -119,7 +120,7 @@ pub fn display_settings_menu_setup(mut commands: Commands, display_quality: Res<
                 },
                 ..Default::default()
             },
-            StateScoped(MenuState::SettingsDisplay)
+            StateScoped(MenuState::SettingsDisplay),
         ))
         .with_children(|parent| {
             parent
@@ -223,7 +224,7 @@ pub fn sound_settings_menu_setup(mut commands: Commands, volume: Res<Volume>) {
                 },
                 ..Default::default()
             },
-            StateScoped(MenuState::SettingsSound)
+            StateScoped(MenuState::SettingsSound),
         ))
         .with_children(|parent| {
             parent
