@@ -58,6 +58,8 @@ fn main() {
     );
     app.add_event::<LoadWorldEvent>();
 
+    server::init("127.0.0.0:0".parse().unwrap());
+
     network::add_netcode_network(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))

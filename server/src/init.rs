@@ -19,12 +19,11 @@ pub struct ServerLobby {
     //pub players: HashMap<ClientId, Entity>,
 }
 
-pub fn add_netcode_network(app: &mut App) {
+pub fn add_netcode_network(app: &mut App, public_addr: SocketAddr) {
     app.add_plugins(NetcodeServerPlugin);
 
     let server = RenetServer::new(default());
 
-    let public_addr = "127.0.0.1:5000".parse().unwrap();
     let socket = UdpSocket::bind(public_addr).unwrap();
     let current_time: std::time::Duration = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
@@ -37,12 +36,18 @@ pub fn add_netcode_network(app: &mut App) {
         authentication: ServerAuthentication::Unsecure,
     };
 
+    println!(
+        "UDP socket granted by the OS: {}",
+        &socket.local_addr().unwrap()
+    );
+
     let transport = NetcodeServerTransport::new(server_config, socket).unwrap();
     app.insert_resource(server);
     app.insert_resource(transport);
 }
 
 pub fn init(addr: SocketAddr) {
+    println!("Requesting a sever start on {}", addr);
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -56,12 +61,11 @@ pub fn init(addr: SocketAddr) {
 
     app.insert_resource(ServerLobby::default());
 
-    add_netcode_network(&mut app);
+    add_netcode_network(&mut app, addr);
 
     dispatcher::setup_resources_and_events(&mut app);
 
     dispatcher::register_systems(&mut app);
 
-    println!("Starting server on {}", addr);
     app.run();
 }
