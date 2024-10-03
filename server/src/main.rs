@@ -1,9 +1,9 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use crate::init::acquire_local_ephemeral_udp_socket;
 
 mod chat;
 mod dispatcher;
 mod init;
 
 fn main() {
-    init::init("127.0.0.1:5000".parse().unwrap());
+    init::init(acquire_local_ephemeral_udp_socket());
 }

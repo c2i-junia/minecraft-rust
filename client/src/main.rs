@@ -59,8 +59,10 @@ fn main() {
     );
     app.add_event::<LoadWorldEvent>();
 
+    let socket = server::acquire_local_ephemeral_udp_socket();
+    println!("Obtained UDP socket: {}", socket.local_addr().unwrap());
     thread::spawn(|| {
-        server::init("127.0.0.0:0".parse().unwrap());
+        server::init(socket);
     });
 
     network::add_netcode_network(&mut app);
