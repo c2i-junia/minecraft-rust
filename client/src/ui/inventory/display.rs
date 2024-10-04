@@ -1,10 +1,11 @@
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_ITEM_STACK};
-use crate::input::keyboard::{get_action_keys, GameAction};
+use crate::input::keyboard::{is_action_just_pressed, GameAction};
 use crate::player::inventory::{add_item_to_stack, remove_item_from_stack};
 use crate::player::Player;
 use crate::ui::hotbar::Hotbar;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
 use crate::world::MaterialResource;
+use crate::KeyMap;
 use bevy::color::Color;
 use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
@@ -34,6 +35,7 @@ pub fn render_inventory_hotbar(
         Res<ButtonInput<KeyCode>>,
         Res<ButtonInput<MouseButton>>,
         Res<MaterialResource>,
+        Res<KeyMap>,
     ),
     mut scroll: EventReader<MouseWheel>,
 ) {
@@ -48,17 +50,14 @@ pub fn render_inventory_hotbar(
         mut hotbar_query,
     ) = queries;
 
-    let (keyboard_input, mouse_input, material_resource) = resources;
+    let (keyboard_input, mouse_input, material_resource, key_map) = resources;
 
     let mut vis = visibility_query.single_mut();
-    let keys = get_action_keys(GameAction::ToggleInventory);
-    for key in keys {
-        if keyboard_input.just_pressed(key) {
-            *vis = match *vis {
-                Visibility::Hidden => Visibility::Visible,
-                _ => Visibility::Hidden,
-            };
-        }
+    if is_action_just_pressed(GameAction::ToggleInventory, &keyboard_input, &key_map) {
+        *vis = match *vis {
+            Visibility::Hidden => Visibility::Visible,
+            _ => Visibility::Hidden,
+        };
     }
 
     let mut player = player_query.single_mut();

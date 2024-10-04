@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
 use bevy_simple_text_input::TextInputInactive;
+use controls::controls_menu_setup;
 use multi::multiplayer_action;
 
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
@@ -10,6 +11,7 @@ pub mod game_loading_screen;
 pub mod multi;
 pub mod settings;
 pub mod solo;
+pub mod controls;
 
 // This plugin manages the menu, with 5 different screens:
 // - a main menu with "New Game", "Settings", "Quit"
@@ -61,7 +63,8 @@ pub fn menu_plugin(app: &mut App) {
         .add_systems(
             Update,
             (menu_action, button_system).run_if(in_state(GameState::Menu)),
-        );
+        )
+        .add_systems(OnEnter(MenuState::SettingsControls), controls_menu_setup);
 }
 
 // State used for the current menu screen
@@ -73,6 +76,7 @@ pub enum MenuState {
     Settings,
     SettingsDisplay,
     SettingsSound,
+    SettingsControls,
     #[default]
     Disabled,
 }
@@ -81,6 +85,12 @@ pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 pub const HOVERED_PRESSED_BUTTON: Color = Color::srgb(0.25, 0.65, 0.25);
 pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+
+/// Tag component for scrolling UI lists
+#[derive(Component)]
+pub struct ScrollingList {
+    pub offset:f32
+}
 
 // Tag component used to mark which setting is currently selected
 #[derive(Component)]
@@ -94,6 +104,7 @@ enum MenuButtonAction {
     Settings,
     SettingsDisplay,
     SettingsSound,
+    SettingsControls,
     BackToMainMenu,
     BackToSettings,
     Quit,
@@ -320,6 +331,7 @@ fn menu_action(
                     menu_state.set(MenuState::Settings);
                 }
                 MenuButtonAction::Multi => menu_state.set(MenuState::Multi),
+                MenuButtonAction::SettingsControls => menu_state.set(MenuState::SettingsControls),
             }
         }
     }

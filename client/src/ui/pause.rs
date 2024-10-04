@@ -14,7 +14,7 @@ use bevy::{
     },
 };
 
-use crate::{input::keyboard::is_action_just_pressed, world::SaveRequestEvent, GameState};
+use crate::{input::keyboard::is_action_just_pressed, world::SaveRequestEvent, GameState, KeyMap};
 
 use super::UiDialog;
 
@@ -115,11 +115,12 @@ pub fn render_pause_menu(
     input: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut save_event: EventWriter<SaveRequestEvent>,
+    key_map: Res<KeyMap>
 ) {
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
 
-    if is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &input) {
+    if is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &input, &key_map) {
         *vis = match *vis {
             Visibility::Visible | Visibility::Inherited => Visibility::Hidden,
             Visibility::Hidden => Visibility::Visible,
