@@ -20,7 +20,7 @@ use bevy::{
         RenderPlugin,
     },
 };
-use input::keyboard::GameAction;
+use input::keyboard::{get_default_keybinds, GameAction};
 use menu::settings::{DisplayQuality, Volume};
 use std::collections::HashMap;
 
@@ -68,41 +68,7 @@ fn main() {
     network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
-        .insert_resource(KeyMap {
-            map: {
-                let mut map = HashMap::new();
-                map.insert(
-                    GameAction::MoveForward,
-                    vec![KeyCode::KeyW, KeyCode::ArrowUp],
-                );
-                map.insert(
-                    GameAction::MoveBackward,
-                    vec![KeyCode::KeyS, KeyCode::ArrowDown],
-                );
-                map.insert(
-                    GameAction::MoveLeft,
-                    vec![KeyCode::KeyA, KeyCode::ArrowLeft],
-                );
-                map.insert(
-                    GameAction::MoveRight,
-                    vec![KeyCode::KeyD, KeyCode::ArrowRight],
-                );
-                map.insert(GameAction::Jump, vec![KeyCode::Space]);
-                map.insert(GameAction::Escape, vec![KeyCode::Escape]);
-                map.insert(GameAction::ToggleFps, vec![KeyCode::F3]);
-                map.insert(GameAction::ToggleViewMode, vec![KeyCode::F5]);
-                map.insert(GameAction::ToggleChunkDebugMode, vec![KeyCode::F4]);
-                map.insert(GameAction::ToggleFlyMode, vec![KeyCode::KeyF]);
-                map.insert(GameAction::FlyUp, vec![KeyCode::Space]);
-                map.insert(GameAction::FlyDown, vec![KeyCode::ShiftLeft]);
-                map.insert(GameAction::ToggleBlockWireframeDebugMode, vec![KeyCode::F6]);
-                map.insert(GameAction::ToggleInventory, vec![KeyCode::KeyE]);
-                map.insert(GameAction::OpenChat, vec![KeyCode::KeyT]);
-                map.insert(GameAction::RenderDistanceMinus, vec![KeyCode::KeyO]);
-                map.insert(GameAction::RenderDistancePlus, vec![KeyCode::KeyP]);
-                map
-            }
-        })
+        .insert_resource(get_default_keybinds())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()

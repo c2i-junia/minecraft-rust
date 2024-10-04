@@ -1,3 +1,4 @@
+use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
@@ -62,7 +63,7 @@ pub fn menu_plugin(app: &mut App) {
         // Common systems to all screens that handles buttons behavior
         .add_systems(
             Update,
-            (menu_action, button_system).run_if(in_state(GameState::Menu)),
+            (menu_action, button_system, mouse_scroll).run_if(in_state(GameState::Menu)),
         )
         .add_systems(OnEnter(MenuState::SettingsControls), controls_menu_setup);
 }
@@ -89,7 +90,7 @@ pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 /// Tag component for scrolling UI lists
 #[derive(Component)]
 pub struct ScrollingList {
-    pub offset:f32
+    pub position:f32
 }
 
 // Tag component used to mark which setting is currently selected
@@ -333,6 +334,31 @@ fn menu_action(
                 MenuButtonAction::Multi => menu_state.set(MenuState::Multi),
                 MenuButtonAction::SettingsControls => menu_state.set(MenuState::SettingsControls),
             }
+        }
+    }
+}
+
+pub fn mouse_scroll(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
+    query_node: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.read() {
+        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
+            let items_height = list_node.size().y;
+            let container_height = query_node.get(parent.get()).unwrap().size().y;
+
+            let max_scroll = (items_height - container_height).max(0.);
+
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.top = Val::Px(scrolling_list.position);
+            println!("Mouse event : {:?}, {:?}, {:?}, {:?}", container_height, max_scroll, style.top, scrolling_list.position);
         }
     }
 }
