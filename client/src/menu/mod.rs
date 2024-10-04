@@ -344,6 +344,7 @@ pub fn mouse_scroll(
     query_node: Query<&Node>,
 ) {
     for mouse_wheel_event in mouse_wheel_events.read() {
+        println!("MouseEvent");
         for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
             let items_height = list_node.size().y;
             let container_height = query_node.get(parent.get()).unwrap().size().y;
@@ -358,7 +359,7 @@ pub fn mouse_scroll(
             scrolling_list.position += dy;
             scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
             style.top = Val::Px(scrolling_list.position);
-            println!("Mouse event : {:?}, {:?}, {:?}, {:?}", container_height, max_scroll, style.top, scrolling_list.position);
+            println!("Mouse event : {:?}, {:?}, {:?}, {:?}", container_height, max_scroll, items_height, scrolling_list.position);
         }
     }
 }
