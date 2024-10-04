@@ -21,7 +21,6 @@ use bevy::{
     },
 };
 use menu::settings::{DisplayQuality, Volume};
-use std::thread;
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -34,6 +33,7 @@ pub enum GameState {
     #[default]
     Splash,
     Menu,
+    PreGameLoading,
     Game,
 }
 
@@ -58,14 +58,7 @@ fn main() {
             }),
     );
     app.add_event::<LoadWorldEvent>();
-
-    let socket = server::acquire_local_ephemeral_udp_socket();
-    println!("Obtained UDP socket: {}", socket.local_addr().unwrap());
-    thread::spawn(|| {
-        server::init(socket);
-    });
-
-    network::add_netcode_network(&mut app);
+    network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         // Declare the game state, whose starting value is determined by the `Default` trait

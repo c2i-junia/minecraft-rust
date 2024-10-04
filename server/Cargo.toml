@@ -13,6 +13,7 @@ bevy = "0.14.2"
 bevy_renet = { version = "0.0.12", features = ["serde", "transport"] }
 bincode = { version = "1.3.3" }
 serde = { version = "1.0.210", features = ["derive"] }
+rand = "0.8.5"
 
 # Define the library target
 [lib]

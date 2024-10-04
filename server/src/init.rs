@@ -6,6 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
@@ -16,7 +17,7 @@ use std::net::{SocketAddr, UdpSocket};
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
-    //pub players: HashMap<ClientId, Entity>,
+    pub players: HashMap<u128, String>,
 }
 
 pub fn acquire_local_ephemeral_udp_socket() -> UdpSocket {

@@ -2,10 +2,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct AuthRegisterRequest {
-    username: String,
+    pub username: String,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct AuthWhoAmIRequest {
-    username: String,
+pub struct AuthRegisterResponse {
+    pub username: String,
+    pub session_token: u128,
 }

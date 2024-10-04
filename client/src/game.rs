@@ -26,6 +26,11 @@ use crate::input::*;
 use crate::player::*;
 use crate::ui::inventory::*;
 
+use crate::menu::game_loading_screen::load_loading_screen;
+use crate::network::{
+    establish_authenticated_connection_to_server, init_server_connection,
+    launch_local_server_system, network_failure_handler, poll_network_messages,
+};
 use crate::{DisplayQuality, GameState, Volume};
 
 fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
@@ -63,6 +68,20 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(UIMode::Closed)
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_event::<SaveRequestEvent>()
+        .add_systems(
+            OnEnter(GameState::PreGameLoading),
+            (
+                load_loading_screen,
+                launch_local_server_system,
+                init_server_connection,
+            )
+                .chain(),
+        )
+        .add_systems(
+            Update,
+            establish_authenticated_connection_to_server
+                .run_if(in_state(GameState::PreGameLoading)),
+        )
         .add_systems(
             OnEnter(GameState::Game),
             (
@@ -120,6 +139,14 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(
             PostUpdate,
             (world_render_system,).run_if(in_state(GameState::Game)),
+        )
+        .add_systems(
+            Update,
+            poll_network_messages.run_if(in_state(GameState::Game)),
+        )
+        .add_systems(
+            Update,
+            network_failure_handler.run_if(in_state(GameState::Game)),
         )
         .add_systems(OnExit(GameState::Game), clear_resources);
 }

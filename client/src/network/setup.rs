@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
 use crate::network::{update_cached_chat_state, CachedChatConversation};
+use crate::GameState;
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
 };
@@ -9,9 +10,17 @@ use bevy_renet::renet::DefaultChannel;
 use bevy_renet::transport::NetcodeClientPlugin;
 use bincode::Options;
 use shared::messages::ChatConversation;
-use std::{net::UdpSocket, time::SystemTime};
+use std::net::SocketAddr;
+use std::{net::UdpSocket, thread, time::SystemTime};
 
-pub fn add_netcode_network(app: &mut App) {
+#[derive(Resource, Debug)]
+pub struct TargetServer {
+    address: Option<SocketAddr>,
+    username: Option<String>,
+    session_token: Option<u128>,
+}
+
+pub fn add_base_netcode(app: &mut App) {
     app.add_plugins(RenetClientPlugin);
 
     let client = RenetClient::new(default());
@@ -20,33 +29,22 @@ pub fn add_netcode_network(app: &mut App) {
     // Setup the transport layer
     app.add_plugins(NetcodeClientPlugin);
 
-    let authentication = ClientAuthentication::Unsecure {
-        server_addr: "127.0.0.1:5000".parse().unwrap(),
-        client_id: 0,
-        user_data: None,
-        protocol_id: shared::PROTOCOL_ID,
-    };
-    let socket = UdpSocket::bind("127.0.0.1:0").unwrap();
-    let current_time = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .unwrap();
-    let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
+    app.insert_resource(TargetServer {
+        address: None,
+        username: None,
+        session_token: None,
+    });
+}
 
-    app.insert_resource(transport);
-
-    fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportError>) {
-        for e in renet_error.read() {
-            println!("network error: {}", e);
-        }
-    }
-
-    app.add_systems(Update, network_failure_handler);
-
-    app.add_systems(Update, poll_network_messages);
-
-    app.insert_resource(CachedChatConversation { ..default() });
-
-    println!("Network subsystem initialized");
+pub fn launch_local_server_system(mut target: ResMut<TargetServer>) {
+    println!("Launching local server...");
+    let socket = server::acquire_local_ephemeral_udp_socket();
+    let addr = socket.local_addr().unwrap();
+    println!("Obtained UDP socket: {}", addr);
+    thread::spawn(|| {
+        server::init(socket);
+    });
+    target.address = Some(addr);
 }
 
 pub fn poll_network_messages(
@@ -61,5 +59,66 @@ pub fn poll_network_messages(
             }
             Err(e) => println!("err {}", e),
         };
+    }
+}
+
+pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {
+    let addr = target.address.unwrap();
+    commands.add(move |world: &mut World| {
+        let authentication = ClientAuthentication::Unsecure {
+            server_addr: addr,
+            client_id: 0,
+            user_data: None,
+            protocol_id: shared::PROTOCOL_ID,
+        };
+        let socket = UdpSocket::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
+        let current_time = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap();
+        let transport = NetcodeClientTransport::new(current_time, authentication, socket).unwrap();
+
+        world.insert_resource(transport);
+
+        world.insert_resource(CachedChatConversation { ..default() });
+
+        println!("Network subsystem initialized");
+    })
+}
+
+pub fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportError>) {
+    for e in renet_error.read() {
+        println!("network error: {}", e);
+    }
+}
+
+pub fn establish_authenticated_connection_to_server(
+    mut client: ResMut<RenetClient>,
+    mut target: ResMut<TargetServer>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
+    if target.session_token.is_some() {
+        println!(
+            "Successfully acquired a session token as {}",
+            &target.username.clone().unwrap()
+        );
+        game_state.set(GameState::Game);
+        return;
+    }
+
+    println!("uwu");
+    let auth_msg = shared::messages::AuthRegisterRequest {
+        username: "Player".into(),
+    };
+    let auth_msg_encoded = bincode::options().serialize(&auth_msg).unwrap();
+    client.send_message(DefaultChannel::ReliableOrdered, auth_msg_encoded);
+
+    while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
+        let message =
+            bincode::options().deserialize::<shared::messages::AuthRegisterResponse>(&message);
+        if let Ok(message) = message {
+            target.username = Some(message.username);
+            target.session_token = Some(message.session_token);
+            println!("Connected! {:?}", target);
+        }
     }
 }

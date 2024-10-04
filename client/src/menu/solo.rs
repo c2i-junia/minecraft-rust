@@ -390,7 +390,7 @@ pub fn solo_action(
                         load_event.send(LoadWorldEvent {
                             world_name: world.name.clone(),
                         });
-                        game_state.set(GameState::Game);
+                        game_state.set(GameState::PreGameLoading);
                         menu_state.set(MenuState::Disabled);
                     }
                 }

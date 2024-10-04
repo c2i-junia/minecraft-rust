@@ -6,6 +6,7 @@ use multi::multiplayer_action;
 
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
+pub mod game_loading_screen;
 pub mod multi;
 pub mod settings;
 pub mod solo;
