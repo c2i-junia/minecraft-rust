@@ -9,15 +9,15 @@ use bevy_renet::renet::transport::{
 use bevy_renet::renet::DefaultChannel;
 use bevy_renet::transport::NetcodeClientPlugin;
 use bincode::Options;
-use shared::messages::ChatConversation;
+use shared::messages::{AuthRegisterRequest, ChatConversation, ClientToServerMessage};
 use std::net::SocketAddr;
 use std::{net::UdpSocket, thread, time::SystemTime};
 
 #[derive(Resource, Debug)]
 pub struct TargetServer {
-    address: Option<SocketAddr>,
-    username: Option<String>,
-    session_token: Option<u128>,
+    pub address: Option<SocketAddr>,
+    pub username: Option<String>,
+    pub session_token: Option<u128>,
 }
 
 pub fn add_base_netcode(app: &mut App) {
@@ -65,6 +65,13 @@ pub fn poll_network_messages(
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {
     let addr = target.address.unwrap();
     commands.add(move |world: &mut World| {
+        world.remove_resource::<RenetClient>();
+        world.remove_resource::<NetcodeClientTransport>();
+        world.remove_resource::<CachedChatConversation>();
+
+        let client = RenetClient::new(default());
+        world.insert_resource(client);
+
         let authentication = ClientAuthentication::Unsecure {
             server_addr: addr,
             client_id: 0,
@@ -104,11 +111,11 @@ pub fn establish_authenticated_connection_to_server(
         game_state.set(GameState::Game);
         return;
     }
+    println!("trying to connect...");
 
-    println!("uwu");
-    let auth_msg = shared::messages::AuthRegisterRequest {
+    let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
         username: "Player".into(),
-    };
+    });
     let auth_msg_encoded = bincode::options().serialize(&auth_msg).unwrap();
     client.send_message(DefaultChannel::ReliableOrdered, auth_msg_encoded);
 

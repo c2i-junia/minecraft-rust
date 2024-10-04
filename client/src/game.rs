@@ -30,6 +30,7 @@ use crate::menu::game_loading_screen::load_loading_screen;
 use crate::network::{
     establish_authenticated_connection_to_server, init_server_connection,
     launch_local_server_system, network_failure_handler, poll_network_messages,
+    terminate_server_connection,
 };
 use crate::{DisplayQuality, GameState, Volume};
 
@@ -148,7 +149,10 @@ pub fn game_plugin(app: &mut App) {
             Update,
             network_failure_handler.run_if(in_state(GameState::Game)),
         )
-        .add_systems(OnExit(GameState::Game), clear_resources);
+        .add_systems(
+            OnExit(GameState::Game),
+            (clear_resources, terminate_server_connection).chain(),
+        );
 }
 
 fn clear_resources(mut world_map: ResMut<WorldMap>) {

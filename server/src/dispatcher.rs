@@ -5,7 +5,7 @@ use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
 use rand::random;
-use shared::messages::{AuthRegisterRequest, AuthRegisterResponse, ChatConversation, ChatMessage};
+use shared::messages::{AuthRegisterResponse, ChatConversation, ClientToServerMessage};
 
 #[derive(Resource)]
 pub struct BroadcastTimer {
@@ -32,6 +32,7 @@ fn server_update_system(
     mut chat_conversation: ResMut<ChatConversation>,
     mut ev_chat: EventWriter<ChatMessageEvent>,
     mut lobby: ResMut<ServerLobby>,
+    mut ev_app_exit: EventWriter<AppExit>,
 ) {
     for event in server_events.read() {
         println!("event received");
@@ -48,8 +49,19 @@ fn server_update_system(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, DefaultChannel::ReliableOrdered)
         {
-            match bincode::options().deserialize::<AuthRegisterRequest>(&message) {
-                Ok(auth_req) => {
+            println!("msg received {:?}", &message);
+
+            let msg = bincode::options().deserialize::<ClientToServerMessage>(&message);
+            let msg = match msg {
+                Ok(msg) => msg,
+                Err(e) => {
+                    println!("Failed to parse incoming message: {}", e);
+                    continue;
+                }
+            };
+
+            match msg {
+                ClientToServerMessage::AuthRegisterRequest(auth_req) => {
                     println!("Auth request received {:?}", auth_req);
 
                     if lobby.players.values().any(|v| *v == auth_req.username) {
@@ -70,17 +82,18 @@ fn server_update_system(
                     let payload = bincode::options().serialize(msg).unwrap();
                     server.send_message(client_id, DefaultChannel::ReliableOrdered, payload);
                 }
-                Err(_e) => {}
-            }
-
-            match bincode::options().deserialize::<ChatMessage>(&message) {
-                Ok(parsed_message) => {
-                    println!("Chat message received: {:?}", &parsed_message);
-                    chat_conversation.messages.push(parsed_message);
+                ClientToServerMessage::ChatMessage(chat_msg) => {
+                    println!("Chat message received: {:?}", &chat_msg);
+                    chat_conversation.messages.push(chat_msg);
                     ev_chat.send(ChatMessageEvent);
                 }
-                Err(_e) => {}
-            };
+                ClientToServerMessage::ShutdownOrder(order) => {
+                    println!("Received shutdown order... {:?}", order);
+                    // TODO: add permission checks
+                    println!("Server is going down...");
+                    ev_app_exit.send(AppExit::Success);
+                }
+            }
         }
     }
 }

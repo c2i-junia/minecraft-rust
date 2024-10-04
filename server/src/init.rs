@@ -69,5 +69,26 @@ pub fn init(socket: UdpSocket) {
 
     dispatcher::register_systems(&mut app);
 
+    setup_heartbeat(&mut app);
+
     app.run();
+}
+
+#[derive(Resource)]
+struct HeartbeatTimer {
+    timer: Timer,
+}
+
+fn setup_heartbeat(app: &mut App) {
+    app.insert_resource(HeartbeatTimer {
+        timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
+    });
+    app.add_systems(Update, heartbeat_system);
+}
+
+fn heartbeat_system(time: Res<Time>, mut timer: ResMut<HeartbeatTimer>) {
+    timer.timer.tick(time.delta());
+    if timer.timer.finished() {
+        println!("Server heartbeat");
+    }
 }
