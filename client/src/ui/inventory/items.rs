@@ -1,37 +1,24 @@
-use serde::{Deserialize, Serialize};
-
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
 use crate::world::Block;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub struct Item {
-    pub id: ItemsType,
-    pub nb: u32,
-}
+pub type Item = shared::world::Item;
+pub type ItemId = shared::world::ItemId;
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
-pub enum ItemsType {
-    Grass,
-    Dirt,
-    Stone,
-    Bedrock,
-}
-
-pub fn item_from_block(block: Block) -> Option<ItemsType> {
+pub fn item_from_block(block: Block) -> Option<ItemId> {
     match block {
-        Block::Bedrock => Some(ItemsType::Bedrock),
-        Block::Dirt | Block::Grass => Some(ItemsType::Dirt),
-        Block::Stone => Some(ItemsType::Stone), // _ => None
+        Block::Bedrock => Some(ItemId::Bedrock),
+        Block::Dirt | Block::Grass => Some(ItemId::Dirt),
+        Block::Stone => Some(ItemId::Stone), // _ => None
     }
 }
 
-pub fn block_from_item(item: ItemsType) -> Option<Block> {
+pub fn block_from_item(item: ItemId) -> Option<Block> {
     match item {
-        ItemsType::Bedrock => Some(Block::Bedrock),
-        ItemsType::Dirt => Some(Block::Dirt),
-        ItemsType::Grass => Some(Block::Grass),
-        ItemsType::Stone => Some(Block::Stone),
+        ItemId::Bedrock => Some(Block::Bedrock),
+        ItemId::Dirt => Some(Block::Dirt),
+        ItemId::Grass => Some(Block::Grass),
+        ItemId::Stone => Some(Block::Stone),
         // _ => None
     }
 }
@@ -59,7 +46,7 @@ pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -
 pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
-    item_type: ItemsType,
+    item_type: ItemId,
 ) -> u32 {
     if nb == 0 {
         0

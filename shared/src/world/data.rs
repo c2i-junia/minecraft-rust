@@ -33,3 +33,17 @@ pub struct Chunk {
 pub struct WorldMap {
     pub map: HashMap<IVec3, Chunk>,
 }
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub struct Item {
+    pub id: ItemId,
+    pub nb: u32,
+}
+
+#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
+pub enum ItemId {
+    Grass,
+    Dirt,
+    Stone,
+    Bedrock,
+}

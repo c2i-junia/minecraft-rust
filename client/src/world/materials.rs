@@ -1,5 +1,5 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
-use crate::ui::inventory::items::ItemsType;
+use crate::ui::inventory::items::ItemId;
 use crate::world::{Block, GlobalMaterial};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
@@ -9,7 +9,7 @@ use std::collections::HashMap;
 pub struct MaterialResource {
     pub block_materials: HashMap<Block, Handle<StandardMaterial>>,
     pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
-    pub item_textures: HashMap<ItemsType, Handle<Image>>,
+    pub item_textures: HashMap<ItemId, Handle<Image>>,
     pub atlas_texture: Option<Handle<StandardMaterial>>,
 }
 
@@ -95,15 +95,15 @@ pub fn setup_materials(
 
     material_resource
         .item_textures
-        .insert(ItemsType::Grass, asset_server.load("textures/grass.png"));
+        .insert(ItemId::Grass, asset_server.load("textures/grass.png"));
     material_resource
         .item_textures
-        .insert(ItemsType::Dirt, asset_server.load("textures/dirt.png"));
+        .insert(ItemId::Dirt, asset_server.load("textures/dirt.png"));
     material_resource
         .item_textures
-        .insert(ItemsType::Stone, asset_server.load("textures/stone.png"));
+        .insert(ItemId::Stone, asset_server.load("textures/stone.png"));
     material_resource.item_textures.insert(
-        ItemsType::Bedrock,
+        ItemId::Bedrock,
         asset_server.load("textures/bedrock.png"),
     );
 

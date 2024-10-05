@@ -8,7 +8,7 @@ use bevy::prelude::*;
 // Ajoute un item à l'inventaire du joueur
 pub fn add_item_to_inventory(
     player: &mut Query<&mut Player>,
-    item_id: items::ItemsType,
+    item_id: items::ItemId,
     mut nb: u32,
 ) {
     let mut player = player.single_mut();
@@ -56,7 +56,7 @@ pub fn add_item_to_inventory(
 /// Returns number of items really added to the stack
 pub fn add_item_to_stack(
     player: &mut Player,
-    item_id: items::ItemsType,
+    item_id: items::ItemId,
     stack: u32,
     mut nb: u32,
 ) -> u32 {
