@@ -1,11 +1,13 @@
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use crate::init::ServerLobby;
+use crate::world::generation::setup_world;
 use crate::{chat, world};
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
 use rand::random;
 use shared::messages::{AuthRegisterResponse, ChatConversation, ClientToServerMessage};
+use shared::world::WorldMap;
 
 #[derive(Resource)]
 pub struct BroadcastTimer {
@@ -21,6 +23,9 @@ pub fn setup_resources_and_events(app: &mut App) {
 }
 
 pub fn register_systems(app: &mut App) {
+    app.insert_resource(WorldMap { ..default() });
+    app.add_systems(Startup, setup_world);
+
     app.add_systems(Update, server_update_system);
 
     app.add_systems(Update, chat::broadcast_chat_messages);

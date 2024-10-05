@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-pub type Block = shared::data::Block;
+pub type Block = shared::world::Block;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {

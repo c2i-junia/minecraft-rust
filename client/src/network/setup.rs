@@ -63,7 +63,7 @@ fn poll_reliable_ordered_messages(
     }
 }
 
-fn poll_unreliable_messages(client: &mut ResMut<RenetClient>) {
+fn poll_reliable_unordered_messages(client: &mut ResMut<RenetClient>) {
     update_world_from_network(client);
 }
 
@@ -72,7 +72,7 @@ pub fn poll_network_messages(
     mut chat_state: ResMut<CachedChatConversation>,
 ) {
     poll_reliable_ordered_messages(&mut client, &mut chat_state);
-    poll_unreliable_messages(&mut client);
+    poll_reliable_unordered_messages(&mut client);
 }
 
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {

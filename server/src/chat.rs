@@ -27,7 +27,7 @@ pub fn broadcast_chat_messages(
         );
         let cm: ChatConversation = chat_messages.into_inner().clone();
         let serialized = bincode::options().serialize(&cm).unwrap();
-        println!("data {:?}", cm);
+        println!("world {:?}", cm);
         println!("serialized: {:?}", serialized);
         server.broadcast_message(DefaultChannel::ReliableOrdered, serialized);
         ev_chat.clear();
