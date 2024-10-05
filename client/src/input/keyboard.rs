@@ -4,7 +4,7 @@ use bevy::{input::ButtonInput, prelude::{Component, KeyCode}};
 
 use crate::KeyMap;
 
-#[derive(Eq, Hash, PartialEq, Component, Debug)]
+#[derive(Eq, Hash, PartialEq, Component, Debug, Clone, Copy)]
 pub enum GameAction {
     MoveForward,
     MoveBackward,

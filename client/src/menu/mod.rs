@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
 use bevy_simple_text_input::TextInputInactive;
-use controls::controls_menu_setup;
+use controls::{controls_menu_setup, controls_update_system};
 use multi::multiplayer_action;
 
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
@@ -60,6 +60,7 @@ pub fn menu_plugin(app: &mut App) {
             Update,
             (multiplayer_action).run_if(in_state(MenuState::Multi)),
         )
+        .add_systems(Update, controls_update_system.run_if(in_state(MenuState::SettingsControls)))
         // Common systems to all screens that handles buttons behavior
         .add_systems(
             Update,
