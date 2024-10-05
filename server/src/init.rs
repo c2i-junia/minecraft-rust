@@ -75,6 +75,11 @@ pub fn init(socket: UdpSocket) {
 }
 
 #[derive(Resource)]
+pub struct TickCounter {
+    pub(crate) tick: u64,
+}
+
+#[derive(Resource)]
 struct HeartbeatTimer {
     timer: Timer,
 }
@@ -83,12 +88,18 @@ fn setup_heartbeat(app: &mut App) {
     app.insert_resource(HeartbeatTimer {
         timer: Timer::new(Duration::from_secs(1), TimerMode::Repeating),
     });
+    app.insert_resource(TickCounter { tick: 0 });
     app.add_systems(Update, heartbeat_system);
 }
 
-fn heartbeat_system(time: Res<Time>, mut timer: ResMut<HeartbeatTimer>) {
+fn heartbeat_system(
+    time: Res<Time>,
+    mut ticker: ResMut<TickCounter>,
+    mut timer: ResMut<HeartbeatTimer>,
+) {
+    ticker.tick += 1;
     timer.timer.tick(time.delta());
     if timer.timer.finished() {
-        println!("Server heartbeat");
+        println!("Server heartbeat, tick={}", ticker.tick);
     }
 }

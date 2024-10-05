@@ -4,13 +4,7 @@ use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
-pub enum Block {
-    Grass,
-    Dirt,
-    Stone,
-    Bedrock,
-}
+pub type Block = shared::data::Block;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {

@@ -1,6 +1,6 @@
-use crate::chat;
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use crate::init::ServerLobby;
+use crate::{chat, world};
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
@@ -24,6 +24,8 @@ pub fn register_systems(app: &mut App) {
     app.add_systems(Update, server_update_system);
 
     app.add_systems(Update, chat::broadcast_chat_messages);
+
+    app.add_systems(Update, world::broadcast_world_state);
 }
 
 fn server_update_system(

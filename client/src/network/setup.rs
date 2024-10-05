@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
+use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
 use crate::GameState;
 use bevy_renet::renet::transport::{
@@ -47,19 +48,31 @@ pub fn launch_local_server_system(mut target: ResMut<TargetServer>) {
     target.address = Some(addr);
 }
 
-pub fn poll_network_messages(
-    mut client: ResMut<RenetClient>,
-    mut chat_state: ResMut<CachedChatConversation>,
+fn poll_reliable_ordered_messages(
+    client: &mut ResMut<RenetClient>,
+    chat_state: &mut ResMut<CachedChatConversation>,
 ) {
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         let message = bincode::options().deserialize::<ChatConversation>(&message);
         match message {
             Ok(data) => {
-                update_cached_chat_state(&mut chat_state, data);
+                update_cached_chat_state(chat_state, data);
             }
             Err(e) => println!("err {}", e),
         };
     }
+}
+
+fn poll_unreliable_messages(client: &mut ResMut<RenetClient>) {
+    update_world_from_network(client);
+}
+
+pub fn poll_network_messages(
+    mut client: ResMut<RenetClient>,
+    mut chat_state: ResMut<CachedChatConversation>,
+) {
+    poll_reliable_ordered_messages(&mut client, &mut chat_state);
+    poll_unreliable_messages(&mut client);
 }
 
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {

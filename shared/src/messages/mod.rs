@@ -1,11 +1,13 @@
 mod auth;
-mod chat_messages;
+mod chat;
 mod system;
+mod world;
 
 pub use auth::*;
-pub use chat_messages::*;
+pub use chat::*;
 use serde::{Deserialize, Serialize};
 pub use system::*;
+pub use world::*;
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub enum ClientToServerMessage {
@@ -18,4 +20,5 @@ pub enum ClientToServerMessage {
 pub enum ServerToClientMessage {
     AuthRegisterResponse(AuthRegisterResponse),
     ChatConversation(ChatConversation),
+    WorldUpdate(WorldUpdate),
 }

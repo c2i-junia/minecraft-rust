@@ -7,7 +7,6 @@ use shared::messages::{ClientToServerMessage, ShutdownOrder};
 pub fn terminate_server_connection(
     mut client: ResMut<RenetClient>,
     mut target: ResMut<TargetServer>,
-    //mut commands: Commands,
 ) {
     println!("Terminating server connection");
     let order = ClientToServerMessage::ShutdownOrder(ShutdownOrder {
@@ -19,11 +18,4 @@ pub fn terminate_server_connection(
     target.address = None;
     target.username = None;
     target.session_token = None;
-
-    /*
-    commands.add(move |world: &mut World| {
-        world.remove_resource::<NetcodeClientTransport>();
-        world.remove_resource::<CachedChatConversation>();
-    })
-     */
 }
