@@ -254,7 +254,10 @@ fn add_world_item(
     list: &mut WorldList,
     list_entity: Entity,
 ) {
-    println!("Adding world to list : name = {:?}, entity={:?}", name, list_entity);
+    println!(
+        "Adding world to list : name = {:?}, entity={:?}",
+        name, list_entity
+    );
 
     let btn_style = Style {
         display: Display::Flex,

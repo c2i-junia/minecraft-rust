@@ -115,7 +115,7 @@ pub fn render_pause_menu(
     input: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,
     mut save_event: EventWriter<SaveRequestEvent>,
-    key_map: Res<KeyMap>
+    key_map: Res<KeyMap>,
 ) {
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();

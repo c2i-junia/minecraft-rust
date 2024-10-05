@@ -47,7 +47,7 @@ pub struct LoadWorldEvent {
 
 #[derive(Resource, Serialize, Deserialize)]
 pub struct KeyMap {
-    pub map: BTreeMap<GameAction, Vec<KeyCode>>
+    pub map: BTreeMap<GameAction, Vec<KeyCode>>,
 }
 
 fn main() {

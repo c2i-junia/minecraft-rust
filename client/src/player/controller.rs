@@ -77,8 +77,16 @@ pub fn player_movement_system(
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_query, camera_query) = queries;
-    let (time, keyboard_input, world_seed, render_distance, ui_mode, key_map, mut materials, mut world_map) =
-        resources;
+    let (
+        time,
+        keyboard_input,
+        world_seed,
+        render_distance,
+        ui_mode,
+        key_map,
+        mut materials,
+        mut world_map,
+    ) = resources;
 
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();

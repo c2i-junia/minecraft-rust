@@ -138,7 +138,7 @@ pub fn setup_hud(mut commands: Commands) {
 pub fn toggle_hud_system(
     mut q: Query<&mut Visibility, With<HudRoot>>,
     kbd: Res<ButtonInput<KeyCode>>,
-    key_map: Res<KeyMap>
+    key_map: Res<KeyMap>,
 ) {
     let keys = get_action_keys(GameAction::ToggleFps, &key_map);
     for key in keys {

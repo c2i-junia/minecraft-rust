@@ -7,7 +7,9 @@ use bevy::{
     },
     text::{Font, Text, TextSection, TextStyle},
     ui::{
-        AlignContent, AlignItems, BackgroundColor, BorderColor, Display, FlexDirection, GridPlacement, GridTrack, Interaction, JustifyContent, Overflow, Style, UiImage, UiRect, Val
+        AlignContent, AlignItems, BackgroundColor, BorderColor, Display, FlexDirection,
+        GridPlacement, GridTrack, Interaction, JustifyContent, Overflow, Style, UiImage, UiRect,
+        Val,
     },
     utils::hashbrown::HashMap,
 };
@@ -380,10 +382,7 @@ pub fn multiplayer_action(
                 }
                 MultiplayerButtonAction::Connect(serv_entity) => {
                     if let Some(srv) = list.servers.get(&serv_entity) {
-                        println!(
-                            "Server : name={}, ip={}",
-                            srv.name, srv.ip
-                        );
+                        println!("Server : name={}, ip={}", srv.name, srv.ip);
 
                         // TODO : try to connect player with srv.ip provided
                     }

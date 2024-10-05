@@ -9,11 +9,11 @@ use multi::multiplayer_action;
 use crate::input::keyboard::save_keybinds;
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
+pub mod controls;
 pub mod game_loading_screen;
 pub mod multi;
 pub mod settings;
 pub mod solo;
-pub mod controls;
 
 // This plugin manages the menu, with 5 different screens:
 // - a main menu with "New Game", "Settings", "Quit"
@@ -62,7 +62,10 @@ pub fn menu_plugin(app: &mut App) {
             Update,
             (multiplayer_action).run_if(in_state(MenuState::Multi)),
         )
-        .add_systems(Update, controls_update_system.run_if(in_state(MenuState::SettingsControls)))
+        .add_systems(
+            Update,
+            controls_update_system.run_if(in_state(MenuState::SettingsControls)),
+        )
         // Common systems to all screens that handles buttons behavior
         .add_systems(
             Update,
@@ -93,7 +96,7 @@ pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
 /// Tag component for scrolling UI lists
 #[derive(Component)]
 pub struct ScrollingList {
-    pub position:f32
+    pub position: f32,
 }
 
 // Tag component used to mark which setting is currently selected
@@ -362,7 +365,10 @@ pub fn mouse_scroll(
             scrolling_list.position += dy;
             scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
             style.top = Val::Px(scrolling_list.position);
-            println!("Mouse event : {:?}, {:?}, {:?}, {:?}", container_height, max_scroll, items_height, scrolling_list.position);
+            println!(
+                "Mouse event : {:?}, {:?}, {:?}, {:?}",
+                container_height, max_scroll, items_height, scrolling_list.position
+            );
         }
     }
 }

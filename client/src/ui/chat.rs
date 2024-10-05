@@ -114,7 +114,7 @@ pub fn render_chat(
         Res<AssetServer>,
         ResMut<RenetClient>,
         Res<ButtonInput<KeyCode>>,
-        Res<KeyMap>
+        Res<KeyMap>,
     ),
     queries: (
         Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
@@ -145,14 +145,18 @@ pub fn render_chat(
     if is_action_just_released(
         crate::input::keyboard::GameAction::OpenChat,
         &keyboard_input,
-        &key_map
+        &key_map,
     ) {
         inactive.0 = false;
         *visibility = Visibility::Visible;
     }
 
     if *visibility == Visibility::Visible
-        && is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &keyboard_input, &key_map)
+        && is_action_just_pressed(
+            crate::input::keyboard::GameAction::Escape,
+            &keyboard_input,
+            &key_map,
+        )
     {
         *visibility = Visibility::Hidden;
         *value = TextInputValue("".to_string());

@@ -1,4 +1,9 @@
-use std::{collections::BTreeMap, fs::{self, File}, io::Write, path::Path};
+use std::{
+    collections::BTreeMap,
+    fs::{self, File},
+    io::Write,
+    path::Path,
+};
 
 use bevy::{
     input::ButtonInput,
@@ -9,7 +14,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::KeyMap;
 
-#[derive(Eq, Hash, PartialEq, Component, Debug, Clone, Copy, Serialize, Deserialize, PartialOrd, Ord)]
+#[derive(
+    Eq, Hash, PartialEq, Component, Debug, Clone, Copy, Serialize, Deserialize, PartialOrd, Ord,
+)]
 pub enum GameAction {
     MoveForward,
     MoveBackward,
@@ -79,8 +86,7 @@ pub fn get_action_keys(action: GameAction, key_map: &KeyMap) -> Vec<KeyCode> {
     key_map.map.get(&action).unwrap().to_vec()
 }
 
-
-const BINDS_PATH:&str = "keybinds.ron";
+const BINDS_PATH: &str = "keybinds.ron";
 
 pub fn get_keybinds() -> KeyMap {
     // Try to get & serialize existing binds
