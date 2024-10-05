@@ -8,7 +8,8 @@ use bevy::{
     text::{Font, Text, TextSection, TextStyle},
     ui::{
         AlignContent, AlignItems, BackgroundColor, BorderColor, Display, FlexDirection,
-        GridPlacement, GridTrack, Interaction, JustifyContent, Style, UiImage, UiRect, Val,
+        GridPlacement, GridTrack, Interaction, JustifyContent, Overflow, Style, UiImage, UiRect,
+        Val,
     },
     utils::hashbrown::HashMap,
 };
@@ -17,7 +18,7 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 
-use super::{MenuButtonAction, MenuState};
+use super::{MenuButtonAction, MenuState, ScrollingList};
 
 pub struct ServerItem {
     pub name: String,
@@ -26,7 +27,6 @@ pub struct ServerItem {
 
 #[derive(Component, Default)]
 pub struct ServerList {
-    pub position: f32,
     pub servers: HashMap<Entity, ServerItem>,
 }
 
@@ -98,26 +98,36 @@ pub fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) 
                 ..Default::default()
             });
 
-            root.spawn((
-                NodeBundle {
-                    border_color: BorderColor(BACKGROUND_COLOR),
-                    style: Style {
-                        width: Val::Percent(100.),
-                        height: Val::Vh(50.),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Start,
-                        justify_content: JustifyContent::Start,
-                        border: UiRect::all(Val::Px(2.)),
-                        padding: UiRect::all(Val::Px(5.)),
-                        ..Default::default()
-                    },
+            root.spawn(NodeBundle {
+                border_color: BorderColor(BACKGROUND_COLOR),
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(50.),
+                    flex_direction: FlexDirection::Column,
+                    overflow: Overflow::clip_y(),
+                    border: UiRect::all(Val::Px(2.)),
                     ..Default::default()
                 },
-                ServerList {
-                    position: 0.,
-                    servers: HashMap::new(),
-                },
-            ));
+                ..Default::default()
+            })
+            .with_children(|w| {
+                w.spawn((
+                    NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            padding: UiRect::all(Val::Px(10.)),
+                            row_gap: Val::Px(10.),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    ScrollingList { position: 0. },
+                    ServerList {
+                        servers: HashMap::new(),
+                    },
+                ));
+            });
 
             root.spawn(NodeBundle {
                 style: Style {
@@ -372,10 +382,7 @@ pub fn multiplayer_action(
                 }
                 MultiplayerButtonAction::Connect(serv_entity) => {
                     if let Some(srv) = list.servers.get(&serv_entity) {
-                        println!(
-                            "Server : name={}, ip={} {}",
-                            srv.name, srv.ip, list.position
-                        );
+                        println!("Server : name={}, ip={}", srv.name, srv.ip);
 
                         // TODO : try to connect player with srv.ip provided
                     }

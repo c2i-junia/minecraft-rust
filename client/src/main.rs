@@ -20,7 +20,10 @@ use bevy::{
         RenderPlugin,
     },
 };
+use input::keyboard::{get_keybinds, GameAction};
 use menu::settings::{DisplayQuality, Volume};
+use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -42,6 +45,11 @@ pub struct LoadWorldEvent {
     pub world_name: String,
 }
 
+#[derive(Resource, Serialize, Deserialize)]
+pub struct KeyMap {
+    pub map: BTreeMap<GameAction, Vec<KeyCode>>,
+}
+
 fn main() {
     let mut app = App::new();
     app.add_plugins(
@@ -61,6 +69,7 @@ fn main() {
     network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
+        .insert_resource(get_keybinds())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()

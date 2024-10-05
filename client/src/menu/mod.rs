@@ -1,11 +1,15 @@
+use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::prelude::*;
 
 use bevy::{app::AppExit, color::palettes::css::CRIMSON};
 use bevy_simple_text_input::TextInputInactive;
+use controls::{controls_menu_setup, controls_update_system};
 use multi::multiplayer_action;
 
+use crate::input::keyboard::save_keybinds;
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
+pub mod controls;
 pub mod game_loading_screen;
 pub mod multi;
 pub mod settings;
@@ -48,6 +52,7 @@ pub fn menu_plugin(app: &mut App) {
             OnEnter(MenuState::SettingsSound),
             settings::sound_settings_menu_setup,
         )
+        .add_systems(OnExit(MenuState::SettingsControls), save_keybinds)
         .add_systems(
             Update,
             settings::setting_button::<Volume>.run_if(in_state(MenuState::SettingsSound)),
@@ -57,11 +62,16 @@ pub fn menu_plugin(app: &mut App) {
             Update,
             (multiplayer_action).run_if(in_state(MenuState::Multi)),
         )
+        .add_systems(
+            Update,
+            controls_update_system.run_if(in_state(MenuState::SettingsControls)),
+        )
         // Common systems to all screens that handles buttons behavior
         .add_systems(
             Update,
-            (menu_action, button_system).run_if(in_state(GameState::Menu)),
-        );
+            (menu_action, button_system, mouse_scroll).run_if(in_state(GameState::Menu)),
+        )
+        .add_systems(OnEnter(MenuState::SettingsControls), controls_menu_setup);
 }
 
 // State used for the current menu screen
@@ -73,6 +83,7 @@ pub enum MenuState {
     Settings,
     SettingsDisplay,
     SettingsSound,
+    SettingsControls,
     #[default]
     Disabled,
 }
@@ -81,6 +92,12 @@ pub const NORMAL_BUTTON: Color = Color::srgb(0.15, 0.15, 0.15);
 pub const HOVERED_BUTTON: Color = Color::srgb(0.25, 0.25, 0.25);
 pub const HOVERED_PRESSED_BUTTON: Color = Color::srgb(0.25, 0.65, 0.25);
 pub const PRESSED_BUTTON: Color = Color::srgb(0.35, 0.75, 0.35);
+
+/// Tag component for scrolling UI lists
+#[derive(Component)]
+pub struct ScrollingList {
+    pub position: f32,
+}
 
 // Tag component used to mark which setting is currently selected
 #[derive(Component)]
@@ -94,6 +111,7 @@ enum MenuButtonAction {
     Settings,
     SettingsDisplay,
     SettingsSound,
+    SettingsControls,
     BackToMainMenu,
     BackToSettings,
     Quit,
@@ -320,7 +338,37 @@ fn menu_action(
                     menu_state.set(MenuState::Settings);
                 }
                 MenuButtonAction::Multi => menu_state.set(MenuState::Multi),
+                MenuButtonAction::SettingsControls => menu_state.set(MenuState::SettingsControls),
             }
+        }
+    }
+}
+
+pub fn mouse_scroll(
+    mut mouse_wheel_events: EventReader<MouseWheel>,
+    mut query_list: Query<(&mut ScrollingList, &mut Style, &Parent, &Node)>,
+    query_node: Query<&Node>,
+) {
+    for mouse_wheel_event in mouse_wheel_events.read() {
+        println!("MouseEvent");
+        for (mut scrolling_list, mut style, parent, list_node) in &mut query_list {
+            let items_height = list_node.size().y;
+            let container_height = query_node.get(parent.get()).unwrap().size().y;
+
+            let max_scroll = (items_height - container_height).max(0.) + 30.;
+
+            let dy = match mouse_wheel_event.unit {
+                MouseScrollUnit::Line => mouse_wheel_event.y * 20.,
+                MouseScrollUnit::Pixel => mouse_wheel_event.y,
+            };
+
+            scrolling_list.position += dy;
+            scrolling_list.position = scrolling_list.position.clamp(-max_scroll, 0.);
+            style.top = Val::Px(scrolling_list.position);
+            println!(
+                "Mouse event : {:?}, {:?}, {:?}, {:?}",
+                container_height, max_scroll, items_height, scrolling_list.position
+            );
         }
     }
 }

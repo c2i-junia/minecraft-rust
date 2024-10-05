@@ -2,6 +2,7 @@ use crate::input::keyboard::is_action_just_pressed;
 use crate::input::keyboard::is_action_just_released;
 use crate::network::{send_chat_message, CachedChatConversation};
 use crate::ui::UiDialog;
+use crate::KeyMap;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use bevy_simple_text_input::*;
@@ -113,6 +114,7 @@ pub fn render_chat(
         Res<AssetServer>,
         ResMut<RenetClient>,
         Res<ButtonInput<KeyCode>>,
+        Res<KeyMap>,
     ),
     queries: (
         Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
@@ -133,7 +135,7 @@ pub fn render_chat(
     mut event: EventReader<TextInputSubmitEvent>,
     mut commands: Commands,
 ) {
-    let (cached_conv, asset_server, mut client, keyboard_input) = resources;
+    let (cached_conv, asset_server, mut client, keyboard_input, key_map) = resources;
     let (mut text_query, mut visibility_query, parent_query, mut animation_query) = queries;
 
     let (entity_check, mut inactive, mut value) = text_query.single_mut();
@@ -143,13 +145,18 @@ pub fn render_chat(
     if is_action_just_released(
         crate::input::keyboard::GameAction::OpenChat,
         &keyboard_input,
+        &key_map,
     ) {
         inactive.0 = false;
         *visibility = Visibility::Visible;
     }
 
     if *visibility == Visibility::Visible
-        && is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &keyboard_input)
+        && is_action_just_pressed(
+            crate::input::keyboard::GameAction::Escape,
+            &keyboard_input,
+            &key_map,
+        )
     {
         *visibility = Visibility::Hidden;
         *value = TextInputValue("".to_string());

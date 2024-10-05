@@ -2,7 +2,7 @@ use super::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use super::targeted_block::BlockText;
 use super::{CoordsText, FpsText};
 use crate::input::keyboard::{get_action_keys, GameAction};
-use crate::GameState;
+use crate::{GameState, KeyMap};
 use bevy::prelude::*;
 
 /// Marker to find the container entity so we can show/hide the FPS counter
@@ -138,8 +138,9 @@ pub fn setup_hud(mut commands: Commands) {
 pub fn toggle_hud_system(
     mut q: Query<&mut Visibility, With<HudRoot>>,
     kbd: Res<ButtonInput<KeyCode>>,
+    key_map: Res<KeyMap>,
 ) {
-    let keys = get_action_keys(GameAction::ToggleFps);
+    let keys = get_action_keys(GameAction::ToggleFps, &key_map);
     for key in keys {
         if kbd.just_pressed(key) {
             let mut vis = q.single_mut();

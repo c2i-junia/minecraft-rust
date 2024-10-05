@@ -5,6 +5,7 @@ use crate::player::{Player, ViewMode};
 use crate::ui::UIMode;
 use crate::world::RenderDistance;
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
+use crate::KeyMap;
 use bevy::prelude::*;
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
@@ -69,29 +70,38 @@ pub fn player_movement_system(
         Res<WorldSeed>,
         Res<RenderDistance>,
         Res<UIMode>,
+        Res<KeyMap>,
         ResMut<Assets<StandardMaterial>>,
         ResMut<WorldMap>,
     ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_query, camera_query) = queries;
-    let (time, keyboard_input, world_seed, render_distance, ui_mode, mut materials, mut world_map) =
-        resources;
+    let (
+        time,
+        keyboard_input,
+        world_seed,
+        render_distance,
+        ui_mode,
+        key_map,
+        mut materials,
+        mut world_map,
+    ) = resources;
 
     let (mut player_transform, mut player, material_handle_mut_ref) = player_query.single_mut();
     let camera_transform = camera_query.single();
 
     if *ui_mode == UIMode::Closed {
-        if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input) {
+        if is_action_just_pressed(GameAction::ToggleViewMode, &keyboard_input, &key_map) {
             player.toggle_view_mode();
         }
 
-        if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input) {
+        if is_action_just_pressed(GameAction::ToggleChunkDebugMode, &keyboard_input, &key_map) {
             player.toggle_chunk_debug_mode();
         }
 
         // fly mode (f key)
-        if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input) {
+        if is_action_just_pressed(GameAction::ToggleFlyMode, &keyboard_input, &key_map) {
             player.toggle_fly_mode();
         }
     }
@@ -125,10 +135,10 @@ pub fn player_movement_system(
 
     // flying mode
     if player.is_flying && *ui_mode == UIMode::Closed {
-        if is_action_pressed(GameAction::FlyUp, &keyboard_input) {
+        if is_action_pressed(GameAction::FlyUp, &keyboard_input, &key_map) {
             player_transform.translation.y += speed * 2.0 * time.delta_seconds();
         }
-        if is_action_pressed(GameAction::FlyDown, &keyboard_input) {
+        if is_action_pressed(GameAction::FlyDown, &keyboard_input, &key_map) {
             player_transform.translation.y -= speed * 2.0 * time.delta_seconds();
         }
     }
@@ -144,16 +154,16 @@ pub fn player_movement_system(
 
     if *ui_mode == UIMode::Closed {
         // Adjust direction based on key presses
-        if is_action_pressed(GameAction::MoveBackward, &keyboard_input) {
+        if is_action_pressed(GameAction::MoveBackward, &keyboard_input, &key_map) {
             direction -= forward;
         }
-        if is_action_pressed(GameAction::MoveForward, &keyboard_input) {
+        if is_action_pressed(GameAction::MoveForward, &keyboard_input, &key_map) {
             direction += forward;
         }
-        if is_action_pressed(GameAction::MoveLeft, &keyboard_input) {
+        if is_action_pressed(GameAction::MoveLeft, &keyboard_input, &key_map) {
             direction -= right;
         }
-        if is_action_pressed(GameAction::MoveRight, &keyboard_input) {
+        if is_action_pressed(GameAction::MoveRight, &keyboard_input, &key_map) {
             direction += right;
         }
     }
@@ -181,7 +191,7 @@ pub fn player_movement_system(
 
     // Handle jumping (if on the ground) and gravity, only if not flying
     if !player.is_flying {
-        if player.on_ground && is_action_pressed(GameAction::Jump, &keyboard_input) {
+        if player.on_ground && is_action_pressed(GameAction::Jump, &keyboard_input, &key_map) {
             // Player can jump only when grounded
             player.vertical_velocity = jump_velocity;
             player.on_ground = false;

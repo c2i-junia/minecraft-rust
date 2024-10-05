@@ -71,6 +71,7 @@ pub fn settings_menu_setup(mut commands: Commands) {
                     for (action, text) in [
                         (MenuButtonAction::SettingsDisplay, "Display"),
                         (MenuButtonAction::SettingsSound, "Sound"),
+                        (MenuButtonAction::SettingsControls, "Controls"),
                         (MenuButtonAction::BackToMainMenu, "Back"),
                     ] {
                         parent

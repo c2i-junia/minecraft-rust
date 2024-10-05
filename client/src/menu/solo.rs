@@ -6,12 +6,12 @@ use bevy::{
         ResMut, StateScoped, TextBundle,
     },
     text::TextStyle,
-    ui::{AlignItems, FlexDirection, JustifyContent, Style, UiRect, Val},
+    ui::{AlignItems, FlexDirection, JustifyContent, Overflow, Style, UiRect, Val},
 };
 
 use crate::{constants::SAVE_PATH, world::delete_save_files, GameState, LoadWorldEvent};
 
-use super::{MenuButtonAction, MenuState};
+use super::{MenuButtonAction, MenuState, ScrollingList};
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -34,7 +34,6 @@ pub struct WorldItem {
 
 #[derive(Component, Default)]
 pub struct WorldList {
-    pub position: f32,
     pub worlds: HashMap<Entity, WorldItem>,
 }
 
@@ -103,26 +102,36 @@ pub fn solo_menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
                 ..Default::default()
             });
 
-            root.spawn((
-                NodeBundle {
-                    border_color: BorderColor(BACKGROUND_COLOR),
-                    style: Style {
-                        width: Val::Percent(100.),
-                        height: Val::Vh(50.),
-                        flex_direction: FlexDirection::Column,
-                        align_items: AlignItems::Start,
-                        justify_content: JustifyContent::Start,
-                        border: UiRect::all(Val::Px(2.)),
-                        padding: UiRect::all(Val::Px(5.)),
-                        ..Default::default()
-                    },
+            root.spawn(NodeBundle {
+                border_color: BorderColor(BACKGROUND_COLOR),
+                style: Style {
+                    width: Val::Percent(100.),
+                    height: Val::Percent(50.),
+                    flex_direction: FlexDirection::Column,
+                    overflow: Overflow::clip_y(),
+                    border: UiRect::all(Val::Px(2.)),
                     ..Default::default()
                 },
-                WorldList {
-                    position: 0.,
-                    worlds: HashMap::new(),
-                },
-            ));
+                ..Default::default()
+            })
+            .with_children(|w| {
+                w.spawn((
+                    NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            align_items: AlignItems::Center,
+                            padding: UiRect::all(Val::Px(10.)),
+                            row_gap: Val::Px(10.),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                    ScrollingList { position: 0. },
+                    WorldList {
+                        worlds: HashMap::new(),
+                    },
+                ));
+            });
 
             root.spawn(NodeBundle {
                 style: Style {
@@ -243,9 +252,12 @@ fn add_world_item(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     list: &mut WorldList,
-    entity: Entity,
+    list_entity: Entity,
 ) {
-    println!("Adding world to list : name = {:?}", name);
+    println!(
+        "Adding world to list : name = {:?}, entity={:?}",
+        name, list_entity
+    );
 
     let btn_style = Style {
         display: Display::Flex,
@@ -341,7 +353,7 @@ fn add_world_item(
         .entity(world)
         .push_children(&[play_btn, delete_btn, txt]);
 
-    commands.entity(entity).push_children(&[world]);
+    commands.entity(list_entity).push_children(&[world]);
 
     list.worlds.insert(world, WorldItem { name: name.clone() });
 }
@@ -385,8 +397,6 @@ pub fn solo_action(
                 }
                 MultiplayerButtonAction::Load(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
-                        println!("World : name={}, {}", world.name, list.position);
-
                         load_event.send(LoadWorldEvent {
                             world_name: world.name.clone(),
                         });
