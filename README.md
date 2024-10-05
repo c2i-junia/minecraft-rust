@@ -1,6 +1,8 @@
 # minecraft-rust
 
-Copy of Minecraft written in Rust, using the Bevy game engine
+A Minecraft game clone written in Rust, using the Bevy game engine.
+
+<br>
 
 ## Controls
 
@@ -39,10 +41,50 @@ In inventory :
 > [!NOTE]
 > In this context, "valid stack" means a stack in inventory, either empty or holding the same items as the mouse
 
-## Dependencies
+<br>
 
-ArchLinux :
+## Getting Started
+
+### Prerequisites
+
+To run this project, you need to have the following installed:
+
+- **Rust** (Stable toolchain)
+
+### Running the Project
+
+To compile and run the game locally, use the following commands:
 
 ```sh
-sudo pacman -Syu vulkan-radeon vulkan-tools
+# Clone the repository
+git clone https://github.com/your-repo/minecraft-rust.git
+
+# Navigate to the project directory
+cd minecraft-rust
+
+# Start the local server
+cd server
+cargo run --release
+
+# In a separate terminal, start the client
+cd ../client
+cargo run --release
 ```
+
+<br>
+
+## Contributing
+
+Feel free to submit issues or open pull requests. If you want to know where to help, refer to the existing issues.
+
+### Guidelines 
+
+1. Run `cargo fmt` before committing.
+2. **Commit Messages**:
+   - Use a capitalized first letter.
+   - Write commit messages in the present tense (e.g., "Add feature X" instead of "Added feature X").
+3. **Branches**:
+   - Use the naming convention `feature/<description>` for branches introducing new features.
+   - The `main` branch should always compile successfully and be free of warnings.
+   - Experimental branches are allowed to include code that does not build successfully.
+   - Prefer rebasing over merging.
