@@ -6,6 +6,7 @@ use bevy_simple_text_input::TextInputInactive;
 use controls::{controls_menu_setup, controls_update_system};
 use multi::multiplayer_action;
 
+use crate::input::keyboard::save_keybinds;
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
 pub mod game_loading_screen;
@@ -51,6 +52,7 @@ pub fn menu_plugin(app: &mut App) {
             OnEnter(MenuState::SettingsSound),
             settings::sound_settings_menu_setup,
         )
+        .add_systems(OnExit(MenuState::SettingsControls), save_keybinds)
         .add_systems(
             Update,
             settings::setting_button::<Volume>.run_if(in_state(MenuState::SettingsSound)),
@@ -350,7 +352,7 @@ pub fn mouse_scroll(
             let items_height = list_node.size().y;
             let container_height = query_node.get(parent.get()).unwrap().size().y;
 
-            let max_scroll = (items_height - container_height).max(0.);
+            let max_scroll = (items_height - container_height).max(0.) + 30.;
 
             let dy = match mouse_wheel_event.unit {
                 MouseScrollUnit::Line => mouse_wheel_event.y * 20.,

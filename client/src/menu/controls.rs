@@ -17,13 +17,13 @@ use bevy::{
 
 use crate::{input::keyboard::GameAction, KeyMap};
 
-use super::{MenuButtonAction, MenuState, ScrollingList};
+use super::{MenuButtonAction, MenuState, ScrollingList, NORMAL_BUTTON};
 
 #[derive(Debug, Component, PartialEq, Eq)]
-pub enum ControlsButtonAction {
-    EditControl(GameAction),
-    Clear(GameAction, Entity),
-}
+pub struct ClearButton(GameAction, Entity);
+
+#[derive(Component, Debug, PartialEq, Eq)]
+pub struct EditControlButton(GameAction);
 
 #[derive(Component)]
 pub struct ActionRecorder {
@@ -88,7 +88,7 @@ pub fn controls_menu_setup(mut commands: Commands, assets: Res<AssetServer>, key
                 style: Style {
                     overflow: Overflow::clip_y(),
                     height: Val::Vh(100.),
-                    width: Val::Vw(80.),
+                    width: Val::Vw(60.),
                     flex_direction: FlexDirection::Column,
                     ..Default::default()
                 },
@@ -127,6 +127,7 @@ pub fn controls_menu_setup(mut commands: Commands, assets: Res<AssetServer>, key
                         for (action, keys) in &key_map.map {
                             list.spawn((
                                 ButtonBundle {
+                                    border_color: BorderColor(Color::srgb(0.3, 0.3, 0.3)),
                                     style: Style {
                                         display: Display::Grid,
                                         width: Val::Percent(100.),
@@ -137,11 +138,12 @@ pub fn controls_menu_setup(mut commands: Commands, assets: Res<AssetServer>, key
                                             RepeatedGridTrack::flex(2, 1.),
                                             RepeatedGridTrack::px(1, 40.),
                                         ],
+                                        border: UiRect::bottom(Val::Px(2.5)),
                                         ..Default::default()
                                     },
                                     ..Default::default()
                                 },
-                                ControlsButtonAction::EditControl(*action),
+                                EditControlButton(*action),
                             ))
                             .with_children(|line| {
                                 line.spawn(TextBundle {
@@ -172,11 +174,17 @@ pub fn controls_menu_setup(mut commands: Commands, assets: Res<AssetServer>, key
 
                                 let id = component.id();
 
-                                update_input_component(&mut component.commands(), id, keys, &assets);
+                                update_input_component(
+                                    &mut component.commands(),
+                                    id,
+                                    keys,
+                                    &assets,
+                                );
 
                                 line.spawn((
                                     ButtonBundle {
                                         border_radius: BorderRadius::all(Val::Percent(25.)),
+                                        focus_policy: FocusPolicy::Pass,
                                         style: Style {
                                             align_items: AlignItems::Center,
                                             justify_content: JustifyContent::Center,
@@ -186,7 +194,7 @@ pub fn controls_menu_setup(mut commands: Commands, assets: Res<AssetServer>, key
                                         },
                                         ..Default::default()
                                     },
-                                    ControlsButtonAction::Clear(*action, id),
+                                    ClearButton(*action, id),
                                 ))
                                 .with_children(|btn| {
                                     btn.spawn(ImageBundle {
@@ -269,6 +277,7 @@ pub fn update_input_component(
     commands.entity(entity).despawn_descendants();
     let font: Handle<Font> = assets.load("fonts/gohu.ttf");
 
+    // List all possible binds, and add them as text elements
     for key in binds {
         let child = commands
             .spawn(NodeBundle {
@@ -283,7 +292,25 @@ pub fn update_input_component(
             .with_children(|k| {
                 k.spawn(TextBundle {
                     text: Text::from_section(
-                        format!("{:?}", key),
+                        {
+                            // Formats keybinds
+                            let mut output = format!("{:?}", key).replace("Key", "");
+                            if output.starts_with("Arrow") {
+                                if output.ends_with("Left") {
+                                    output = "←".into()
+                                }
+                                if output.ends_with("Right") {
+                                    output = "→".into()
+                                }
+                                if output.ends_with("Up") {
+                                    output = "↑".into()
+                                }
+                                if output.ends_with("Down") {
+                                    output = "↓".into()
+                                }
+                            }
+                            output
+                        },
                         TextStyle {
                             font: font.clone(),
                             font_size: 21.,
@@ -301,13 +328,14 @@ pub fn update_input_component(
 
 pub fn controls_update_system(
     queries: (
-        Query<(&Interaction, &ControlsButtonAction, &Children), Changed<Interaction>>,
+        Query<(&Interaction, &EditControlButton, &Children, &mut Style), Changed<Interaction>>,
+        Query<(&Interaction, &ClearButton, &mut BackgroundColor), Changed<Interaction>>,
         Query<(&mut ActionRecorder, &mut Visibility)>,
     ),
     mut commands: Commands,
     resources: (Res<AssetServer>, Res<ButtonInput<KeyCode>>, ResMut<KeyMap>),
 ) {
-    let (interaction_query, mut visibility_query) = queries;
+    let (mut edit_query, mut clear_query, mut visibility_query) = queries;
     let (assets, input, mut key_map) = resources;
 
     if visibility_query.is_empty() {
@@ -330,25 +358,54 @@ pub fn controls_update_system(
         }
     }
 
-    for (interaction, btn_action, children) in interaction_query.iter() {
-        if *interaction == Interaction::Pressed {
-            match *btn_action {
-                ControlsButtonAction::EditControl(kbd_action) => {
-                    // Open the "add input" dialog
-                    *vis = Visibility::Visible;
-                    recorder.action = kbd_action;
-                    recorder.entity = children[1];
+    for (interaction, btn_action, children, mut style) in edit_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                let kbd_action = btn_action.0;
+                // Check if "Clear" button received an event. If so, ignores input
+                if clear_query.get(children[2]).is_ok() {
+                    continue;
                 }
-                ControlsButtonAction::Clear(kbd_action, entity) => {
-                    // Clear all binds for this action
-                    key_map.map.insert(kbd_action, Vec::new());
-                    update_input_component(
-                        &mut commands,
-                        entity,
-                        key_map.map.get(&kbd_action).unwrap(),
-                        &assets,
-                    );
-                }
+                // Open the "add input" dialog
+                *vis = Visibility::Visible;
+                recorder.action = kbd_action;
+                recorder.entity = children[1];
+            }
+            Interaction::Hovered => {
+                // Show "Clear" button
+                style.grid_template_columns.pop();
+                style
+                    .grid_template_columns
+                    .push(RepeatedGridTrack::px(1, 40.));
+            }
+            Interaction::None => {
+                // Hide "clear button"
+                style.grid_template_columns.pop();
+                style
+                    .grid_template_columns
+                    .push(RepeatedGridTrack::px(1, 10.));
+            }
+        }
+    }
+
+    for (interaction, clear, mut bg) in clear_query.iter_mut() {
+        match *interaction {
+            Interaction::Pressed => {
+                // Clear all binds for this action
+                key_map.map.insert(clear.0, Vec::new());
+                // Update visual element
+                update_input_component(
+                    &mut commands,
+                    clear.1,
+                    key_map.map.get(&clear.0).unwrap(),
+                    &assets,
+                );
+            }
+            Interaction::Hovered => {
+                bg.0 = Color::Srgba(css::RED);
+            }
+            Interaction::None => {
+                bg.0 = NORMAL_BUTTON;
             }
         }
     }

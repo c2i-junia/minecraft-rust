@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-bevy = "0.14"
+bevy = { version="0.14", features=["serialize"] }
 lazy_static = "1.5.0"
 rand = "0.8.5"              # to generate the seed
 noise = "0.9"               # to generate the map
