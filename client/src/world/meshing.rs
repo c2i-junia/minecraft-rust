@@ -1,9 +1,9 @@
 use crate::constants::CHUNK_SIZE;
-use crate::world::utils::to_global_pos;
 use crate::world::{Block, WorldMap};
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
+use shared::world::to_global_pos;
 
 #[derive(Copy, Clone)]
 struct UvCoords {

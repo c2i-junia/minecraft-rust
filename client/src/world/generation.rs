@@ -1,9 +1,9 @@
 use crate::constants::CHUNK_SIZE;
 use crate::player::Player;
-use crate::world::utils::{block_to_chunk_coord, to_global_pos, SIX_OFFSETS};
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
+use shared::world::{block_to_chunk_coord, to_global_pos, SIX_OFFSETS};
 use std::collections::HashSet;
 
 use crate::{world::*, GameState, LoadWorldEvent};

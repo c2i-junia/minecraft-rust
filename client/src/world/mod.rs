@@ -6,7 +6,6 @@ mod meshing;
 pub mod render;
 mod render_distance;
 mod save;
-pub(crate) mod utils;
 
 pub use data::*;
 pub use generation::*;

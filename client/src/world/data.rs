@@ -1,7 +1,7 @@
 use crate::constants::CHUNK_SIZE;
-use crate::world::utils::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos};
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
+use shared::world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos};
 use std::collections::HashMap;
 
 pub type Block = shared::world::Block;

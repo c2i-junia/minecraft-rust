@@ -1,6 +1,5 @@
 use crate::camera::BlockRaycastSet;
 use crate::constants::CHUNK_SIZE;
-use crate::world::utils::{global_block_to_chunk_pos, SIX_OFFSETS};
 use crate::world::{
     Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent,
 };
@@ -11,6 +10,7 @@ use bevy::pbr::PbrBundle;
 use bevy::prelude::*;
 use bevy::prelude::{Commands, Mesh, Res, Transform};
 use bevy_mod_raycast::deferred::RaycastMesh;
+use shared::world::{global_block_to_chunk_pos, SIX_OFFSETS};
 
 fn update_chunk(
     chunk: &mut Chunk,
