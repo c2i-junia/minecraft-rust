@@ -1,7 +1,6 @@
 use std::fs;
 use std::{collections::HashMap, fmt::Debug};
 
-use bevy::reflect::Enum;
 use bevy::{
     prelude::{ResMut, Resource},
     scene::ron::from_str,
@@ -10,8 +9,6 @@ use serde::{Deserialize, Serialize};
 
 pub type BlockId = u32;
 pub type ItemId = u32;
-
-pub type Test = &'static dyn Enum;
 
 /// Data associated with a given `BlockId`
 #[derive(Debug, Clone)]
@@ -165,13 +162,7 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
         registry.blocks, registry.items, registry.block_to_id, registry.item_to_id
     );
     println!("--------------------------------------------");
-}
 
-pub enum TestType {
-    Grass,
-    Dirt,
-    Stone,
-    Bedrock,
 }
 
 pub enum BlockType {

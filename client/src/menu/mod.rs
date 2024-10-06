@@ -147,10 +147,7 @@ fn button_system(
     }
 }
 
-fn menu_setup(
-    mut menu_state: ResMut<NextState<MenuState>>,
-    mut commands: Commands,
-) {
+fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>, mut commands: Commands) {
     commands.spawn((
         Camera2dBundle::default(),
         MenuCamera,

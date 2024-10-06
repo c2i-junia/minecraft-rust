@@ -3,7 +3,9 @@ use crate::player::Player;
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
-use shared::world::{block_to_chunk_coord, to_global_pos, BlockEnum, BlockType, ItemBlockRegistry, SIX_OFFSETS};
+use shared::world::{
+    block_to_chunk_coord, to_global_pos, BlockEnum, BlockType, ItemBlockRegistry, SIX_OFFSETS,
+};
 use std::collections::HashSet;
 
 use crate::{world::*, GameState, LoadWorldEvent};
@@ -55,7 +57,10 @@ fn generate_chunk(
                 };
 
                 // Get block id from name, then set it
-                world_map.set_block(&IVec3::new(x, y, z), *registry.block_to_id.get(&block).unwrap());
+                world_map.set_block(
+                    &IVec3::new(x, y, z),
+                    *registry.block_to_id.get(&block).unwrap(),
+                );
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
@@ -107,7 +112,12 @@ pub fn setup_world(
     commands.insert_resource(WorldSeed(seed));
 
     // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
-    if let Ok(loaded_world) = load_world_map(world_name, &mut player, &mut transform.translation, &registry) {
+    if let Ok(loaded_world) = load_world_map(
+        world_name,
+        &mut player,
+        &mut transform.translation,
+        &registry,
+    ) {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
 
