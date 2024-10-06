@@ -40,7 +40,7 @@ pub fn block_from_item(item: &ItemId, registry: &ItemBlockRegistry) -> Option<Bl
 /// Cannot go lower than `0` items\
 /// Returns number of items _actually_ removed
 pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -> u32 {
-    if let Some(mut item) = floating_stack.items.clone() {
+    if let Some(mut item) = floating_stack.items {
         if nb >= item.nb {
             floating_stack.items = None;
             return item.nb;
@@ -63,7 +63,7 @@ pub fn add_item_floating_stack(
 ) -> u32 {
     if nb == 0 {
         0
-    } else if let Some(mut item) = floating_stack.items.clone() {
+    } else if let Some(mut item) = floating_stack.items {
         if nb + item.nb > MAX_ITEM_STACK {
             nb = MAX_ITEM_STACK - item.nb;
         }

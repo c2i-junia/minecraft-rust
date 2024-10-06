@@ -5,7 +5,6 @@ use bevy::{app::AppExit, color::palettes::css::CRIMSON};
 use bevy_simple_text_input::TextInputInactive;
 use controls::{controls_menu_setup, controls_update_system};
 use multi::multiplayer_action;
-use shared::world::ItemBlockRegistry;
 
 use crate::input::keyboard::save_keybindings;
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
@@ -148,8 +147,10 @@ fn button_system(
     }
 }
 
-fn menu_setup(mut menu_state: ResMut<NextState<MenuState>>, mut commands: Commands, registry: Res<ItemBlockRegistry>) {
-    println!("Registry : {:?}", registry);
+fn menu_setup(
+    mut menu_state: ResMut<NextState<MenuState>>,
+    mut commands: Commands,
+) {
     commands.spawn((
         Camera2dBundle::default(),
         MenuCamera,

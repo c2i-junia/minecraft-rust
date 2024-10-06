@@ -41,12 +41,10 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &ItemBlockRegistry) -> 
                 } else {
                     "grass"
                 };
-
-                let res = registry.block_to_id.get(block.into());
-
+                
                 chunk
                     .map
-                    .insert(IVec3::new(x, y, z), *res.unwrap());
+                    .insert(IVec3::new(x, y, z), *registry.block_to_id.get(block).unwrap());
             }
         }
     }

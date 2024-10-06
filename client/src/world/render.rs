@@ -19,11 +19,11 @@ fn update_chunk(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     world_map: &mut WorldMap,
-    registry: &ItemBlockRegistry
+    registry: &ItemBlockRegistry,
 ) {
     //println!("update_chunk {}", chunk_pos);
     let texture = material_resource.atlas_texture.clone().unwrap();
-    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk_pos, &registry);
+    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk_pos, registry);
 
     if chunk.entity.is_some() {
         commands
@@ -65,7 +65,7 @@ pub fn world_render_system(
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut queued_events: Local<QueuedEvents>,
-    registry: Res<ItemBlockRegistry>
+    registry: Res<ItemBlockRegistry>,
 ) {
     for event in ev_render.read() {
         queued_events.events.insert(*event);
@@ -104,7 +104,7 @@ pub fn world_render_system(
                 &mut commands,
                 &mut meshes,
                 &mut world_map,
-                &registry
+                &registry,
             );
         }
     }

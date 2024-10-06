@@ -80,9 +80,6 @@ impl WorldMap {
         if x == 0 && z == 0 {
             // println!("inserting y={}", y)
         }
-        chunk.map.insert(
-            IVec3::new(sub_x, sub_y, sub_z),
-            block,
-        );
+        chunk.map.insert(IVec3::new(sub_x, sub_y, sub_z), block);
     }
 }

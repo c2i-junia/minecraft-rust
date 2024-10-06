@@ -18,7 +18,7 @@ use bevy::{
         render_resource::WgpuFeatures,
         settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
-    }
+    },
 };
 use input::data::GameAction;
 use input::keyboard::get_bindings;

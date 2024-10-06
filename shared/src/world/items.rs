@@ -1,5 +1,5 @@
-use std::fs;
 use std::collections::HashMap;
+use std::fs;
 
 use bevy::{
     prelude::{ResMut, Resource},
@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub type BlockId = u32;
 pub type ItemId = u32;
 
+/// Data associated with a given `BlockId`
 #[derive(Debug, Clone)]
 pub struct BlockData {
     pub drops: Vec<(u16, ItemId)>,
@@ -17,6 +18,7 @@ pub struct BlockData {
     pub uvs: [f32; 4],
 }
 
+/// Temporary struct for deserialization purposes
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TempBlock {
     pub id: String,
@@ -25,12 +27,14 @@ pub struct TempBlock {
     pub uvs: [f32; 4],
 }
 
+/// Data associated with a given `ItemId`
 #[derive(Debug)]
 pub struct ItemData {
     pub kind: ItemType,
     pub stack: u8,
 }
 
+/// Temporary struct for deserialization purposes
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TempItem {
     pub id: String,
@@ -38,6 +42,7 @@ pub struct TempItem {
     pub stack: u8,
 }
 
+/// Type of armor piece
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ArmorType {
     Helmet,
@@ -46,6 +51,7 @@ pub enum ArmorType {
     Boots,
 }
 
+/// Type of item
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ItemType {
     Block(BlockId),
@@ -88,25 +94,22 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
     // let mut item_to_id: HashMap<String, ItemId> = HashMap::new();
 
     // First, load all items
-    for p in fs::read_dir("../data/items").unwrap() {
-        if let Ok(p) = p {
-            if let Ok(contents) = fs::read_to_string(p.path()) {
-                if let Ok(item) = from_str::<TempItem>(&contents) {
+    for p in fs::read_dir("../data/items").unwrap().flatten() {
+        if let Ok(contents) = fs::read_to_string(p.path()) {
+            if let Ok(item) = from_str::<TempItem>(&contents) {
+                // Gets numeric id of item after registration
+                let nb = registry.items.len() as ItemId;
+                // Maps string id to numeric id for blocks
+                registry.item_to_id.insert(item.id, nb);
 
-                    // Gets numeric id of item after registration
-                    let nb = registry.items.len() as ItemId;
-                    // Maps string id to numeric id for blocks
-                    registry.item_to_id.insert(item.id, nb);
-
-                    // Insert item into registry
-                    registry.items.insert(
-                        nb,
-                        ItemData {
-                            kind: item.kind,
-                            stack: item.stack,
-                        },
-                    );
-                }
+                // Insert item into registry
+                registry.items.insert(
+                    nb,
+                    ItemData {
+                        kind: item.kind,
+                        stack: item.stack,
+                    },
+                );
             }
         }
     }
@@ -115,33 +118,30 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
     let clone_item = registry.item_to_id.clone();
 
     // Then, load all blocks
-    for p in fs::read_dir("../data/blocks").unwrap() {
-        if let Ok(p) = p {
-            if let Ok(contents) = fs::read_to_string(p.path()) {
-                if let Ok(block) = from_str::<TempBlock>(&contents) {
+    for p in fs::read_dir("../data/blocks").unwrap().flatten() {
+        if let Ok(contents) = fs::read_to_string(p.path()) {
+            if let Ok(block) = from_str::<TempBlock>(&contents) {
+                // Gets numeric id of block after registration
+                let nb = registry.blocks.len() as BlockId;
+                // Maps string id to numeric id for items
+                registry.block_to_id.insert(block.id, nb);
 
-                    // Gets numeric id of block after registration
-                    let nb = registry.blocks.len() as BlockId;
-                    // Maps string id to numeric id for items
-                    registry.block_to_id.insert(block.id, nb);
-
-                    // Inserts block into registry
-                    registry.blocks.insert(
-                        nb,
-                        BlockData {
-                            drops: {
-                                let mut d: Vec<(u16, ItemId)> = Vec::new();
-                                for drop in block.drops {
-                                    // Gets numeric id of item drop
-                                    d.push((drop.0, *clone_item.get(&drop.1).unwrap()));
-                                }
-                                d
-                            },
-                            break_time: block.break_time,
-                            uvs: block.uvs,
+                // Inserts block into registry
+                registry.blocks.insert(
+                    nb,
+                    BlockData {
+                        drops: {
+                            let mut d: Vec<(u16, ItemId)> = Vec::new();
+                            for drop in block.drops {
+                                // Gets numeric id of item drop
+                                d.push((drop.0, *clone_item.get(&drop.1).unwrap()));
+                            }
+                            d
                         },
-                    );
-                }
+                        break_time: block.break_time,
+                        uvs: block.uvs,
+                    },
+                );
             }
         }
     }
@@ -159,6 +159,9 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
     }
 
     println!("--------------------------------------------");
-    println!("Final items :  {:?}\n\n{:?}\n\n{:?}\n\n{:?}", registry.blocks, registry.items, registry.block_to_id, registry.item_to_id);
+    println!(
+        "Final items :  {:?}\n\n{:?}\n\n{:?}\n\n{:?}",
+        registry.blocks, registry.items, registry.block_to_id, registry.item_to_id
+    );
     println!("--------------------------------------------");
 }

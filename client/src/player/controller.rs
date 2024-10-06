@@ -116,7 +116,7 @@ pub fn player_movement_system(
         world_seed.0,
         &mut ev_render,
         render_distance,
-        &registry
+        &registry,
     );
 
     let material_handle = &*material_handle_mut_ref;

@@ -26,7 +26,12 @@ pub fn handle_block_interactions(
         Query<&RaycastSource<BlockRaycastSet>>,
         Query<&Hotbar>,
     ),
-    resources: (ResMut<WorldMap>, Res<ButtonInput<MouseButton>>, Res<UIMode>, Res<ItemBlockRegistry>),
+    resources: (
+        ResMut<WorldMap>,
+        Res<ButtonInput<MouseButton>>,
+        Res<UIMode>,
+        Res<ItemBlockRegistry>,
+    ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_query, mut p_transform, raycast_source, hotbar) = queries;

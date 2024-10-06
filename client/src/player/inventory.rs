@@ -7,11 +7,7 @@ use bevy::prelude::*;
 use shared::world::ItemId;
 
 // Ajoute un item à l'inventaire du joueur
-pub fn add_item_to_inventory(
-    player: &mut Query<&mut Player>,
-    item_id: ItemId,
-    mut nb: u32,
-) {
+pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: ItemId, mut nb: u32) {
     let mut player = player.single_mut();
 
     for i in 0..MAX_INVENTORY_SLOTS {
@@ -55,12 +51,7 @@ pub fn add_item_to_inventory(
 /// Add items to stack at specified position\
 /// Stacks cannot exceed MAX_ITEM_STACK number of items\
 /// Returns number of items really added to the stack
-pub fn add_item_to_stack(
-    player: &mut Player,
-    item_id: ItemId,
-    stack: u32,
-    mut nb: u32,
-) -> u32 {
+pub fn add_item_to_stack(player: &mut Player, item_id: ItemId, stack: u32, mut nb: u32) -> u32 {
     let item_option = player.inventory.get(&stack);
     let mut new_item = Item { id: item_id, nb };
 

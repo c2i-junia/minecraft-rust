@@ -24,7 +24,7 @@ pub fn setup_materials(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut material_resource: ResMut<MaterialResource>,
     mut atlas_handles: ResMut<AtlasHandles>,
-    registry: Res<ItemBlockRegistry>
+    registry: Res<ItemBlockRegistry>,
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -83,9 +83,10 @@ pub fn setup_materials(
     material_resource
         .block_materials
         .insert(*registry.block_to_id.get("stone").unwrap(), stone_material);
-    material_resource
-        .block_materials
-        .insert(*registry.block_to_id.get("bedrock").unwrap(), bedrock_material);
+    material_resource.block_materials.insert(
+        *registry.block_to_id.get("bedrock").unwrap(),
+        bedrock_material,
+    );
 
     material_resource
         .global_materials
@@ -94,15 +95,18 @@ pub fn setup_materials(
         .global_materials
         .insert(GlobalMaterial::Moon, moon_material);
 
-    material_resource
-        .item_textures
-        .insert(*registry.item_to_id.get("grass").unwrap(), asset_server.load("textures/grass.png"));
-    material_resource
-        .item_textures
-        .insert(*registry.item_to_id.get("dirt").unwrap(), asset_server.load("textures/dirt.png"));
-    material_resource
-        .item_textures
-        .insert(*registry.item_to_id.get("stone").unwrap(), asset_server.load("textures/stone.png"));
+    material_resource.item_textures.insert(
+        *registry.item_to_id.get("grass").unwrap(),
+        asset_server.load("textures/grass.png"),
+    );
+    material_resource.item_textures.insert(
+        *registry.item_to_id.get("dirt").unwrap(),
+        asset_server.load("textures/dirt.png"),
+    );
+    material_resource.item_textures.insert(
+        *registry.item_to_id.get("stone").unwrap(),
+        asset_server.load("textures/stone.png"),
+    );
     material_resource.item_textures.insert(
         *registry.item_to_id.get("bedrock").unwrap(),
         asset_server.load("textures/bedrock.png"),

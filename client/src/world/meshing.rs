@@ -24,7 +24,11 @@ fn get_uv_coords(block: &BlockId, registry: &ItemBlockRegistry) -> UvCoords {
     }
 }
 
-pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3, registry: &ItemBlockRegistry) -> Mesh {
+pub(crate) fn generate_chunk_mesh(
+    world_map: &WorldMap,
+    chunk_pos: &IVec3,
+    registry: &ItemBlockRegistry,
+) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();

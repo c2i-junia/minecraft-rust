@@ -45,16 +45,17 @@ fn generate_chunk(
             // Générer des blocs à partir de la couche 0 (bedrock) jusqu'à la hauteur générée
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    registry.block_to_id.get("bedrock") // Placer la bedrock à la couche 0
+                    "bedrock" // Placer la bedrock à la couche 0
                 } else if y < terrain_height - 2 {
-                    registry.block_to_id.get("stone") // Placer de la pierre en dessous des 3 dernières couches
+                    "stone" // Placer de la pierre en dessous des 3 dernières couches
                 } else if y < terrain_height {
-                    registry.block_to_id.get("dirt") // Placer de la terre dans les 3 couches sous la surface
+                    "dirt" // Placer de la terre dans les 3 couches sous la surface
                 } else {
-                    registry.block_to_id.get("grass") // Placer de l'herbe à la surface
+                    "grass" // Placer de l'herbe à la surface
                 };
 
-                world_map.set_block(&IVec3::new(x, y, z), *block.unwrap());
+                // Get block id from name, then set it
+                world_map.set_block(&IVec3::new(x, y, z), *registry.block_to_id.get(block).unwrap());
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
@@ -77,7 +78,7 @@ pub fn setup_world(
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     mut ev_load: EventReader<LoadWorldEvent>,
     mut player_query: Query<(&mut Transform, &mut Player)>,
-    registry: Res<ItemBlockRegistry>
+    registry: Res<ItemBlockRegistry>,
 ) {
     let mut world_name = "default";
     // Get loaded world name
@@ -149,7 +150,13 @@ pub fn setup_world(
         for x in -1..=1 {
             for y in 0..=8 {
                 for z in -1..=1 {
-                    generate_chunk(IVec3::new(x, y, z), seed, &mut world_map, &mut ev_render, &registry);
+                    generate_chunk(
+                        IVec3::new(x, y, z),
+                        seed,
+                        &mut world_map,
+                        &mut ev_render,
+                        &registry,
+                    );
                 }
             }
         }
@@ -162,7 +169,7 @@ pub fn load_chunk_around_player(
     seed: u32,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     render_distance: Res<RenderDistance>,
-    registry: &ItemBlockRegistry
+    registry: &ItemBlockRegistry,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -183,7 +190,7 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(chunk_pos, seed, world_map, ev_render, &registry);
+            generate_chunk(chunk_pos, seed, world_map, ev_render, registry);
         }
     }
 }
