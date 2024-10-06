@@ -20,8 +20,13 @@ pub struct ServerLobby {
     pub players: HashMap<u128, String>,
 }
 
+#[allow(dead_code)]
 pub fn acquire_local_ephemeral_udp_socket() -> UdpSocket {
-    let addr: SocketAddr = "127.0.0.1:0".parse().unwrap();
+    acquire_socket_by_port(0)
+}
+
+pub fn acquire_socket_by_port(port: u16) -> UdpSocket {
+    let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
     UdpSocket::bind(addr).unwrap()
 }
 
