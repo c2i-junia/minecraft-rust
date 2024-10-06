@@ -1,13 +1,13 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
-use crate::ui::inventory::items::ItemId;
-use crate::world::{Block, GlobalMaterial};
+use crate::world::GlobalMaterial;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
+use shared::world::{BlockId, ItemBlockRegistry, ItemId};
 use std::collections::HashMap;
 
 #[derive(Resource, Default)]
 pub struct MaterialResource {
-    pub block_materials: HashMap<Block, Handle<StandardMaterial>>,
+    pub block_materials: HashMap<BlockId, Handle<StandardMaterial>>,
     pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
     pub item_textures: HashMap<ItemId, Handle<Image>>,
     pub atlas_texture: Option<Handle<StandardMaterial>>,
@@ -24,6 +24,7 @@ pub fn setup_materials(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut material_resource: ResMut<MaterialResource>,
     mut atlas_handles: ResMut<AtlasHandles>,
+    registry: Res<ItemBlockRegistry>
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -75,16 +76,16 @@ pub fn setup_materials(
 
     material_resource
         .block_materials
-        .insert(Block::Dirt, dirt_material);
+        .insert(*registry.block_to_id.get("dirt").unwrap(), dirt_material);
     material_resource
         .block_materials
-        .insert(Block::Grass, grass_material);
+        .insert(*registry.block_to_id.get("grass").unwrap(), grass_material);
     material_resource
         .block_materials
-        .insert(Block::Stone, stone_material);
+        .insert(*registry.block_to_id.get("stone").unwrap(), stone_material);
     material_resource
         .block_materials
-        .insert(Block::Bedrock, bedrock_material);
+        .insert(*registry.block_to_id.get("bedrock").unwrap(), bedrock_material);
 
     material_resource
         .global_materials
@@ -95,16 +96,17 @@ pub fn setup_materials(
 
     material_resource
         .item_textures
-        .insert(ItemId::Grass, asset_server.load("textures/grass.png"));
+        .insert(*registry.item_to_id.get("grass").unwrap(), asset_server.load("textures/grass.png"));
     material_resource
         .item_textures
-        .insert(ItemId::Dirt, asset_server.load("textures/dirt.png"));
+        .insert(*registry.item_to_id.get("dirt").unwrap(), asset_server.load("textures/dirt.png"));
     material_resource
         .item_textures
-        .insert(ItemId::Stone, asset_server.load("textures/stone.png"));
-    material_resource
-        .item_textures
-        .insert(ItemId::Bedrock, asset_server.load("textures/bedrock.png"));
+        .insert(*registry.item_to_id.get("stone").unwrap(), asset_server.load("textures/stone.png"));
+    material_resource.item_textures.insert(
+        *registry.item_to_id.get("bedrock").unwrap(),
+        asset_server.load("textures/bedrock.png"),
+    );
 
     let image_paths = [
         "textures/moss.png",

@@ -1,25 +1,38 @@
+use rand::Rng;
+use shared::world::{items::ItemId, BlockId};
+use shared::world::{ItemBlockRegistry, ItemType};
+
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
-use crate::world::Block;
 
 pub type Item = shared::world::Item;
-pub type ItemId = shared::world::ItemId;
 
-pub fn item_from_block(block: Block) -> Option<ItemId> {
-    match block {
-        Block::Bedrock => Some(ItemId::Bedrock),
-        Block::Dirt | Block::Grass => Some(ItemId::Dirt),
-        Block::Stone => Some(ItemId::Stone), // _ => None
+pub fn item_from_block(block: &BlockId, registry: &ItemBlockRegistry) -> Option<ItemId> {
+    let pool = registry.blocks.get(block).unwrap().drops.clone();
+    let total = pool
+        .clone()
+        .into_iter()
+        .reduce(|a, b| (a.0 + b.0, a.1))
+        .unwrap()
+        .0;
+    let mut nb = rand::thread_rng().gen_range(0..total);
+
+    // Choose drop item
+    for item in pool {
+        if nb < item.0 {
+            return Some(item.1);
+        } else {
+            nb -= item.0;
+        }
     }
+    None
 }
 
-pub fn block_from_item(item: ItemId) -> Option<Block> {
-    match item {
-        ItemId::Bedrock => Some(Block::Bedrock),
-        ItemId::Dirt => Some(Block::Dirt),
-        ItemId::Grass => Some(Block::Grass),
-        ItemId::Stone => Some(Block::Stone),
-        // _ => None
+pub fn block_from_item(item: &ItemId, registry: &ItemBlockRegistry) -> Option<BlockId> {
+    if let ItemType::Block(block) = registry.items.get(item).unwrap().kind {
+        Some(block)
+    } else {
+        None
     }
 }
 
@@ -27,7 +40,7 @@ pub fn block_from_item(item: ItemId) -> Option<Block> {
 /// Cannot go lower than `0` items\
 /// Returns number of items _actually_ removed
 pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -> u32 {
-    if let Some(mut item) = floating_stack.items {
+    if let Some(mut item) = floating_stack.items.clone() {
         if nb >= item.nb {
             floating_stack.items = None;
             return item.nb;
@@ -50,7 +63,7 @@ pub fn add_item_floating_stack(
 ) -> u32 {
     if nb == 0 {
         0
-    } else if let Some(mut item) = floating_stack.items {
+    } else if let Some(mut item) = floating_stack.items.clone() {
         if nb + item.nb > MAX_ITEM_STACK {
             nb = MAX_ITEM_STACK - item.nb;
         }

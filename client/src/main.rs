@@ -18,13 +18,14 @@ use bevy::{
         render_resource::WgpuFeatures,
         settings::{RenderCreation, WgpuSettings},
         RenderPlugin,
-    },
+    }
 };
 use input::data::GameAction;
 use input::keyboard::get_bindings;
 use menu::settings::{DisplayQuality, Volume};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use shared::world::{load_blocks_items, ItemBlockRegistry};
+use std::collections::{BTreeMap, HashMap};
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -34,8 +35,8 @@ pub const TEXT_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);
 // Enum that will be used as a global state for the game
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
 pub enum GameState {
-    #[default]
     Splash,
+    #[default]
     Menu,
     PreGameLoading,
     Game,
@@ -71,6 +72,7 @@ fn main() {
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         .insert_resource(get_bindings())
+        .insert_resource(ItemBlockRegistry { items: HashMap::new(), blocks: HashMap::new(), block_to_id: HashMap::new(), item_to_id: HashMap::new() })
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
@@ -80,5 +82,6 @@ fn main() {
             menu::menu_plugin,
             game::game_plugin,
         ))
+        .add_systems(PreStartup, load_blocks_items)
         .run();
 }

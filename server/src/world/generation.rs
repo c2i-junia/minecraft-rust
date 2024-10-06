@@ -5,7 +5,7 @@ use rand::random;
 use shared::world::*;
 use std::collections::HashMap;
 
-fn generate_chunk(chunk_pos: IVec3, seed: u32) -> Chunk {
+fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &ItemBlockRegistry) -> Chunk {
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
@@ -33,18 +33,20 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32) -> Chunk {
 
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    Block::Bedrock
+                    "bedrock"
                 } else if y < terrain_height - 2 {
-                    Block::Stone
+                    "stone"
                 } else if y < terrain_height {
-                    Block::Dirt
+                    "dirt"
                 } else {
-                    Block::Grass
+                    "grass"
                 };
+
+                let res = registry.block_to_id.get(block.into());
 
                 chunk
                     .map
-                    .insert(IVec3::new(x, y, z), BlockWrapper::new(block));
+                    .insert(IVec3::new(x, y, z), *res.unwrap());
             }
         }
     }
@@ -52,7 +54,8 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32) -> Chunk {
     chunk
 }
 
-pub fn setup_world(mut commands: Commands, mut world_map: ResMut<WorldMap>) {
+pub fn setup_world(mut commands: Commands, mut world_map: ResMut<WorldMap>, registry: Res<ItemBlockRegistry>) {
+    println!("Registry : {:?}", registry);
     let seed = random::<u32>();
     commands.insert_resource(WorldSeed(seed));
 
@@ -62,7 +65,7 @@ pub fn setup_world(mut commands: Commands, mut world_map: ResMut<WorldMap>) {
         for y in 0..=8 {
             for z in -1..=1 {
                 let pos = IVec3::new(x, y, z);
-                let chunk = generate_chunk(pos, seed);
+                let chunk = generate_chunk(pos, seed, &registry);
                 world_map.map.insert(pos, chunk);
             }
         }
