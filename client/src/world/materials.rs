@@ -102,10 +102,9 @@ pub fn setup_materials(
     material_resource
         .item_textures
         .insert(ItemId::Stone, asset_server.load("textures/stone.png"));
-    material_resource.item_textures.insert(
-        ItemId::Bedrock,
-        asset_server.load("textures/bedrock.png"),
-    );
+    material_resource
+        .item_textures
+        .insert(ItemId::Bedrock, asset_server.load("textures/bedrock.png"));
 
     let image_paths = [
         "textures/moss.png",

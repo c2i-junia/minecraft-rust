@@ -6,11 +6,7 @@ use crate::ui::inventory::items::Item;
 use bevy::prelude::*;
 
 // Ajoute un item à l'inventaire du joueur
-pub fn add_item_to_inventory(
-    player: &mut Query<&mut Player>,
-    item_id: items::ItemId,
-    mut nb: u32,
-) {
+pub fn add_item_to_inventory(player: &mut Query<&mut Player>, item_id: items::ItemId, mut nb: u32) {
     let mut player = player.single_mut();
 
     for i in 0..MAX_INVENTORY_SLOTS {
