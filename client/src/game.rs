@@ -30,7 +30,7 @@ use crate::menu::game_loading_screen::load_loading_screen;
 use crate::network::{
     establish_authenticated_connection_to_server, init_server_connection,
     launch_local_server_system, network_failure_handler, poll_network_messages,
-    terminate_server_connection,
+    terminate_server_connection, upload_player_inputs_system,
 };
 use crate::{DisplayQuality, GameState, Volume};
 
@@ -143,11 +143,12 @@ pub fn game_plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            poll_network_messages.run_if(in_state(GameState::Game)),
-        )
-        .add_systems(
-            Update,
-            network_failure_handler.run_if(in_state(GameState::Game)),
+            (
+                poll_network_messages,
+                network_failure_handler,
+                upload_player_inputs_system,
+            )
+                .run_if(in_state(GameState::Game)),
         )
         .add_systems(
             OnExit(GameState::Game),

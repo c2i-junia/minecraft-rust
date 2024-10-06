@@ -1,5 +1,6 @@
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
-use crate::init::ServerLobby;
+use crate::init::{ServerLobby, TickCounter};
+use crate::player::handle_player_inputs;
 use crate::world::generation::setup_world;
 use crate::{chat, world};
 use bevy::prelude::*;
@@ -40,6 +41,7 @@ fn server_update_system(
     mut ev_chat: EventWriter<ChatMessageEvent>,
     mut lobby: ResMut<ServerLobby>,
     mut ev_app_exit: EventWriter<AppExit>,
+    tick: Res<TickCounter>,
 ) {
     for event in server_events.read() {
         println!("event received");
@@ -56,7 +58,7 @@ fn server_update_system(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, DefaultChannel::ReliableOrdered)
         {
-            println!("msg received {:?}", &message);
+            //println!("msg received {:?}", &message);
 
             let msg = bincode::options().deserialize::<ClientToServerMessage>(&message);
             let msg = match msg {
@@ -99,6 +101,9 @@ fn server_update_system(
                     // TODO: add permission checks
                     println!("Server is going down...");
                     ev_app_exit.send(AppExit::Success);
+                }
+                ClientToServerMessage::PlayerInputs(inputs) => {
+                    handle_player_inputs(inputs, &tick);
                 }
             }
         }
