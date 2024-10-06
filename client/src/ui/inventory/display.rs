@@ -1,5 +1,7 @@
+use super::{add_item_floating_stack, remove_item_floating_stack};
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_ITEM_STACK};
-use crate::input::keyboard::{is_action_just_pressed, GameAction};
+use crate::input::data::GameAction;
+use crate::input::keyboard::is_action_just_pressed;
 use crate::player::inventory::{add_item_to_stack, remove_item_from_stack};
 use crate::player::Player;
 use crate::ui::hotbar::Hotbar;
@@ -17,8 +19,6 @@ use bevy::prelude::{
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use bevy::ui::{BorderColor, Interaction};
 use bevy::window::PrimaryWindow;
-
-use super::{add_item_floating_stack, remove_item_floating_stack};
 
 pub fn render_inventory_hotbar(
     queries: (

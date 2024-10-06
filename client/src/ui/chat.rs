@@ -143,7 +143,7 @@ pub fn render_chat(
     let (parent, children) = parent_query.single();
 
     if is_action_just_released(
-        crate::input::keyboard::GameAction::OpenChat,
+        crate::input::data::GameAction::OpenChat,
         &keyboard_input,
         &key_map,
     ) {
@@ -153,7 +153,7 @@ pub fn render_chat(
 
     if *visibility == Visibility::Visible
         && is_action_just_pressed(
-            crate::input::keyboard::GameAction::Escape,
+            crate::input::data::GameAction::Escape,
             &keyboard_input,
             &key_map,
         )

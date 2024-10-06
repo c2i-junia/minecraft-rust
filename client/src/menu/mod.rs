@@ -6,7 +6,7 @@ use bevy_simple_text_input::TextInputInactive;
 use controls::{controls_menu_setup, controls_update_system};
 use multi::multiplayer_action;
 
-use crate::input::keyboard::save_keybinds;
+use crate::input::keyboard::save_keybindings;
 use crate::{DisplayQuality, GameState, MenuCamera, Volume, TEXT_COLOR};
 
 pub mod controls;
@@ -52,7 +52,7 @@ pub fn menu_plugin(app: &mut App) {
             OnEnter(MenuState::SettingsSound),
             settings::sound_settings_menu_setup,
         )
-        .add_systems(OnExit(MenuState::SettingsControls), save_keybinds)
+        .add_systems(OnExit(MenuState::SettingsControls), save_keybindings)
         .add_systems(
             Update,
             settings::setting_button::<Volume>.run_if(in_state(MenuState::SettingsSound)),

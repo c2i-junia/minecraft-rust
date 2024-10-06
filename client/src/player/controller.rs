@@ -1,5 +1,6 @@
 use crate::camera::CameraController;
 use crate::constants::GRAVITY;
+use crate::input::data::GameAction;
 use crate::input::keyboard::*;
 use crate::player::{Player, ViewMode};
 use crate::ui::UIMode;

@@ -15,9 +15,9 @@ use bevy::{
     },
 };
 
-use crate::{input::keyboard::GameAction, KeyMap};
-
 use super::{MenuButtonAction, MenuState, ScrollingList, NORMAL_BUTTON};
+use crate::input::data::GameAction;
+use crate::KeyMap;
 
 #[derive(Debug, Component, PartialEq, Eq)]
 pub struct ClearButton(GameAction, Entity);
@@ -293,7 +293,7 @@ pub fn update_input_component(
                 k.spawn(TextBundle {
                     text: Text::from_section(
                         {
-                            // Formats keybinds
+                            // Formats keybindings
                             let mut output = format!("{:?}", key).replace("Key", "");
                             if output.starts_with("Arrow") {
                                 if output.ends_with("Left") {

@@ -5,37 +5,13 @@ use std::{
     path::Path,
 };
 
+use crate::input::data::GameAction;
+use crate::KeyMap;
 use bevy::{
     input::ButtonInput,
-    prelude::{Component, KeyCode, Res},
+    prelude::{KeyCode, Res},
 };
 use ron::{from_str, ser::PrettyConfig};
-use serde::{Deserialize, Serialize};
-
-use crate::KeyMap;
-
-#[derive(
-    Eq, Hash, PartialEq, Component, Debug, Clone, Copy, Serialize, Deserialize, PartialOrd, Ord,
-)]
-pub enum GameAction {
-    MoveForward,
-    MoveBackward,
-    MoveLeft,
-    MoveRight,
-    Jump,
-    Escape,
-    ToggleFps,
-    ToggleViewMode,
-    ToggleChunkDebugMode,
-    ToggleFlyMode,
-    FlyUp,
-    FlyDown,
-    ToggleBlockWireframeDebugMode,
-    ToggleInventory,
-    OpenChat,
-    RenderDistanceMinus,
-    RenderDistancePlus,
-}
 
 pub fn is_action_pressed(
     action: GameAction,
@@ -86,9 +62,9 @@ pub fn get_action_keys(action: GameAction, key_map: &KeyMap) -> Vec<KeyCode> {
     key_map.map.get(&action).unwrap().to_vec()
 }
 
-const BINDS_PATH: &str = "keybinds.ron";
+const BINDS_PATH: &str = "keybindings.ron";
 
-pub fn get_keybinds() -> KeyMap {
+pub fn get_bindings() -> KeyMap {
     // Try to get & serialize existing binds
     if let Ok(content) = fs::read_to_string(Path::new(BINDS_PATH)) {
         if let Ok(key_map) = from_str::<KeyMap>(&content) {
@@ -134,7 +110,7 @@ pub fn get_keybinds() -> KeyMap {
     }
 }
 
-pub fn save_keybinds(key_map: Res<KeyMap>) {
+pub fn save_keybindings(key_map: Res<KeyMap>) {
     let pretty_config = PrettyConfig::new()
         .with_depth_limit(3)
         .with_separate_tuple_members(true)
@@ -142,9 +118,9 @@ pub fn save_keybinds(key_map: Res<KeyMap>) {
     if let Ok(serialized) = ron::ser::to_string_pretty(key_map.into_inner(), pretty_config) {
         if let Ok(mut file) = File::create(Path::new(BINDS_PATH)) {
             if let Err(e) = file.write_all(serialized.as_bytes()) {
-                println!("Error while saving keybinds : {}", e);
+                println!("Error while saving keybindings : {}", e);
             } else {
-                println!("Key binds saved");
+                println!("Keybindings saved");
             }
         }
     }

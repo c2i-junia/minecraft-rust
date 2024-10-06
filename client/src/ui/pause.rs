@@ -120,7 +120,7 @@ pub fn render_pause_menu(
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
 
-    if is_action_just_pressed(crate::input::keyboard::GameAction::Escape, &input, &key_map) {
+    if is_action_just_pressed(crate::input::data::GameAction::Escape, &input, &key_map) {
         *vis = match *vis {
             Visibility::Visible | Visibility::Inherited => Visibility::Hidden,
             Visibility::Hidden => Visibility::Visible,

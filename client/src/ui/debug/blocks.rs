@@ -1,4 +1,5 @@
-use crate::input::keyboard::{is_action_just_pressed, GameAction};
+use crate::input::data::GameAction;
+use crate::input::keyboard::is_action_just_pressed;
 use crate::world::materials::MaterialResource;
 use crate::KeyMap;
 use bevy::pbr::wireframe::WireframeConfig;

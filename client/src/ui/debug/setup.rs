@@ -1,7 +1,8 @@
 use super::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use super::targeted_block::BlockText;
 use super::{CoordsText, FpsText};
-use crate::input::keyboard::{get_action_keys, GameAction};
+use crate::input::data::GameAction;
+use crate::input::keyboard::get_action_keys;
 use crate::{GameState, KeyMap};
 use bevy::prelude::*;
 

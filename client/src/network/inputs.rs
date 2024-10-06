@@ -1,4 +1,5 @@
-use crate::input::keyboard::{is_action_pressed, GameAction};
+use crate::input::data::GameAction;
+use crate::input::keyboard::is_action_pressed;
 use crate::KeyMap;
 use bevy::input::ButtonInput;
 use bevy::prelude::*;
