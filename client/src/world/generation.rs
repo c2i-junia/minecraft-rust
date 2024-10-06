@@ -3,7 +3,7 @@ use crate::player::Player;
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
-use shared::world::{block_to_chunk_coord, to_global_pos, ItemBlockRegistry, SIX_OFFSETS};
+use shared::world::{block_to_chunk_coord, to_global_pos, BlockEnum, BlockType, ItemBlockRegistry, SIX_OFFSETS};
 use std::collections::HashSet;
 
 use crate::{world::*, GameState, LoadWorldEvent};
@@ -45,17 +45,17 @@ fn generate_chunk(
             // Générer des blocs à partir de la couche 0 (bedrock) jusqu'à la hauteur générée
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    "bedrock" // Placer la bedrock à la couche 0
+                    BlockType::Bedrock.get_id()
                 } else if y < terrain_height - 2 {
-                    "stone" // Placer de la pierre en dessous des 3 dernières couches
+                    BlockType::Stone.get_id()
                 } else if y < terrain_height {
-                    "dirt" // Placer de la terre dans les 3 couches sous la surface
+                    BlockType::Dirt.get_id()
                 } else {
-                    "grass" // Placer de l'herbe à la surface
+                    BlockType::Grass.get_id()
                 };
 
                 // Get block id from name, then set it
-                world_map.set_block(&IVec3::new(x, y, z), *registry.block_to_id.get(block).unwrap());
+                world_map.set_block(&IVec3::new(x, y, z), *registry.block_to_id.get(&block).unwrap());
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
@@ -107,7 +107,7 @@ pub fn setup_world(
     commands.insert_resource(WorldSeed(seed));
 
     // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
-    if let Ok(loaded_world) = load_world_map(world_name, &mut player, &mut transform.translation) {
+    if let Ok(loaded_world) = load_world_map(world_name, &mut player, &mut transform.translation, &registry) {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
 

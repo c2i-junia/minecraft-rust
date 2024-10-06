@@ -1,6 +1,7 @@
-use std::collections::HashMap;
 use std::fs;
+use std::{collections::HashMap, fmt::Debug};
 
+use bevy::reflect::Enum;
 use bevy::{
     prelude::{ResMut, Resource},
     scene::ron::from_str,
@@ -9,6 +10,8 @@ use serde::{Deserialize, Serialize};
 
 pub type BlockId = u32;
 pub type ItemId = u32;
+
+pub type Test = &'static dyn Enum;
 
 /// Data associated with a given `BlockId`
 #[derive(Debug, Clone)]
@@ -88,10 +91,11 @@ pub struct ItemBlockRegistry {
 
 /// Loads all blocks and items into the registry from their `.ron` files
 pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
-    println!("Test");
+    println!("Begin items & blocks loading...");
 
-    // let mut block_to_id: HashMap<String, BlockId> = HashMap::new();
-    // let mut item_to_id: HashMap<String, ItemId> = HashMap::new();
+    // Create String -> Id maps
+    let mut block_to_id: HashMap<String, BlockId> = HashMap::new();
+    let mut item_to_id: HashMap<String, ItemId> = HashMap::new();
 
     // First, load all items
     for p in fs::read_dir("../data/items").unwrap().flatten() {
@@ -100,7 +104,7 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
                 // Gets numeric id of item after registration
                 let nb = registry.items.len() as ItemId;
                 // Maps string id to numeric id for blocks
-                registry.item_to_id.insert(item.id, nb);
+                item_to_id.insert(item.id, nb);
 
                 // Insert item into registry
                 registry.items.insert(
@@ -114,9 +118,6 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
         }
     }
 
-    // Clone item -> id map for borrow purposes
-    let clone_item = registry.item_to_id.clone();
-
     // Then, load all blocks
     for p in fs::read_dir("../data/blocks").unwrap().flatten() {
         if let Ok(contents) = fs::read_to_string(p.path()) {
@@ -124,7 +125,7 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
                 // Gets numeric id of block after registration
                 let nb = registry.blocks.len() as BlockId;
                 // Maps string id to numeric id for items
-                registry.block_to_id.insert(block.id, nb);
+                block_to_id.insert(block.id, nb);
 
                 // Inserts block into registry
                 registry.blocks.insert(
@@ -134,7 +135,7 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
                             let mut d: Vec<(u16, ItemId)> = Vec::new();
                             for drop in block.drops {
                                 // Gets numeric id of item drop
-                                d.push((drop.0, *clone_item.get(&drop.1).unwrap()));
+                                d.push((drop.0, *item_to_id.get(&drop.1).unwrap()));
                             }
                             d
                         },
@@ -146,17 +147,17 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
         }
     }
 
-    // Clone block -> id map for borrow purposes
-    let clone_block = registry.block_to_id.clone();
-
     // Finally, edit items with numeric ids of blocks
-    for (txt, id) in clone_item.iter() {
+    for (txt, id) in item_to_id.iter() {
         if let Some(item) = registry.items.get_mut(id) {
             if item.kind == ItemType::Block(0) {
-                item.kind = ItemType::Block(*clone_block.get(txt).unwrap());
+                item.kind = ItemType::Block(*block_to_id.get(txt).unwrap());
             }
         }
     }
+
+    registry.block_to_id = block_to_id;
+    registry.item_to_id = item_to_id;
 
     println!("--------------------------------------------");
     println!(
@@ -164,4 +165,33 @@ pub fn load_blocks_items(mut registry: ResMut<ItemBlockRegistry>) {
         registry.blocks, registry.items, registry.block_to_id, registry.item_to_id
     );
     println!("--------------------------------------------");
+}
+
+pub enum TestType {
+    Grass,
+    Dirt,
+    Stone,
+    Bedrock,
+}
+
+pub enum BlockType {
+    Dirt,
+    Grass,
+    Stone,
+    Bedrock,
+}
+
+pub trait BlockEnum {
+    fn get_id(self) -> String;
+}
+
+impl BlockEnum for BlockType {
+    fn get_id(self) -> String {
+        match self {
+            BlockType::Grass => "grass".into(),
+            BlockType::Bedrock => "bedrock".into(),
+            BlockType::Dirt => "dirt".into(),
+            BlockType::Stone => "stone".into(),
+        }
+    }
 }

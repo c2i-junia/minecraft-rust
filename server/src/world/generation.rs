@@ -33,18 +33,18 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &ItemBlockRegistry) -> 
 
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    "bedrock"
+                    BlockType::Bedrock.get_id()
                 } else if y < terrain_height - 2 {
-                    "stone"
+                    BlockType::Stone.get_id()
                 } else if y < terrain_height {
-                    "dirt"
+                    BlockType::Dirt.get_id()
                 } else {
-                    "grass"
+                    BlockType::Grass.get_id()
                 };
                 
                 chunk
                     .map
-                    .insert(IVec3::new(x, y, z), *registry.block_to_id.get(block).unwrap());
+                    .insert(IVec3::new(x, y, z), *registry.block_to_id.get(&block).unwrap());
             }
         }
     }

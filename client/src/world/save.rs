@@ -12,6 +12,7 @@ use bevy::prelude::*;
 
 use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
+use shared::world::{BlockId, ItemBlockRegistry, ItemId};
 
 #[derive(Event)]
 pub struct SaveRequestEvent;
@@ -21,12 +22,15 @@ pub struct Save {
     pub map: HashMap<IVec3, Chunk>,
     pub player_pos: Vec3,
     pub inventory: HashMap<u32, Item>,
+    pub id_to_block: HashMap<BlockId, String>,
+    pub id_to_item: HashMap<ItemId, String>,
 }
 
 // Système pour sauvegarder le monde lorsque "L" est pressé
 pub fn save_world_system(
     world_map: Res<WorldMap>,
     world_seed: Res<WorldSeed>, // Ajoute `WorldSeed` comme ressource ici
+    registry: Res<ItemBlockRegistry>,
     player_query: Query<(&Transform, &Player)>,
     mut event: EventReader<SaveRequestEvent>,
 ) {
@@ -45,6 +49,22 @@ pub fn save_world_system(
             map: world_map.map.clone(),
             player_pos: transform.translation,
             inventory: player.inventory.clone(),
+            id_to_block: {
+                // Create reversed map : BlockId -> String, to save
+                let mut rbmap: HashMap<BlockId, String> = HashMap::new();
+                for (key, value) in registry.block_to_id.iter() {
+                    rbmap.insert(*value, key.clone());
+                }
+                rbmap
+            },
+            id_to_item: {
+                // Same for ItemId -> String
+                let mut rimap: HashMap<BlockId, String> = HashMap::new();
+                for (key, value) in registry.item_to_id.iter() {
+                    rimap.insert(*value, key.clone());
+                }
+                rimap
+            },
         };
 
         // Sauvegarde le monde et la graine dans leurs fichiers respectifs

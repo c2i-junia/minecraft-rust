@@ -7,14 +7,6 @@ use super::{BlockId, ItemId};
 
 pub const CHUNK_SIZE: i32 = 16;
 
-// #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy, Serialize, Deserialize)]
-// pub enum Block {
-//     Grass,
-//     Dirt,
-//     Stone,
-//     Bedrock,
-// }
-
 #[derive(Clone, Default, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Chunk {
     pub map: HashMap<IVec3, BlockId>,

@@ -15,7 +15,7 @@ pub struct WorldSeed(pub u32);
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Chunk {
-    map: HashMap<IVec3, BlockId>,
+    pub(super) map: HashMap<IVec3, BlockId>,
     #[serde(skip)]
     pub(crate) entity: Option<Entity>,
 }
