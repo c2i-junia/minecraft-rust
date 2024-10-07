@@ -51,9 +51,13 @@ To run this project, you need to have the following installed:
 
 - **Rust** (Stable toolchain)
 
+This can be installed in several ways depending on your setup, the most standard way is to use rustup.rs.
+
 ### Running the Project
 
 To compile and run the game locally, use the following commands:
+
+Note: the first compilation will be slow depending on your hardware, next compilations will be incremental and thus faster.
 
 ```sh
 # Clone the repository
@@ -62,12 +66,14 @@ git clone https://github.com/your-repo/minecraft-rust.git
 # Navigate to the project directory
 cd minecraft-rust
 
-# Start the local server
-cd server
-cargo run --release
+# Navigate to the client directory
+cd client
 
-# In a separate terminal, start the client
-cd ../client
+# Start the client in dev mode
+sh run.sh
+
+# Alternative: start the client in release mode 
+# Warning: slow compilation, but better runtime performance
 cargo run --release
 ```
 
