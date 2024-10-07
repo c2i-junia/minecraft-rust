@@ -104,7 +104,7 @@ pub fn game_plugin(app: &mut App) {
         )
         .add_systems(
             OnEnter(GameState::Game),
-            (print_settings, mouse_grab_system, setup_chunk_ghost),
+            (print_settings, setup_chunk_ghost),
         )
         .add_systems(
             Update,
