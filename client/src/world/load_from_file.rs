@@ -11,13 +11,14 @@ use crate::{
 };
 use bevy::{math::Vec3, utils::hashbrown::HashMap};
 use ron::de::from_str;
-use shared::world::{BlockId, Item, ItemBlockRegistry, ItemId};
+use shared::world::{BlockData, Item, ItemData, Registry, RegistryId};
 
 pub fn load_world_map(
     file_name: &str,
     player: &mut Player,
     player_pos: &mut Vec3,
-    registry: &ItemBlockRegistry,
+    r_items: &Registry<ItemData>,
+    r_blocks: &Registry<BlockData>,
 ) -> Result<WorldMap, Box<dyn std::error::Error>> {
     let file_path = format!("{}{}_save.ron", SAVE_PATH, file_name);
     let path = Path::new(&file_path);
@@ -26,9 +27,9 @@ pub fn load_world_map(
 
     // Build map : old ItemId -> new ItemId, in case the blocks aren't the same
     let mut items_changed = false;
-    let mut items_id_map: HashMap<ItemId, ItemId> = HashMap::new();
+    let mut items_id_map: HashMap<RegistryId, RegistryId> = HashMap::new();
     for (old_id, name) in save.id_to_item.iter() {
-        if let Some(new_id) = registry.item_to_id.get(name) {
+        if let Some(new_id) = r_items.get_id(name) {
             if new_id != old_id {
                 items_changed = true;
             }
@@ -38,9 +39,9 @@ pub fn load_world_map(
 
     // Same for blocks
     let mut blocks_changed = false;
-    let mut blocks_id_map: HashMap<BlockId, BlockId> = HashMap::new();
+    let mut blocks_id_map: HashMap<RegistryId, RegistryId> = HashMap::new();
     for (old_id, name) in save.id_to_block.iter() {
-        if let Some(new_id) = registry.block_to_id.get(name) {
+        if let Some(new_id) = r_blocks.get_id(name) {
             if new_id != old_id {
                 blocks_changed = true;
             }

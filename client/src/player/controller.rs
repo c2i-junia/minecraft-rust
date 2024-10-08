@@ -8,7 +8,7 @@ use crate::world::RenderDistance;
 use crate::world::{load_chunk_around_player, WorldMap, WorldRenderRequestUpdateEvent, WorldSeed};
 use crate::KeyMap;
 use bevy::prelude::*;
-use shared::world::ItemBlockRegistry;
+use shared::world::{BlockData, Registry};
 
 fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
     world_map
@@ -73,7 +73,7 @@ pub fn player_movement_system(
         Res<RenderDistance>,
         Res<UIMode>,
         Res<KeyMap>,
-        Res<ItemBlockRegistry>,
+        Res<Registry<BlockData>>,
         ResMut<Assets<StandardMaterial>>,
         ResMut<WorldMap>,
     ),
@@ -87,7 +87,7 @@ pub fn player_movement_system(
         render_distance,
         ui_mode,
         key_map,
-        registry,
+        r_blocks,
         mut materials,
         mut world_map,
     ) = resources;
@@ -116,7 +116,7 @@ pub fn player_movement_system(
         world_seed.0,
         &mut ev_render,
         render_distance,
-        &registry,
+        &r_blocks,
     );
 
     let material_handle = &*material_handle_mut_ref;

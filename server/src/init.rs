@@ -6,7 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
-use shared::world::{load_blocks_items, ItemBlockRegistry};
+use shared::world::{load_blocks_items, BlockData, ItemData, Registry};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -67,7 +67,8 @@ pub fn init(socket: UdpSocket) {
     app.add_plugins(FrameTimeDiagnosticsPlugin);
     app.add_plugins(LogDiagnosticsPlugin::default());
 
-    app.insert_resource(ItemBlockRegistry { items: HashMap::new(), blocks: HashMap::new(), block_to_id: HashMap::new(), item_to_id: HashMap::new() })
+    app.insert_resource(Registry::<BlockData>::new())
+        .insert_resource(Registry::<ItemData>::new())
         .add_systems(PreStartup, load_blocks_items);
 
     app.insert_resource(ServerLobby::default());

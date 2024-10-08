@@ -24,8 +24,8 @@ use input::data::GameAction;
 use input::keyboard::get_bindings;
 use menu::settings::{DisplayQuality, Volume};
 use serde::{Deserialize, Serialize};
-use shared::world::{load_blocks_items, ItemBlockRegistry};
-use std::collections::{BTreeMap, HashMap};
+use shared::world::{load_blocks_items, BlockData, ItemData, Registry};
+use std::collections::BTreeMap;
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -72,12 +72,8 @@ fn main() {
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         .insert_resource(get_bindings())
-        .insert_resource(ItemBlockRegistry {
-            items: HashMap::new(),
-            blocks: HashMap::new(),
-            block_to_id: HashMap::new(),
-            item_to_id: HashMap::new(),
-        })
+        .insert_resource(Registry::<BlockData>::new())
+        .insert_resource(Registry::<ItemData>::new())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()

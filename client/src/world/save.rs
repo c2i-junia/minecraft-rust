@@ -12,7 +12,7 @@ use bevy::prelude::*;
 
 use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
-use shared::world::{BlockId, ItemBlockRegistry, ItemId};
+use shared::world::{BlockData, ItemData, Registry, RegistryId};
 
 #[derive(Event)]
 pub struct SaveRequestEvent;
@@ -21,16 +21,17 @@ pub struct SaveRequestEvent;
 pub struct Save {
     pub map: HashMap<IVec3, Chunk>,
     pub player_pos: Vec3,
-    pub inventory: HashMap<u32, Item>,
-    pub id_to_block: HashMap<BlockId, String>,
-    pub id_to_item: HashMap<ItemId, String>,
+    pub inventory: HashMap<RegistryId, Item>,
+    pub id_to_block: HashMap<RegistryId, String>,
+    pub id_to_item: HashMap<RegistryId, String>,
 }
 
 // Système pour sauvegarder le monde lorsque "L" est pressé
 pub fn save_world_system(
     world_map: Res<WorldMap>,
     world_seed: Res<WorldSeed>, // Ajoute `WorldSeed` comme ressource ici
-    registry: Res<ItemBlockRegistry>,
+    r_items: Res<Registry<ItemData>>,
+    r_blocks: Res<Registry<BlockData>>,
     player_query: Query<(&Transform, &Player)>,
     mut event: EventReader<SaveRequestEvent>,
 ) {
@@ -51,16 +52,16 @@ pub fn save_world_system(
             inventory: player.inventory.clone(),
             id_to_block: {
                 // Create reversed map : BlockId -> String, to save
-                let mut rbmap: HashMap<BlockId, String> = HashMap::new();
-                for (key, value) in registry.block_to_id.iter() {
+                let mut rbmap: HashMap<RegistryId, String> = HashMap::new();
+                for (key, value) in r_blocks.iter_names() {
                     rbmap.insert(*value, key.clone());
                 }
                 rbmap
             },
             id_to_item: {
                 // Same for ItemId -> String
-                let mut rimap: HashMap<BlockId, String> = HashMap::new();
-                for (key, value) in registry.item_to_id.iter() {
+                let mut rimap: HashMap<RegistryId, String> = HashMap::new();
+                for (key, value) in r_items.iter_names() {
                     rimap.insert(*value, key.clone());
                 }
                 rimap

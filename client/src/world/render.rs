@@ -10,7 +10,7 @@ use bevy::pbr::PbrBundle;
 use bevy::prelude::*;
 use bevy::prelude::{Commands, Mesh, Res, Transform};
 use bevy_mod_raycast::deferred::RaycastMesh;
-use shared::world::{global_block_to_chunk_pos, ItemBlockRegistry, SIX_OFFSETS};
+use shared::world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS};
 
 fn update_chunk(
     chunk: &mut Chunk,
@@ -19,11 +19,11 @@ fn update_chunk(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     world_map: &mut WorldMap,
-    registry: &ItemBlockRegistry,
+    r_blocks: &Registry<BlockData>,
 ) {
     //println!("update_chunk {}", chunk_pos);
     let texture = material_resource.atlas_texture.clone().unwrap();
-    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk_pos, registry);
+    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk_pos, r_blocks);
 
     if chunk.entity.is_some() {
         commands
@@ -65,7 +65,7 @@ pub fn world_render_system(
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut queued_events: Local<QueuedEvents>,
-    registry: Res<ItemBlockRegistry>,
+    r_blocks: Res<Registry<BlockData>>,
 ) {
     for event in ev_render.read() {
         queued_events.events.insert(*event);
@@ -104,7 +104,7 @@ pub fn world_render_system(
                 &mut commands,
                 &mut meshes,
                 &mut world_map,
-                &registry,
+                &r_blocks,
             );
         }
     }

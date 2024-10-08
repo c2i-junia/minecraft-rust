@@ -3,7 +3,7 @@ use crate::world::WorldMap;
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
-use shared::world::{to_global_pos, BlockId, ItemBlockRegistry};
+use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
 
 #[derive(Copy, Clone)]
 struct UvCoords {
@@ -13,9 +13,9 @@ struct UvCoords {
     v1: f32,
 }
 
-fn get_uv_coords(block: &BlockId, registry: &ItemBlockRegistry) -> UvCoords {
+fn get_uv_coords(block: &RegistryId, registry: &Registry<BlockData>) -> UvCoords {
     // should be refactored later
-    let res = registry.blocks.get(block).unwrap().uvs;
+    let res = registry.get(block).unwrap().uvs;
     UvCoords {
         u0: res[0],
         u1: res[1],
@@ -27,7 +27,7 @@ fn get_uv_coords(block: &BlockId, registry: &ItemBlockRegistry) -> UvCoords {
 pub(crate) fn generate_chunk_mesh(
     world_map: &WorldMap,
     chunk_pos: &IVec3,
-    registry: &ItemBlockRegistry,
+    registry: &Registry<BlockData>,
 ) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();

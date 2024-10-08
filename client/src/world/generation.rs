@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use shared::world::{
-    block_to_chunk_coord, to_global_pos, BlockEnum, BlockType, ItemBlockRegistry, SIX_OFFSETS,
+    block_to_chunk_coord, to_global_pos, BlockData, BlockType, ItemData, Registry, SIX_OFFSETS
 };
 use std::collections::HashSet;
 
@@ -17,7 +17,7 @@ fn generate_chunk(
     seed: u32,
     world_map: &mut WorldMap,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
-    registry: &ItemBlockRegistry,
+    registry: &Registry<BlockData>,
 ) {
     //println!("gen chunk {}", chunk_pos);
     let perlin = Perlin::new(seed);
@@ -47,19 +47,19 @@ fn generate_chunk(
             // Générer des blocs à partir de la couche 0 (bedrock) jusqu'à la hauteur générée
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    BlockType::Bedrock.get_id()
+                    BlockType::Bedrock.get_name()
                 } else if y < terrain_height - 2 {
-                    BlockType::Stone.get_id()
+                    BlockType::Stone.get_name()
                 } else if y < terrain_height {
-                    BlockType::Dirt.get_id()
+                    BlockType::Dirt.get_name()
                 } else {
-                    BlockType::Grass.get_id()
+                    BlockType::Grass.get_name()
                 };
 
                 // Get block id from name, then set it
                 world_map.set_block(
                     &IVec3::new(x, y, z),
-                    *registry.block_to_id.get(&block).unwrap(),
+                    *registry.get_id(&block).unwrap(),
                 );
 
                 // Incrémenter le compteur de blocs
@@ -83,7 +83,8 @@ pub fn setup_world(
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     mut ev_load: EventReader<LoadWorldEvent>,
     mut player_query: Query<(&mut Transform, &mut Player)>,
-    registry: Res<ItemBlockRegistry>,
+    r_blocks: Res<Registry<BlockData>>,
+    r_items: Res<Registry<ItemData>>,
 ) {
     let mut world_name = "default";
     // Get loaded world name
@@ -116,7 +117,8 @@ pub fn setup_world(
         world_name,
         &mut player,
         &mut transform.translation,
-        &registry,
+        &r_items,
+        &r_blocks,
     ) {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
@@ -165,7 +167,7 @@ pub fn setup_world(
                         seed,
                         &mut world_map,
                         &mut ev_render,
-                        &registry,
+                        &r_blocks,
                     );
                 }
             }
@@ -179,7 +181,7 @@ pub fn load_chunk_around_player(
     seed: u32,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     render_distance: Res<RenderDistance>,
-    registry: &ItemBlockRegistry,
+    r_blocks: &Registry<BlockData>,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -200,7 +202,7 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(chunk_pos, seed, world_map, ev_render, registry);
+            generate_chunk(chunk_pos, seed, world_map, ev_render, r_blocks);
         }
     }
 }

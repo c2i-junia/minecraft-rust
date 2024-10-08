@@ -1,5 +1,6 @@
 use crate::{ui::items, GameState};
 use bevy::prelude::*;
+use shared::world::RegistryId;
 use std::collections::HashMap;
 
 #[derive(Component, Clone)]
@@ -9,7 +10,7 @@ pub struct Player {
     pub view_mode: ViewMode,
     pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
-    pub inventory: HashMap<u32, items::Item>,
+    pub inventory: HashMap<RegistryId, items::Item>,
     pub height: f32,
     pub width: f32,
 }

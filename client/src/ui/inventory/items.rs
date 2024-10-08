@@ -1,14 +1,13 @@
 use rand::Rng;
-use shared::world::{items::ItemId, BlockId};
-use shared::world::{ItemBlockRegistry, ItemType};
+use shared::world::{BlockData, ItemData, ItemType, Registry, RegistryId};
 
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
 
 pub type Item = shared::world::Item;
 
-pub fn item_from_block(block: &BlockId, registry: &ItemBlockRegistry) -> Option<ItemId> {
-    let pool = registry.blocks.get(block).unwrap().drops.clone();
+pub fn item_from_block(block: &RegistryId, r_blocks: &Registry<BlockData>) -> Option<RegistryId> {
+    let pool = r_blocks.get(block).unwrap().drops.clone();
     let total = pool
         .clone()
         .into_iter()
@@ -28,8 +27,8 @@ pub fn item_from_block(block: &BlockId, registry: &ItemBlockRegistry) -> Option<
     None
 }
 
-pub fn block_from_item(item: &ItemId, registry: &ItemBlockRegistry) -> Option<BlockId> {
-    if let ItemType::Block(block) = registry.items.get(item).unwrap().kind {
+pub fn block_from_item(item: &RegistryId, registry: &Registry<ItemData>) -> Option<RegistryId> {
+    if let ItemType::Block(block) = registry.get(item).unwrap().kind {
         Some(block)
     } else {
         None
@@ -59,7 +58,7 @@ pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -
 pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
-    item_type: ItemId,
+    item_type: RegistryId,
 ) -> u32 {
     if nb == 0 {
         0

@@ -9,7 +9,7 @@ use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
-use shared::world::ItemBlockRegistry;
+use shared::world::{BlockData, ItemData, Registry};
 
 use super::inventory;
 
@@ -30,12 +30,13 @@ pub fn handle_block_interactions(
         ResMut<WorldMap>,
         Res<ButtonInput<MouseButton>>,
         Res<UIMode>,
-        Res<ItemBlockRegistry>,
+        Res<Registry<BlockData>>,
+        Res<Registry<ItemData>>,
     ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_query, mut p_transform, raycast_source, hotbar) = queries;
-    let (mut world_map, mouse_input, ui_mode, registry) = resources;
+    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items) = resources;
 
     let player = player_query.single().clone();
 
@@ -65,7 +66,7 @@ pub fn handle_block_interactions(
 
                 if let Some(block) = block {
                     // add the block to the player's inventory
-                    let item_type = items::item_from_block(&block, &registry);
+                    let item_type = items::item_from_block(&block, &r_blocks);
 
                     // If block has corresponding item, add it to inventory
                     if let Some(item_type) = item_type {
@@ -116,7 +117,7 @@ pub fn handle_block_interactions(
                     );
 
                     // Check if the item has a block counterpart
-                    if let Some(block) = items::block_from_item(&item.id, &registry) {
+                    if let Some(block) = items::block_from_item(&item.id, &r_items) {
                         let block_pos =
                             IVec3::new(position.x as i32, position.y as i32, position.z as i32);
 

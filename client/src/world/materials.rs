@@ -2,14 +2,14 @@ use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
 use crate::world::GlobalMaterial;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
-use shared::world::{BlockId, ItemBlockRegistry, ItemId};
+use shared::world::{BlockData, ItemData, Registry, RegistryId};
 use std::collections::HashMap;
 
 #[derive(Resource, Default)]
 pub struct MaterialResource {
-    pub block_materials: HashMap<BlockId, Handle<StandardMaterial>>,
+    pub block_materials: HashMap<RegistryId, Handle<StandardMaterial>>,
     pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
-    pub item_textures: HashMap<ItemId, Handle<Image>>,
+    pub item_textures: HashMap<RegistryId, Handle<Image>>,
     pub atlas_texture: Option<Handle<StandardMaterial>>,
 }
 
@@ -24,7 +24,8 @@ pub fn setup_materials(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut material_resource: ResMut<MaterialResource>,
     mut atlas_handles: ResMut<AtlasHandles>,
-    registry: Res<ItemBlockRegistry>,
+    r_blocks: Res<Registry<BlockData>>,
+    r_items: Res<Registry<ItemData>>,
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -76,15 +77,15 @@ pub fn setup_materials(
 
     material_resource
         .block_materials
-        .insert(*registry.block_to_id.get("dirt").unwrap(), dirt_material);
+        .insert(*r_blocks.get_id("dirt").unwrap(), dirt_material);
     material_resource
         .block_materials
-        .insert(*registry.block_to_id.get("grass").unwrap(), grass_material);
+        .insert(*r_blocks.get_id("grass").unwrap(), grass_material);
     material_resource
         .block_materials
-        .insert(*registry.block_to_id.get("stone").unwrap(), stone_material);
+        .insert(*r_blocks.get_id("stone").unwrap(), stone_material);
     material_resource.block_materials.insert(
-        *registry.block_to_id.get("bedrock").unwrap(),
+        *r_blocks.get_id("bedrock").unwrap(),
         bedrock_material,
     );
 
@@ -96,19 +97,19 @@ pub fn setup_materials(
         .insert(GlobalMaterial::Moon, moon_material);
 
     material_resource.item_textures.insert(
-        *registry.item_to_id.get("grass").unwrap(),
+        *r_items.get_id("grass").unwrap(),
         asset_server.load("textures/grass.png"),
     );
     material_resource.item_textures.insert(
-        *registry.item_to_id.get("dirt").unwrap(),
+        *r_items.get_id("dirt").unwrap(),
         asset_server.load("textures/dirt.png"),
     );
     material_resource.item_textures.insert(
-        *registry.item_to_id.get("stone").unwrap(),
+        *r_items.get_id("stone").unwrap(),
         asset_server.load("textures/stone.png"),
     );
     material_resource.item_textures.insert(
-        *registry.item_to_id.get("bedrock").unwrap(),
+        *r_items.get_id("bedrock").unwrap(),
         asset_server.load("textures/bedrock.png"),
     );
 
