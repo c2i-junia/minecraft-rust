@@ -84,10 +84,9 @@ pub fn setup_materials(
     material_resource
         .block_materials
         .insert(*r_blocks.get_id("stone").unwrap(), stone_material);
-    material_resource.block_materials.insert(
-        *r_blocks.get_id("bedrock").unwrap(),
-        bedrock_material,
-    );
+    material_resource
+        .block_materials
+        .insert(*r_blocks.get_id("bedrock").unwrap(), bedrock_material);
 
     material_resource
         .global_materials

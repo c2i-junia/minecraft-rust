@@ -5,7 +5,7 @@ use rand::random;
 use shared::world::*;
 use std::collections::HashMap;
 
-fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &Registry<ItemData>) -> Chunk {
+fn generate_chunk(chunk_pos: IVec3, seed: u32, r_items: &Registry<ItemData>) -> Chunk {
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
@@ -41,10 +41,10 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &Registry<ItemData>) ->
                 } else {
                     BlockType::Grass.get_name()
                 };
-                
+
                 chunk
                     .map
-                    .insert(IVec3::new(x, y, z), *registry.get_id(&block).unwrap());
+                    .insert(IVec3::new(x, y, z), *r_items.get_id(&block).unwrap());
             }
         }
     }
@@ -52,8 +52,12 @@ fn generate_chunk(chunk_pos: IVec3, seed: u32, registry: &Registry<ItemData>) ->
     chunk
 }
 
-pub fn setup_world(mut commands: Commands, mut world_map: ResMut<WorldMap>, registry: Res<Registry<ItemData>>) {
-    println!("Registry : {:?}", registry);
+pub fn setup_world(
+    mut commands: Commands,
+    mut world_map: ResMut<WorldMap>,
+    r_items: Res<Registry<ItemData>>,
+) {
+    println!("Registry : {:?}", r_items);
     let seed = random::<u32>();
     commands.insert_resource(WorldSeed(seed));
 
@@ -63,7 +67,7 @@ pub fn setup_world(mut commands: Commands, mut world_map: ResMut<WorldMap>, regi
         for y in 0..=8 {
             for z in -1..=1 {
                 let pos = IVec3::new(x, y, z);
-                let chunk = generate_chunk(pos, seed, &registry);
+                let chunk = generate_chunk(pos, seed, &r_items);
                 world_map.map.insert(pos, chunk);
             }
         }

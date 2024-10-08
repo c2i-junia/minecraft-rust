@@ -69,10 +69,11 @@ impl Default for ItemData {
     }
 }
 
-impl Default for BlockData {
+impl Default for TempBlock {
     fn default() -> Self {
         Self {
-            drops: vec![(1, 0)],
+            id: "dirt".into(),
+            drops: vec![(1, "dirt".into())],
             break_time: 1.,
             uvs: [0.25, 0.5, 0.0, 1.0],
         }
@@ -81,13 +82,23 @@ impl Default for BlockData {
 
 pub type RegistryId = u32;
 
+/// Structure for registering static data pertaining to a certain object in gameplay
+///
+/// For example : items, blocks, mobs...
 #[derive(Resource, Debug, Clone)]
 pub struct Registry<T> {
     inner: HashMap<RegistryId, T>,
     name_to_id: HashMap<String, RegistryId>,
 }
 
+impl<T> Default for Registry<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T> Registry<T> {
+    /// New empty registry
     pub fn new() -> Self {
         Self {
             inner: HashMap::new(),
@@ -95,17 +106,27 @@ impl<T> Registry<T> {
         }
     }
 
+    /// Register a new object in the registry
+    ///
+    /// If an item with the same `name` is already present, it will be overwritten
     pub fn register(&mut self, name: String, block: T) -> RegistryId {
-        let len = self.inner.len() as RegistryId;
+        let len = if let Some(n) = self.name_to_id.get(&name) {
+            *n as RegistryId
+        } else {
+            self.inner.len() as RegistryId
+        };
+
         self.inner.insert(len, block);
         self.name_to_id.insert(name, len);
         len
     }
 
+    /// Replaces the item with the same `id`, **without changing its `name`**
     pub fn edit(&mut self, id: RegistryId, item: T) -> Option<T> {
         self.inner.insert(id, item)
     }
 
+    /// Tries to remove an object from the registry by its `name`, then returns it if it exists
     pub fn remove(&mut self, name: &str) -> Option<T> {
         if let Some(id) = self.name_to_id.remove(name) {
             self.inner.remove(&id)
@@ -114,18 +135,22 @@ impl<T> Registry<T> {
         }
     }
 
+    /// Tries to get a reference to an object from its `id`
     pub fn get(&self, block_id: &RegistryId) -> Option<&T> {
         self.inner.get(block_id)
     }
 
+    /// Tries to get a reference to a mutable object from its `id`
     pub fn get_mut(&mut self, block_id: &RegistryId) -> Option<&mut T> {
         self.inner.get_mut(block_id)
     }
 
+    /// Tries to get the `id` of an object from its `name`
     pub fn get_id(&self, block_name: &str) -> Option<&RegistryId> {
         self.name_to_id.get(block_name)
     }
 
+    /// Tries to get a reference to an object from its `name`
     pub fn get_by_name(&self, block_name: &str) -> Option<&T> {
         if let Some(id) = self.name_to_id.get(block_name) {
             return self.inner.get(id);
@@ -133,10 +158,12 @@ impl<T> Registry<T> {
         None
     }
 
+    /// Iterates through the `(id, object)` pairs of the registry
     pub fn iter(&self) -> Iter<RegistryId, T> {
         self.inner.iter()
     }
 
+    /// Iterates through the `(name, id)` pairs of the registry
     pub fn iter_names(&self) -> Iter<String, RegistryId> {
         self.name_to_id.iter()
     }
@@ -190,7 +217,7 @@ pub fn load_blocks_items(
 
     // Finally, edit items with numeric ids of blocks
     for (txt, id) in item_r.clone().iter_names() {
-        let mut item: ItemData = item_r.get(id).unwrap().clone();
+        let mut item: ItemData = *item_r.get(id).unwrap();
         if item.kind == ItemType::Block(0) {
             item.kind = ItemType::Block(*blocks_r.get_id(txt).unwrap());
         }

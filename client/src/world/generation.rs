@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
 use shared::world::{
-    block_to_chunk_coord, to_global_pos, BlockData, BlockType, ItemData, Registry, SIX_OFFSETS
+    block_to_chunk_coord, to_global_pos, BlockData, BlockType, ItemData, Registry, SIX_OFFSETS,
 };
 use std::collections::HashSet;
 
@@ -17,7 +17,7 @@ fn generate_chunk(
     seed: u32,
     world_map: &mut WorldMap,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
-    registry: &Registry<BlockData>,
+    r_blocks: &Registry<BlockData>,
 ) {
     //println!("gen chunk {}", chunk_pos);
     let perlin = Perlin::new(seed);
@@ -57,10 +57,7 @@ fn generate_chunk(
                 };
 
                 // Get block id from name, then set it
-                world_map.set_block(
-                    &IVec3::new(x, y, z),
-                    *registry.get_id(&block).unwrap(),
-                );
+                world_map.set_block(&IVec3::new(x, y, z), *r_blocks.get_id(&block).unwrap());
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;

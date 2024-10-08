@@ -27,8 +27,8 @@ pub fn item_from_block(block: &RegistryId, r_blocks: &Registry<BlockData>) -> Op
     None
 }
 
-pub fn block_from_item(item: &RegistryId, registry: &Registry<ItemData>) -> Option<RegistryId> {
-    if let ItemType::Block(block) = registry.get(item).unwrap().kind {
+pub fn block_from_item(item: &RegistryId, r_items: &Registry<ItemData>) -> Option<RegistryId> {
+    if let ItemType::Block(block) = r_items.get(item).unwrap().kind {
         Some(block)
     } else {
         None

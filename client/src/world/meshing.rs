@@ -13,9 +13,9 @@ struct UvCoords {
     v1: f32,
 }
 
-fn get_uv_coords(block: &RegistryId, registry: &Registry<BlockData>) -> UvCoords {
+fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords {
     // should be refactored later
-    let res = registry.get(block).unwrap().uvs;
+    let res = r_blocks.get(block).unwrap().uvs;
     UvCoords {
         u0: res[0],
         u1: res[1],
@@ -27,7 +27,7 @@ fn get_uv_coords(block: &RegistryId, registry: &Registry<BlockData>) -> UvCoords
 pub(crate) fn generate_chunk_mesh(
     world_map: &WorldMap,
     chunk_pos: &IVec3,
-    registry: &Registry<BlockData>,
+    r_blocks: &Registry<BlockData>,
 ) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -281,7 +281,7 @@ pub(crate) fn generate_chunk_mesh(
                 let mut local_normals: Vec<[f32; 3]> = vec![];
                 let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-                let uv_coords = get_uv_coords(block.unwrap(), registry);
+                let uv_coords = get_uv_coords(block.unwrap(), r_blocks);
 
                 if should_render_front_face(global_block_pos) {
                     render_front_face(
