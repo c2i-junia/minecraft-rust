@@ -1,0 +1,6 @@
+(
+    id: "bedrock",
+    drops: [(1, "bedrock")],
+    break_time: 5.0,
+    uvs: (0.75, 1.0, 0.0, 1.0)
+)

@@ -3,7 +3,9 @@ use crate::player::Player;
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::Rng;
-use shared::world::{block_to_chunk_coord, to_global_pos, SIX_OFFSETS};
+use shared::world::{
+    block_to_chunk_coord, to_global_pos, BlockData, BlockType, ItemData, Registry, SIX_OFFSETS,
+};
 use std::collections::HashSet;
 
 use crate::{world::*, GameState, LoadWorldEvent};
@@ -15,6 +17,7 @@ fn generate_chunk(
     seed: u32,
     world_map: &mut WorldMap,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
+    r_blocks: &Registry<BlockData>,
 ) {
     //println!("gen chunk {}", chunk_pos);
     let perlin = Perlin::new(seed);
@@ -44,16 +47,17 @@ fn generate_chunk(
             // Générer des blocs à partir de la couche 0 (bedrock) jusqu'à la hauteur générée
             for y in WORLD_MIN_Y..=terrain_height {
                 let block = if y == 0 {
-                    Block::Bedrock // Placer la bedrock à la couche 0
+                    BlockType::Bedrock.get_name()
                 } else if y < terrain_height - 2 {
-                    Block::Stone // Placer de la pierre en dessous des 3 dernières couches
+                    BlockType::Stone.get_name()
                 } else if y < terrain_height {
-                    Block::Dirt // Placer de la terre dans les 3 couches sous la surface
+                    BlockType::Dirt.get_name()
                 } else {
-                    Block::Grass // Placer de l'herbe à la surface
+                    BlockType::Grass.get_name()
                 };
 
-                world_map.set_block(&IVec3::new(x, y, z), block);
+                // Get block id from name, then set it
+                world_map.set_block(&IVec3::new(x, y, z), *r_blocks.get_id(&block).unwrap());
 
                 // Incrémenter le compteur de blocs
                 world_map.total_blocks_count += 1;
@@ -76,6 +80,8 @@ pub fn setup_world(
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     mut ev_load: EventReader<LoadWorldEvent>,
     mut player_query: Query<(&mut Transform, &mut Player)>,
+    r_blocks: Res<Registry<BlockData>>,
+    r_items: Res<Registry<ItemData>>,
 ) {
     let mut world_name = "default";
     // Get loaded world name
@@ -104,7 +110,13 @@ pub fn setup_world(
     commands.insert_resource(WorldSeed(seed));
 
     // Charger la carte du monde depuis le fichier `{world_name}_save.ron`
-    if let Ok(loaded_world) = load_world_map(world_name, &mut player, &mut transform.translation) {
+    if let Ok(loaded_world) = load_world_map(
+        world_name,
+        &mut player,
+        &mut transform.translation,
+        &r_items,
+        &r_blocks,
+    ) {
         *world_map = loaded_world;
         println!("Loaded existing world from {}_save.ron", world_name);
 
@@ -147,7 +159,13 @@ pub fn setup_world(
         for x in -1..=1 {
             for y in 0..=8 {
                 for z in -1..=1 {
-                    generate_chunk(IVec3::new(x, y, z), seed, &mut world_map, &mut ev_render);
+                    generate_chunk(
+                        IVec3::new(x, y, z),
+                        seed,
+                        &mut world_map,
+                        &mut ev_render,
+                        &r_blocks,
+                    );
                 }
             }
         }
@@ -160,6 +178,7 @@ pub fn load_chunk_around_player(
     seed: u32,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     render_distance: Res<RenderDistance>,
+    r_blocks: &Registry<BlockData>,
 ) {
     let player_chunk = IVec3::new(
         block_to_chunk_coord(player_position.x as i32),
@@ -180,7 +199,7 @@ pub fn load_chunk_around_player(
                 // Doing these scoping shenanigans to release the Mutex at the end of the scope
                 // because generate_chunk requires a Mutex lock as well
             }
-            generate_chunk(chunk_pos, seed, world_map, ev_render);
+            generate_chunk(chunk_pos, seed, world_map, ev_render, r_blocks);
         }
     }
 }

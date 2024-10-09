@@ -1,9 +1,9 @@
 use crate::constants::CHUNK_SIZE;
-use crate::world::{Block, WorldMap};
+use crate::world::WorldMap;
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
-use shared::world::to_global_pos;
+use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
 
 #[derive(Copy, Clone)]
 struct UvCoords {
@@ -13,14 +13,9 @@ struct UvCoords {
     v1: f32,
 }
 
-fn get_uv_coords(block: Block) -> UvCoords {
+fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords {
     // should be refactored later
-    let res = match block {
-        Block::Grass => [0.0, 0.25, 0.0, 1.0],
-        Block::Dirt => [0.25, 0.5, 0.0, 1.0],
-        Block::Stone => [0.5, 0.75, 0.0, 1.0],
-        Block::Bedrock => [0.75, 1.0, 0.0, 1.0],
-    };
+    let res = r_blocks.get(block).unwrap().uvs;
     UvCoords {
         u0: res[0],
         u1: res[1],
@@ -29,7 +24,11 @@ fn get_uv_coords(block: Block) -> UvCoords {
     }
 }
 
-pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Mesh {
+pub(crate) fn generate_chunk_mesh(
+    world_map: &WorldMap,
+    chunk_pos: &IVec3,
+    r_blocks: &Registry<BlockData>,
+) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();
@@ -282,7 +281,7 @@ pub(crate) fn generate_chunk_mesh(world_map: &WorldMap, chunk_pos: &IVec3) -> Me
                 let mut local_normals: Vec<[f32; 3]> = vec![];
                 let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-                let uv_coords = get_uv_coords(block.unwrap().kind);
+                let uv_coords = get_uv_coords(block.unwrap(), r_blocks);
 
                 if should_render_front_face(global_block_pos) {
                     render_front_face(
