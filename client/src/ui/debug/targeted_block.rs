@@ -2,7 +2,6 @@ use crate::{
     camera::BlockRaycastSet,
     constants::{CUBE_SIZE, INTERACTION_DISTANCE},
     player::Player,
-    world::Block,
     world::WorldMap,
 };
 use bevy::{math::NormedVectorSpace, prelude::*};
@@ -32,21 +31,15 @@ pub fn block_text_update_system(
                 block_pos.y.round() as i32,
                 block_pos.z.round() as i32,
             );
-            let block_wrapper = world_map.get_block_by_coordinates(&vec);
-            let block_wrapper = match block_wrapper {
+            let block = world_map.get_block_by_coordinates(&vec);
+            let block = match block {
                 Some(v) => v,
                 None => return,
             };
-            let block_type = block_wrapper.kind;
-            col = match block_type {
-                Block::Bedrock => Color::srgb(0.4, 0.4, 0.4),
-                Block::Dirt => Color::Srgba(Srgba::hex("69512E").unwrap()),
-                Block::Grass => Color::Srgba(Srgba::hex("7CFC00").unwrap()),
-                Block::Stone => Color::Srgba(Srgba::hex("888C8D").unwrap()),
-            };
+            col = Color::WHITE;
             txt = format!(
                 "{:?} | pos = {}",
-                block_type,
+                block,
                 intersection.position().xyz().round()
             );
         }

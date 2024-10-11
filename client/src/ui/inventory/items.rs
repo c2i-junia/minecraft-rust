@@ -1,25 +1,37 @@
+use rand::Rng;
+use shared::world::{BlockData, ItemData, ItemType, Registry, RegistryId};
+
 use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
-use crate::world::Block;
 
 pub type Item = shared::world::Item;
-pub type ItemId = shared::world::ItemId;
 
-pub fn item_from_block(block: Block) -> Option<ItemId> {
-    match block {
-        Block::Bedrock => Some(ItemId::Bedrock),
-        Block::Dirt | Block::Grass => Some(ItemId::Dirt),
-        Block::Stone => Some(ItemId::Stone), // _ => None
+pub fn item_from_block(block: &RegistryId, r_blocks: &Registry<BlockData>) -> Option<RegistryId> {
+    let pool = r_blocks.get(block).unwrap().drops.clone();
+    let total = pool
+        .clone()
+        .into_iter()
+        .reduce(|a, b| (a.0 + b.0, a.1))
+        .unwrap()
+        .0;
+    let mut nb = rand::thread_rng().gen_range(0..total);
+
+    // Choose drop item
+    for item in pool {
+        if nb < item.0 {
+            return Some(item.1);
+        } else {
+            nb -= item.0;
+        }
     }
+    None
 }
 
-pub fn block_from_item(item: ItemId) -> Option<Block> {
-    match item {
-        ItemId::Bedrock => Some(Block::Bedrock),
-        ItemId::Dirt => Some(Block::Dirt),
-        ItemId::Grass => Some(Block::Grass),
-        ItemId::Stone => Some(Block::Stone),
-        // _ => None
+pub fn block_from_item(item: &RegistryId, r_items: &Registry<ItemData>) -> Option<RegistryId> {
+    if let ItemType::Block(block) = r_items.get(item).unwrap().kind {
+        Some(block)
+    } else {
+        None
     }
 }
 
@@ -46,7 +58,7 @@ pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -
 pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
-    item_type: ItemId,
+    item_type: RegistryId,
 ) -> u32 {
     if nb == 0 {
         0

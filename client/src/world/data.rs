@@ -1,10 +1,8 @@
 use crate::constants::CHUNK_SIZE;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use shared::world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos};
+use shared::world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos, BlockId};
 use std::collections::HashMap;
-
-pub type Block = shared::world::Block;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {
@@ -12,17 +10,12 @@ pub enum GlobalMaterial {
     Moon,
 }
 
-#[derive(Component, Clone, Serialize, Deserialize)]
-pub struct BlockWrapper {
-    pub kind: Block,
-}
-
 #[derive(Resource, Serialize, Deserialize)]
 pub struct WorldSeed(pub u32);
 
 #[derive(Clone, Default, Serialize, Deserialize)]
 pub struct Chunk {
-    map: HashMap<IVec3, BlockWrapper>,
+    pub(super) map: HashMap<IVec3, BlockId>,
     #[serde(skip)]
     pub(crate) entity: Option<Entity>,
 }
@@ -36,7 +29,7 @@ pub struct WorldMap {
 }
 
 impl WorldMap {
-    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockWrapper> {
+    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockId> {
         let x = position.x;
         let y = position.y;
         let z = position.z;
@@ -55,9 +48,9 @@ impl WorldMap {
         }
     }
 
-    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<Block> {
+    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<BlockId> {
         let block = self.get_block_by_coordinates(global_block_pos)?;
-        let kind = block.kind;
+        let kind = *block;
 
         let chunk_pos = global_block_to_chunk_pos(global_block_pos);
 
@@ -72,7 +65,7 @@ impl WorldMap {
         Some(kind)
     }
 
-    pub fn set_block(&mut self, position: &IVec3, block: Block) {
+    pub fn set_block(&mut self, position: &IVec3, block: BlockId) {
         let x = position.x;
         let y = position.y;
         let z = position.z;
@@ -87,9 +80,6 @@ impl WorldMap {
         if x == 0 && z == 0 {
             // println!("inserting y={}", y)
         }
-        chunk.map.insert(
-            IVec3::new(sub_x, sub_y, sub_z),
-            BlockWrapper { kind: block },
-        );
+        chunk.map.insert(IVec3::new(sub_x, sub_y, sub_z), block);
     }
 }

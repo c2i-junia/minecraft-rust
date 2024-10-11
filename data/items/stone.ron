@@ -1,0 +1,5 @@
+(
+    id: "stone",
+    kind: Block(0),
+    stack: 64
+)
