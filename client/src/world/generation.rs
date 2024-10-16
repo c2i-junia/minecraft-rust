@@ -86,6 +86,7 @@ pub fn setup_world(
     let mut world_name = "default";
     // Get loaded world name
     for ev in ev_load.read() {
+        println!("----------------------- LOAD EVENT -------------------- {}", ev.world_name);
         world_name = &ev.world_name;
     }
 

@@ -50,6 +50,7 @@ pub fn load_world_map(
     }
 
     let world_map = WorldMap {
+        name: file_name.into(),
         map: {
             if blocks_changed {
                 for (_, chunk) in save.map.iter_mut() {

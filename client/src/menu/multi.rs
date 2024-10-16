@@ -1,3 +1,9 @@
+use std::{
+    fs,
+    io::Write,
+    path::Path,
+};
+
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -17,9 +23,13 @@ use bevy_simple_text_input::{
     TextInputBundle, TextInputInactive, TextInputPlaceholder, TextInputSettings,
     TextInputTextStyle, TextInputValue,
 };
+use ron::{from_str, ser::PrettyConfig};
+
+use crate::constants::{SAVE_PATH, SERVER_LIST_SAVE_NAME};
 
 use super::{MenuButtonAction, MenuState, ScrollingList};
 
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ServerItem {
     pub name: String,
     pub ip: String,
@@ -232,17 +242,220 @@ pub fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) 
         });
 }
 
+pub fn add_server_item(
+    name: String,
+    ip: String,
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    list: &mut ServerList,
+    list_entity: Entity,
+) {
+    println!("Adding server to list : name = {:?}, ip = {:?}", name, ip);
+
+    let btn_style = Style {
+        display: Display::Flex,
+        flex_direction: FlexDirection::Column,
+        justify_content: JustifyContent::Center,
+        align_items: AlignItems::Center,
+        border: UiRect::all(Val::Px(2.)),
+        height: Val::Percent(80.),
+        ..Default::default()
+    };
+
+    let img_style = Style {
+        height: Val::Percent(100.),
+        ..Default::default()
+    };
+
+    let server = commands
+        .spawn(NodeBundle {
+            border_color: BorderColor(BACKGROUND_COLOR),
+            style: Style {
+                flex_direction: FlexDirection::Row,
+                align_items: AlignItems::Center,
+                column_gap: Val::Px(5.),
+                width: Val::Percent(100.),
+                height: Val::Vh(10.),
+                padding: UiRect::horizontal(Val::Percent(2.)),
+                border: UiRect::all(Val::Px(2.)),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .id();
+
+    let play_btn = commands
+        .spawn((
+            MultiplayerButtonAction::Connect(server),
+            ButtonBundle {
+                style: btn_style.clone(),
+                ..Default::default()
+            },
+        ))
+        .with_children(|btn| {
+            let icon = asset_server.load("./play.png");
+            btn.spawn(ImageBundle {
+                image: UiImage::new(icon),
+                style: img_style.clone(),
+                ..Default::default()
+            });
+        })
+        .id();
+
+    let delete_btn = commands
+        .spawn((
+            MultiplayerButtonAction::Delete(server),
+            ButtonBundle {
+                style: btn_style.clone(),
+                ..Default::default()
+            },
+        ))
+        .with_children(|btn| {
+            let icon = asset_server.load("./trash.png");
+            btn.spawn(ImageBundle {
+                image: UiImage::new(icon),
+                style: img_style.clone(),
+                ..Default::default()
+            });
+        })
+        .id();
+
+    let txt = commands
+        .spawn(TextBundle {
+            text: Text {
+                sections: vec![
+                    TextSection {
+                        value: name.clone() + "\n",
+                        style: TextStyle {
+                            font: asset_server.load("fonts/gohu.ttf"),
+                            font_size: 20.,
+                            color: Color::WHITE,
+                        },
+                    },
+                    TextSection {
+                        value: ip.clone(),
+                        style: TextStyle {
+                            font: asset_server.load("fonts/gohu.ttf"),
+                            font_size: 15.,
+                            color: Color::srgb(0.4, 0.4, 0.4),
+                        },
+                    },
+                ],
+                ..Default::default()
+            },
+            style: Style {
+                display: Display::Flex,
+                flex_direction: FlexDirection::Column,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .id();
+
+    commands
+        .entity(server)
+        .push_children(&[play_btn, delete_btn, txt]);
+
+    commands.entity(list_entity).push_children(&[server]);
+
+    list.servers.insert(
+        server,
+        ServerItem {
+            name: name.clone(),
+            ip: ip.clone(),
+        },
+    );
+}
+
+pub fn load_server_list(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut list_query: Query<(&mut ServerList, Entity)>,
+) {
+    let (mut list, list_entity) = list_query.single_mut();
+
+    let txt = format!("{}{}", SAVE_PATH, SERVER_LIST_SAVE_NAME);
+
+    let path = Path::new(&txt);
+
+    // If no server list save, returns
+    if !fs::exists(path).unwrap() {
+        return;
+    }
+
+    let txt = fs::read_to_string(path);
+    if txt.is_err() {
+        return;
+    }
+    let txt = txt.unwrap();
+
+    let servers = from_str::<Vec<ServerItem>>(&txt);
+    if servers.is_err() {
+        return;
+    }
+    let servers = servers.unwrap();
+
+    for srv in servers {
+        add_server_item(
+            srv.name,
+            srv.ip,
+            &mut commands,
+            &assets,
+            &mut list,
+            list_entity,
+        );
+    }
+}
+
+pub fn save_server_list(list: Query<&ServerList>) {
+    let list = list.single();
+
+    let path = Path::new(SAVE_PATH);
+
+    if !fs::exists(path).unwrap() {
+        if fs::create_dir_all(path).is_ok() {
+            println!("Successfully created the saves folder : {}", path.display());
+        } else {
+            println!("Could not create the saves folder, server list save aborted");
+            return;
+        }
+    }
+
+    let pretty_config = PrettyConfig::new()
+        .with_depth_limit(3)
+        .with_separate_tuple_members(true)
+        .with_enumerate_arrays(true);
+
+    if let Ok(data) = ron::ser::to_string_pretty(
+        &list
+            .servers
+            .values()
+            .map(|v| (*v).clone())
+            .collect::<Vec<ServerItem>>(),
+        pretty_config,
+    ) {
+        if let Ok(mut file) = fs::File::create(Path::new(&format!(
+            "{}{}",
+            SAVE_PATH, SERVER_LIST_SAVE_NAME
+        ))) {
+            if file.write_all(data.as_bytes()).is_ok() {
+                println!("Server list saved")
+            }
+        }
+    }
+}
+
 pub fn multiplayer_action(
     queries: (
         Query<(&Interaction, &MultiplayerButtonAction), (Changed<Interaction>, With<Button>)>,
-        Query<&mut TextInputValue, (With<ServerNameInput>, Without<ServerIpInput>)>,
-        Query<&mut TextInputValue, (With<ServerIpInput>, Without<ServerNameInput>)>,
+        Query<&TextInputValue, (With<ServerNameInput>, Without<ServerIpInput>)>,
+        Query<&TextInputValue, (With<ServerIpInput>, Without<ServerNameInput>)>,
         Query<(Entity, &mut ServerList), With<ServerList>>,
     ),
     mut commands: Commands,
     asset_server: Res<AssetServer>,
 ) {
-    let (interaction_query, mut name_query, mut ip_query, mut list_query) = queries;
+    let (interaction_query, name_query, ip_query, mut list_query) = queries;
     if list_query.is_empty() {
         return;
     }
@@ -254,130 +467,17 @@ pub fn multiplayer_action(
             match *menu_button_action {
                 MultiplayerButtonAction::Add => {
                     if !name_query.is_empty() && !ip_query.is_empty() {
-                        let mut name = name_query.single_mut();
-                        let mut ip = ip_query.single_mut();
+                        let name = name_query.single();
+                        let ip = ip_query.single();
 
-                        println!(
-                            "Adding server to list : name = {:?}, ip = {:?}",
-                            name.0, ip.0
+                        add_server_item(
+                            name.0.clone(),
+                            ip.0.clone(),
+                            &mut commands,
+                            &asset_server,
+                            &mut list,
+                            entity,
                         );
-
-                        let btn_style = Style {
-                            display: Display::Flex,
-                            flex_direction: FlexDirection::Column,
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            border: UiRect::all(Val::Px(2.)),
-                            height: Val::Percent(80.),
-                            ..Default::default()
-                        };
-
-                        let img_style = Style {
-                            height: Val::Percent(100.),
-                            ..Default::default()
-                        };
-
-                        let server = commands
-                            .spawn(NodeBundle {
-                                border_color: BorderColor(BACKGROUND_COLOR),
-                                style: Style {
-                                    flex_direction: FlexDirection::Row,
-                                    align_items: AlignItems::Center,
-                                    column_gap: Val::Px(5.),
-                                    width: Val::Percent(100.),
-                                    height: Val::Vh(10.),
-                                    padding: UiRect::horizontal(Val::Percent(2.)),
-                                    border: UiRect::all(Val::Px(2.)),
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            })
-                            .id();
-
-                        let play_btn = commands
-                            .spawn((
-                                MultiplayerButtonAction::Connect(server),
-                                ButtonBundle {
-                                    style: btn_style.clone(),
-                                    ..Default::default()
-                                },
-                            ))
-                            .with_children(|btn| {
-                                let icon = asset_server.load("./play.png");
-                                btn.spawn(ImageBundle {
-                                    image: UiImage::new(icon),
-                                    style: img_style.clone(),
-                                    ..Default::default()
-                                });
-                            })
-                            .id();
-
-                        let delete_btn = commands
-                            .spawn((
-                                MultiplayerButtonAction::Delete(server),
-                                ButtonBundle {
-                                    style: btn_style.clone(),
-                                    ..Default::default()
-                                },
-                            ))
-                            .with_children(|btn| {
-                                let icon = asset_server.load("./trash.png");
-                                btn.spawn(ImageBundle {
-                                    image: UiImage::new(icon),
-                                    style: img_style.clone(),
-                                    ..Default::default()
-                                });
-                            })
-                            .id();
-
-                        let txt = commands
-                            .spawn(TextBundle {
-                                text: Text {
-                                    sections: vec![
-                                        TextSection {
-                                            value: name.0.clone() + "\n",
-                                            style: TextStyle {
-                                                font: asset_server.load("fonts/gohu.ttf"),
-                                                font_size: 20.,
-                                                color: Color::WHITE,
-                                            },
-                                        },
-                                        TextSection {
-                                            value: ip.0.clone(),
-                                            style: TextStyle {
-                                                font: asset_server.load("fonts/gohu.ttf"),
-                                                font_size: 15.,
-                                                color: Color::srgb(0.4, 0.4, 0.4),
-                                            },
-                                        },
-                                    ],
-                                    ..Default::default()
-                                },
-                                style: Style {
-                                    display: Display::Flex,
-                                    flex_direction: FlexDirection::Column,
-                                    ..Default::default()
-                                },
-                                ..Default::default()
-                            })
-                            .id();
-
-                        commands
-                            .entity(server)
-                            .push_children(&[play_btn, delete_btn, txt]);
-
-                        commands.entity(entity).push_children(&[server]);
-
-                        list.servers.insert(
-                            server,
-                            ServerItem {
-                                name: name.0.clone(),
-                                ip: ip.0.clone(),
-                            },
-                        );
-
-                        name.0 = "".into();
-                        ip.0 = "".into();
                     }
                 }
                 MultiplayerButtonAction::Connect(serv_entity) => {
@@ -388,8 +488,11 @@ pub fn multiplayer_action(
                     }
                 }
                 MultiplayerButtonAction::Delete(serv_entity) => {
+                    println!("Old list : {:?}",list.servers);
                     commands.entity(entity).remove_children(&[serv_entity]);
                     commands.entity(serv_entity).despawn_recursive();
+                    list.servers.remove(&serv_entity);
+                    println!("New list : {:?}",list.servers);
                 }
             }
         }

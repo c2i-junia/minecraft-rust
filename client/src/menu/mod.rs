@@ -57,11 +57,12 @@ pub fn menu_plugin(app: &mut App) {
             Update,
             settings::setting_button::<Volume>.run_if(in_state(MenuState::SettingsSound)),
         )
-        .add_systems(OnEnter(MenuState::Multi), multi::multiplayer_menu_setup)
+        .add_systems(OnEnter(MenuState::Multi), (multi::multiplayer_menu_setup, multi::load_server_list).chain())
         .add_systems(
             Update,
             (multiplayer_action).run_if(in_state(MenuState::Multi)),
         )
+        .add_systems(OnExit(MenuState::Multi), multi::save_server_list)
         .add_systems(
             Update,
             controls_update_system.run_if(in_state(MenuState::SettingsControls)),

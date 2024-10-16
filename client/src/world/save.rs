@@ -73,7 +73,7 @@ pub fn save_world_system(
         {
             eprintln!("Failed to save world: {}", e);
         } else {
-            println!("World saved successfully!");
+            println!("World saved successfully ! Name : {}", world_map.name);
         }
 
         if let Err(e) = save_world_seed(
