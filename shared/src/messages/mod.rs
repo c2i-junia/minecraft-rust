@@ -18,7 +18,10 @@ pub enum ClientToServerMessage {
     ChatMessage(ChatMessage),
     ShutdownOrder(ShutdownOrder),
     PlayerInputs(PlayerInputs),
-    WorldUpdateRequest{player_chunk_position: IVec3, requested_chunks: Vec<IVec3>}
+    WorldUpdateRequest {
+        player_chunk_position: IVec3,
+        requested_chunks: Vec<IVec3>,
+    },
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

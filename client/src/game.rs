@@ -69,7 +69,7 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(RenderDistance { ..default() })
         .insert_resource(UIMode::Closed)
         .insert_resource(ViewMode::FirstPerson)
-        .insert_resource(DebugOptions::default() )
+        .insert_resource(DebugOptions::default())
         .insert_resource(Inventory::new())
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_event::<SaveRequestEvent>()

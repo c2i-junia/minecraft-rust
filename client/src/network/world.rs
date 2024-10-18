@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
-use shared::{messages::ServerToClientMessage, world::{block_to_chunk_coord, chunk_in_radius}};
+use shared::{
+    messages::ServerToClientMessage,
+    world::{block_to_chunk_coord, chunk_in_radius},
+};
 
 use crate::{
     player::Player,
@@ -43,7 +46,7 @@ pub fn update_world_from_network(
 
                 for (pos, chunk) in world_update.new_map {
                     // If the chunk is not in render distance range or is empty, do not consider it
-                    if !chunk_in_radius(&player_pos, &pos, r) || chunk.map.len() == 0 {
+                    if !chunk_in_radius(&player_pos, &pos, r) || chunk.map.is_empty() {
                         continue;
                     }
 
@@ -61,6 +64,16 @@ pub fn update_world_from_network(
     }
 }
 
-pub fn request_world_update(client: &mut ResMut<RenetClient>, requested_chunks: Vec<IVec3>, player_chunk_pos: IVec3) {
-    send_network_action(client, super::api::NetworkAction::WorldUpdateRequest { requested_chunks, player_chunk_pos });
+pub fn request_world_update(
+    client: &mut ResMut<RenetClient>,
+    requested_chunks: Vec<IVec3>,
+    player_chunk_pos: IVec3,
+) {
+    send_network_action(
+        client,
+        super::api::NetworkAction::WorldUpdateRequest {
+            requested_chunks,
+            player_chunk_pos,
+        },
+    );
 }

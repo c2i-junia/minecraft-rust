@@ -254,99 +254,98 @@ pub(crate) fn generate_chunk_mesh(
     };
 
     for (local_block_pos, block) in chunk.map.iter() {
+        let x = local_block_pos.x as f32;
+        let y = local_block_pos.y as f32;
+        let z = local_block_pos.z as f32;
 
-                let x = local_block_pos.x as f32;
-                let y = local_block_pos.y as f32;
-                let z = local_block_pos.z as f32;
+        let global_block_pos = &to_global_pos(chunk_pos, local_block_pos);
 
-                let global_block_pos = &to_global_pos(chunk_pos, &local_block_pos);
+        if is_block_surrounded(world_map, chunk_pos, local_block_pos) {
+            continue;
+        }
 
-                if is_block_surrounded(world_map, chunk_pos, &local_block_pos) {
-                    continue;
-                }
+        let mut local_vertices: Vec<[f32; 3]> = vec![];
+        let mut local_indices: Vec<u32> = vec![];
+        let mut local_normals: Vec<[f32; 3]> = vec![];
+        let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-                let mut local_vertices: Vec<[f32; 3]> = vec![];
-                let mut local_indices: Vec<u32> = vec![];
-                let mut local_normals: Vec<[f32; 3]> = vec![];
-                let mut local_uvs: Vec<[f32; 2]> = vec![];
+        let uv_coords = get_uv_coords(block, r_blocks);
 
-                let uv_coords = get_uv_coords(block, r_blocks);
+        if should_render_front_face(global_block_pos) {
+            render_front_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_front_face(global_block_pos) {
-                    render_front_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        if should_render_back_face(global_block_pos) {
+            render_back_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_back_face(global_block_pos) {
-                    render_back_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        if should_render_left_face(global_block_pos) {
+            render_left_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_left_face(global_block_pos) {
-                    render_left_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        if should_render_right_face(global_block_pos) {
+            render_right_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_right_face(global_block_pos) {
-                    render_right_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        if should_render_bottom_face(global_block_pos) {
+            render_bottom_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_bottom_face(global_block_pos) {
-                    render_bottom_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        if should_render_top_face(global_block_pos) {
+            render_top_face(
+                &mut local_vertices,
+                &mut local_indices,
+                &mut local_normals,
+                &mut local_uvs,
+                &mut indices_offset,
+                uv_coords,
+            );
+        }
 
-                if should_render_top_face(global_block_pos) {
-                    render_top_face(
-                        &mut local_vertices,
-                        &mut local_indices,
-                        &mut local_normals,
-                        &mut local_uvs,
-                        &mut indices_offset,
-                        uv_coords,
-                    );
-                }
+        let local_vertices: Vec<[f32; 3]> = local_vertices
+            .iter()
+            .map(|v| [v[0] + x + 0.5, v[1] + y + 0.5, v[2] + z + 0.5])
+            .collect();
 
-                let local_vertices: Vec<[f32; 3]> = local_vertices
-                    .iter()
-                    .map(|v| [v[0] + x + 0.5, v[1] + y + 0.5, v[2] + z + 0.5])
-                    .collect();
-
-                vertices.extend(local_vertices);
-                indices.extend(local_indices);
-                normals.extend(local_normals);
-                uvs.extend(local_uvs);
+        vertices.extend(local_vertices);
+        indices.extend(local_indices);
+        normals.extend(local_normals);
+        uvs.extend(local_uvs);
     }
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());

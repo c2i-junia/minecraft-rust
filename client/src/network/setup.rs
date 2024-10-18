@@ -84,7 +84,13 @@ pub fn poll_network_messages(
     render_distance: Res<RenderDistance>,
 ) {
     poll_reliable_ordered_messages(&mut client, &mut chat_state);
-    poll_reliable_unordered_messages(&mut client, &mut world, &mut ev_render, player_pos, render_distance);
+    poll_reliable_unordered_messages(
+        &mut client,
+        &mut world,
+        &mut ev_render,
+        player_pos,
+        render_distance,
+    );
 }
 
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {

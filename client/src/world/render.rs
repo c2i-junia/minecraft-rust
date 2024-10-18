@@ -1,7 +1,6 @@
 use crate::camera::BlockRaycastSet;
-use shared::CHUNK_SIZE;
 use crate::world::{
-    Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent
+    Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent,
 };
 use crate::{world, GameState};
 use bevy::asset::Assets;
@@ -11,7 +10,7 @@ use bevy::prelude::*;
 use bevy::prelude::{Commands, Mesh, Res, Transform};
 use bevy_mod_raycast::deferred::RaycastMesh;
 use shared::world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS};
-
+use shared::CHUNK_SIZE;
 
 fn update_chunk(
     chunk: &mut Chunk,
@@ -23,7 +22,7 @@ fn update_chunk(
     r_blocks: &Registry<BlockData>,
 ) {
     let texture = material_resource.atlas_texture.clone().unwrap();
-    let new_mesh = world::meshing::generate_chunk_mesh(world_map, &chunk, chunk_pos, r_blocks);
+    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk, chunk_pos, r_blocks);
 
     if chunk.entity.is_some() {
         commands
@@ -46,7 +45,7 @@ fn update_chunk(
                 PbrBundle {
                     mesh: meshes.add(new_mesh),
                     material: texture.clone(),
-                    transform: chunk_t.clone(),
+                    transform: chunk_t,
                     ..Default::default()
                 },
                 RaycastMesh::<BlockRaycastSet>::default(),
@@ -95,9 +94,9 @@ pub fn world_render_system(
         let mut cloned_map = world_map.clone();
 
         for pos in chunks_pos_to_reload.iter() {
-            if let Some(mut chunk) = cloned_map.map.get_mut(pos) {
+            if let Some(chunk) = cloned_map.map.get_mut(pos) {
                 update_chunk(
-                    &mut chunk,
+                    chunk,
                     pos,
                     &material_resource,
                     &mut commands,
@@ -107,7 +106,6 @@ pub fn world_render_system(
                 );
             }
         }
-
     }
     queued_events.events.clear();
 }

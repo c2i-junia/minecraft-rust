@@ -9,7 +9,7 @@ use super::RegistryId;
 pub struct Chunk {
     pub map: HashMap<IVec3, RegistryId>,
     /// Timestamp marking the last update this chunk has received
-    pub ts: u64
+    pub ts: u64,
 }
 
 #[derive(Resource, Default, Clone, Serialize, Deserialize, Debug, PartialEq)]

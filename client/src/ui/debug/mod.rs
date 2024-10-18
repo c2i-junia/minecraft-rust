@@ -16,7 +16,7 @@ pub use setup::*;
 
 #[derive(Resource, Default)]
 pub struct DebugOptions {
-    is_chunk_debug_mode_enabled: bool
+    is_chunk_debug_mode_enabled: bool,
 }
 
 impl DebugOptions {

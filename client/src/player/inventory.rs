@@ -15,7 +15,7 @@ pub struct Inventory {
 impl Inventory {
     pub fn new() -> Self {
         Self {
-            inner: HashMap::new()
+            inner: HashMap::new(),
         }
     }
 

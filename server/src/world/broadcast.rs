@@ -13,10 +13,10 @@ use shared::world::{chunk_in_radius, BlockData, Chunk, Registry, WorldMap};
 use super::data::WorldSeed;
 
 #[derive(Event, Debug)]
-pub struct WorldUpdateRequestEvent{
+pub struct WorldUpdateRequestEvent {
     pub client: ClientId,
     pub chunks: Vec<IVec3>,
-    pub player_chunk_position: IVec3
+    pub player_chunk_position: IVec3,
 }
 
 pub fn send_world_update(
@@ -45,7 +45,7 @@ pub fn send_world_update(
                                 let chunk = generate_chunk(*c, seed.0, &r_blocks);
 
                                 // If chunk is empty, do not create it to prevent unnecessary data transmission
-                                if chunk.map.len() == 0 {
+                                if chunk.map.is_empty() {
                                     continue;
                                 }
 

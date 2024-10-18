@@ -143,14 +143,17 @@ pub fn player_movement_system(
 
         // Iterate through existing chunks, and remove them if necessary
         for (pos, chunk) in world_map.map.clone().iter() {
-            println!("Chunk in radius : {}, radius={r}, pos={pos}", chunk_in_radius(&player_chunk, pos, r));
+            println!(
+                "Chunk in radius : {}, radius={r}, pos={pos}",
+                chunk_in_radius(&player_chunk, pos, r)
+            );
             // If chunk is empty, or not in render radius
-            if !chunk_in_radius(&player_chunk, &pos, r) || chunk.map.len() == 0 {
+            if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty() {
                 // Remove chunk, and delete its associated entity if it exists
                 if let Some(entity) = chunk.entity {
                     commands.entity(entity).despawn_recursive();
                 }
-                world_map.map.remove(&pos);
+                world_map.map.remove(pos);
             }
         }
 

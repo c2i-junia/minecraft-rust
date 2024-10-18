@@ -33,19 +33,29 @@ pub fn register_systems(app: &mut App) {
 
     app.add_systems(Update, chat::broadcast_chat_messages);
 
-    app.add_systems(Update, (world::broadcast_world_state, world::send_world_update));
+    app.add_systems(
+        Update,
+        (world::broadcast_world_state, world::send_world_update),
+    );
 }
 
 fn server_update_system(
     mut server_events: EventReader<ServerEvent>,
-    mut server: ResMut<RenetServer>,
-    mut chat_conversation: ResMut<ChatConversation>,
-    mut ev_chat: EventWriter<ChatMessageEvent>,
-    mut lobby: ResMut<ServerLobby>,
-    mut ev_app_exit: EventWriter<AppExit>,
-    mut ev_world_update_request: EventWriter<WorldUpdateRequestEvent>,
-    tick: Res<TickCounter>,
+    resources: (
+        ResMut<RenetServer>,
+        ResMut<ChatConversation>,
+        ResMut<ServerLobby>,
+        Res<TickCounter>,
+    ),
+    event_writers: (
+        EventWriter<ChatMessageEvent>,
+        EventWriter<AppExit>,
+        EventWriter<WorldUpdateRequestEvent>,
+    ),
 ) {
+    let (mut server, mut chat_conversation, mut lobby, tick) = resources;
+    let (mut ev_chat, mut ev_app_exit, mut ev_world_update_request) = event_writers;
+
     for event in server_events.read() {
         println!("event received");
         match event {
@@ -108,7 +118,7 @@ fn server_update_system(
                 ClientToServerMessage::PlayerInputs(inputs) => {
                     handle_player_inputs(inputs, &tick);
                 }
-                ClientToServerMessage::WorldUpdateRequest{
+                ClientToServerMessage::WorldUpdateRequest {
                     player_chunk_position,
                     requested_chunks,
                 } => {

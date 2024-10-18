@@ -12,7 +12,8 @@ use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, UiImage, Val, Visibility, Window, With
+    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, UiImage, Val, Visibility,
+    Window, With,
 };
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use bevy::ui::{BorderColor, Interaction};
@@ -190,7 +191,7 @@ pub fn render_inventory_hotbar(
 
                         remove_item_floating_stack(
                             &mut floating_stack,
-                            inventory.add_item_to_stack( floating_items.id, cell.id, 1),
+                            inventory.add_item_to_stack(floating_items.id, cell.id, 1),
                         );
                     }
                 } else if floating_items.nb > 0 {
@@ -208,7 +209,7 @@ pub fn render_inventory_hotbar(
                 // Get removed nb of items removed from inventory -> adds them into the floating stack
                 add_item_floating_stack(
                     &mut floating_stack,
-                    inventory.remove_item_from_stack( cell.id, nb),
+                    inventory.remove_item_from_stack(cell.id, nb),
                     stack.id,
                 );
             }
