@@ -1,9 +1,10 @@
-use crate::constants::CHUNK_SIZE;
 use crate::world::WorldMap;
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
+
+use super::Chunk;
 
 #[derive(Copy, Clone)]
 struct UvCoords {
@@ -26,6 +27,7 @@ fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords
 
 pub(crate) fn generate_chunk_mesh(
     world_map: &WorldMap,
+    chunk: &Chunk,
     chunk_pos: &IVec3,
     r_blocks: &Registry<BlockData>,
 ) -> Mesh {
@@ -251,28 +253,15 @@ pub(crate) fn generate_chunk_mesh(
         render_uvs(local_uvs, uv_coords);
     };
 
-    for x in 0..CHUNK_SIZE {
-        for y in 0..CHUNK_SIZE {
-            for z in 0..CHUNK_SIZE {
-                let local_block_pos = IVec3::new(x, y, z);
+    for (local_block_pos, block) in chunk.map.iter() {
 
-                let x = x as f32;
-                let y = y as f32;
-                let z = z as f32;
+                let x = local_block_pos.x as f32;
+                let y = local_block_pos.y as f32;
+                let z = local_block_pos.z as f32;
 
                 let global_block_pos = &to_global_pos(chunk_pos, &local_block_pos);
 
-                let block = world_map.get_block_by_coordinates(global_block_pos);
-
-                if block.is_none() {
-                    continue;
-                }
-
-                if crate::world::generation::is_block_surrounded(
-                    world_map,
-                    chunk_pos,
-                    &local_block_pos,
-                ) {
+                if is_block_surrounded(world_map, chunk_pos, &local_block_pos) {
                     continue;
                 }
 
@@ -281,7 +270,7 @@ pub(crate) fn generate_chunk_mesh(
                 let mut local_normals: Vec<[f32; 3]> = vec![];
                 let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-                let uv_coords = get_uv_coords(block.unwrap(), r_blocks);
+                let uv_coords = get_uv_coords(block, r_blocks);
 
                 if should_render_front_face(global_block_pos) {
                     render_front_face(
@@ -358,8 +347,6 @@ pub(crate) fn generate_chunk_mesh(
                 indices.extend(local_indices);
                 normals.extend(local_normals);
                 uvs.extend(local_uvs);
-            }
-        }
     }
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
@@ -369,4 +356,23 @@ pub(crate) fn generate_chunk_mesh(
     mesh.insert_indices(Indices::U32(indices));
 
     mesh
+}
+
+pub(crate) fn is_block_surrounded(
+    world_map: &WorldMap,
+    chunk_pos: &IVec3,
+    local_block_pos: &IVec3,
+) -> bool {
+    let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
+
+    for offset in &shared::world::SIX_OFFSETS {
+        let neighbor_pos = global_block_pos + *offset;
+
+        // Check if the block exists at the neighboring position
+        if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
+            return false;
+        }
+    }
+
+    true
 }

@@ -2,7 +2,7 @@ use bevy::prelude::Vec3;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub enum NetworkAction {
+pub enum NetworkPlayerInput {
     Forward,
     Right,
     Backward,
@@ -16,6 +16,6 @@ pub enum NetworkAction {
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct PlayerInputs {
     pub tick: u64,
-    pub actions: Vec<NetworkAction>,
+    pub actions: Vec<NetworkPlayerInput>,
     pub direction: Vec3,
 }

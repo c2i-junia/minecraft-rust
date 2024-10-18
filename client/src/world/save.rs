@@ -5,7 +5,7 @@ use std::path::Path;
 use std::{fs, io};
 
 use crate::constants::SAVE_PATH;
-use crate::player::Player;
+use crate::player::inventory::Inventory;
 use crate::ui::items::Item;
 use crate::world::data::*;
 use bevy::prelude::*;
@@ -32,7 +32,8 @@ pub fn save_world_system(
     world_seed: Res<WorldSeed>, // Ajoute `WorldSeed` comme ressource ici
     r_items: Res<Registry<ItemData>>,
     r_blocks: Res<Registry<BlockData>>,
-    player_query: Query<(&Transform, &Player)>,
+    inventory: Res<Inventory>,
+    player_query: Query<&Transform>,
     mut event: EventReader<SaveRequestEvent>,
 ) {
     let mut save_requested = false;
@@ -44,12 +45,12 @@ pub fn save_world_system(
 
     // If a save was requested by the user
     if save_requested {
-        let (transform, player) = player_query.single();
+        let transform = player_query.single();
 
         let data = Save {
             map: world_map.map.clone(),
             player_pos: transform.translation,
-            inventory: player.inventory.clone(),
+            inventory: inventory.inner.clone(),
             id_to_block: {
                 // Create reversed map : BlockId -> String, to save
                 let mut rbmap: HashMap<RegistryId, String> = HashMap::new();

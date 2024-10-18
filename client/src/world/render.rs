@@ -1,7 +1,7 @@
 use crate::camera::BlockRaycastSet;
-use crate::constants::CHUNK_SIZE;
+use shared::CHUNK_SIZE;
 use crate::world::{
-    Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent,
+    Chunk, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent
 };
 use crate::{world, GameState};
 use bevy::asset::Assets;
@@ -12,6 +12,7 @@ use bevy::prelude::{Commands, Mesh, Res, Transform};
 use bevy_mod_raycast::deferred::RaycastMesh;
 use shared::world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS};
 
+
 fn update_chunk(
     chunk: &mut Chunk,
     chunk_pos: &IVec3,
@@ -21,9 +22,8 @@ fn update_chunk(
     world_map: &mut WorldMap,
     r_blocks: &Registry<BlockData>,
 ) {
-    //println!("update_chunk {}", chunk_pos);
     let texture = material_resource.atlas_texture.clone().unwrap();
-    let new_mesh = world::meshing::generate_chunk_mesh(world_map, chunk_pos, r_blocks);
+    let new_mesh = world::meshing::generate_chunk_mesh(world_map, &chunk, chunk_pos, r_blocks);
 
     if chunk.entity.is_some() {
         commands
@@ -34,7 +34,11 @@ fn update_chunk(
     }
 
     if chunk.entity.is_none() {
-        //println!("update_chunk {}", chunk_pos);
+        let chunk_t = Transform::from_xyz(
+            (chunk_pos.x * CHUNK_SIZE) as f32,
+            (chunk_pos.y * CHUNK_SIZE) as f32,
+            (chunk_pos.z * CHUNK_SIZE) as f32,
+        );
         // Cube
         let new_entity = commands
             .spawn((
@@ -42,11 +46,7 @@ fn update_chunk(
                 PbrBundle {
                     mesh: meshes.add(new_mesh),
                     material: texture.clone(),
-                    transform: Transform::from_xyz(
-                        (chunk_pos.x * CHUNK_SIZE) as f32,
-                        (chunk_pos.y * CHUNK_SIZE) as f32,
-                        (chunk_pos.z * CHUNK_SIZE) as f32,
-                    ),
+                    transform: chunk_t.clone(),
                     ..Default::default()
                 },
                 RaycastMesh::<BlockRaycastSet>::default(),
@@ -56,6 +56,7 @@ fn update_chunk(
         let ch = world_map.map.get_mut(chunk_pos).unwrap();
         ch.entity = Some(new_entity);
     }
+    // println!("Chunk updated : len={}", chunk.map.len());
 }
 
 pub fn world_render_system(
@@ -92,21 +93,21 @@ pub fn world_render_system(
         }
 
         let mut cloned_map = world_map.clone();
-        for (chunk_pos, chunk) in cloned_map.map.iter_mut() {
-            if !chunks_pos_to_reload.contains(chunk_pos) {
-                continue;
-            }
 
-            update_chunk(
-                chunk,
-                chunk_pos,
-                &material_resource,
-                &mut commands,
-                &mut meshes,
-                &mut world_map,
-                &r_blocks,
-            );
+        for pos in chunks_pos_to_reload.iter() {
+            if let Some(mut chunk) = cloned_map.map.get_mut(pos) {
+                update_chunk(
+                    &mut chunk,
+                    pos,
+                    &material_resource,
+                    &mut commands,
+                    &mut meshes,
+                    &mut world_map,
+                    &r_blocks,
+                );
+            }
         }
+
     }
     queued_events.events.clear();
 }

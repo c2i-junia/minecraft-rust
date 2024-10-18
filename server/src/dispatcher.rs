@@ -2,6 +2,7 @@ use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use crate::init::{ServerLobby, TickCounter};
 use crate::player::handle_player_inputs;
 use crate::world::generation::setup_world;
+use crate::world::WorldUpdateRequestEvent;
 use crate::{chat, world};
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
@@ -18,7 +19,8 @@ pub struct BroadcastTimer {
 pub fn setup_resources_and_events(app: &mut App) {
     app.insert_resource(BroadcastTimer {
         timer: Timer::from_seconds(2.0, TimerMode::Repeating),
-    });
+    })
+    .add_event::<WorldUpdateRequestEvent>();
 
     setup_chat_resources(app);
 }
@@ -31,7 +33,7 @@ pub fn register_systems(app: &mut App) {
 
     app.add_systems(Update, chat::broadcast_chat_messages);
 
-    app.add_systems(Update, world::broadcast_world_state);
+    app.add_systems(Update, (world::broadcast_world_state, world::send_world_update));
 }
 
 fn server_update_system(
@@ -41,6 +43,7 @@ fn server_update_system(
     mut ev_chat: EventWriter<ChatMessageEvent>,
     mut lobby: ResMut<ServerLobby>,
     mut ev_app_exit: EventWriter<AppExit>,
+    mut ev_world_update_request: EventWriter<WorldUpdateRequestEvent>,
     tick: Res<TickCounter>,
 ) {
     for event in server_events.read() {
@@ -82,7 +85,7 @@ fn server_update_system(
                     lobby
                         .players
                         .insert(new_session_token, auth_req.username.clone());
-                    println!("New map: {:?}", lobby);
+                    println!("New lobby : {:?}", lobby);
                     // TODO: add cleanup system if no heartbeat
                     let msg = &AuthRegisterResponse {
                         username: auth_req.username,
@@ -104,6 +107,16 @@ fn server_update_system(
                 }
                 ClientToServerMessage::PlayerInputs(inputs) => {
                     handle_player_inputs(inputs, &tick);
+                }
+                ClientToServerMessage::WorldUpdateRequest{
+                    player_chunk_position,
+                    requested_chunks,
+                } => {
+                    ev_world_update_request.send(WorldUpdateRequestEvent {
+                        client: client_id,
+                        chunks: requested_chunks,
+                        player_chunk_position,
+                    });
                 }
             }
         }

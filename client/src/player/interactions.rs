@@ -11,8 +11,6 @@ use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 use shared::world::{BlockData, ItemData, Registry};
 
-use super::inventory;
-
 // Helper function to snap a Vec3 position to the grid
 fn snap_to_grid(position: Vec3) -> Vec3 {
     Vec3::new(position.x.round(), position.y.round(), position.z.round())
@@ -21,7 +19,7 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
     queries: (
-        Query<&mut Player>,
+        Query<&Player>,
         Query<&mut Transform, With<Player>>,
         Query<&RaycastSource<BlockRaycastSet>>,
         Query<&Hotbar>,
@@ -32,11 +30,12 @@ pub fn handle_block_interactions(
         Res<UIMode>,
         Res<Registry<BlockData>>,
         Res<Registry<ItemData>>,
+        ResMut<Inventory>,
     ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
-    let (mut player_query, mut p_transform, raycast_source, hotbar) = queries;
-    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items) = resources;
+    let (player_query, mut p_transform, raycast_source, hotbar) = queries;
+    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items, mut inventory) = resources;
 
     let player = player_query.single().clone();
 
@@ -70,7 +69,7 @@ pub fn handle_block_interactions(
 
                     // If block has corresponding item, add it to inventory
                     if let Some(item_type) = item_type {
-                        add_item_to_inventory(&mut player_query, item_type, 1);
+                        inventory.add_item_to_inventory(item_type, 1);
                     }
 
                     ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
@@ -109,9 +108,8 @@ pub fn handle_block_interactions(
                 && (distance.x.abs() > (CUBE_SIZE + player.width) / 2. || distance.z.abs() > (CUBE_SIZE + player.width ) / 2. || distance.y.abs() > (CUBE_SIZE + player.height) / 2.)
             {
                 // Try to get item currently selected in player hotbar
-                if let Some(item) = player.inventory.get(&hotbar.single().selected) {
-                    inventory::remove_item_from_stack(
-                        &mut player_query.single_mut(),
+                if let Some(&item) = inventory.inner.get(&hotbar.single().selected) {
+                    inventory.remove_item_from_stack(
                         hotbar.single().selected,
                         1,
                     );

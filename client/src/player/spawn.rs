@@ -1,24 +1,31 @@
-use crate::{ui::items, GameState};
+use crate::GameState;
 use bevy::prelude::*;
-use shared::world::RegistryId;
-use std::collections::HashMap;
 
 #[derive(Component, Clone)]
 pub struct Player {
     pub vertical_velocity: f32,
     pub on_ground: bool,
-    pub view_mode: ViewMode,
-    pub is_chunk_debug_mode_enabled: bool,
+    // pub view_mode: ViewMode,
+    // pub is_chunk_debug_mode_enabled: bool,
     pub is_flying: bool,
-    pub inventory: HashMap<RegistryId, items::Item>,
+    // pub inventory: HashMap<RegistryId, items::Item>,
     pub height: f32,
     pub width: f32,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Resource)]
 pub enum ViewMode {
     FirstPerson,
     ThirdPerson,
+}
+
+impl ViewMode {
+    pub fn toggle(&mut self) {
+        *self = match *self {
+            ViewMode::FirstPerson => ViewMode::ThirdPerson,
+            ViewMode::ThirdPerson => ViewMode::FirstPerson,
+        };
+    }
 }
 
 impl Player {
@@ -26,24 +33,10 @@ impl Player {
         Self {
             vertical_velocity: 0.0,
             on_ground: true,
-            view_mode: ViewMode::FirstPerson,
-            is_chunk_debug_mode_enabled: true,
             is_flying: false,
-            inventory: HashMap::new(), // No items in the inventory at the beginning
             height: 1.8,
             width: 0.8,
         }
-    }
-
-    pub fn toggle_view_mode(&mut self) {
-        self.view_mode = match self.view_mode {
-            ViewMode::FirstPerson => ViewMode::ThirdPerson,
-            ViewMode::ThirdPerson => ViewMode::FirstPerson,
-        };
-    }
-
-    pub fn toggle_chunk_debug_mode(&mut self) {
-        self.is_chunk_debug_mode_enabled = !self.is_chunk_debug_mode_enabled;
     }
 
     pub fn toggle_fly_mode(&mut self) {

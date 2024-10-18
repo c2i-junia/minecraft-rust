@@ -1,8 +1,10 @@
-use crate::constants::CHUNK_SIZE;
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use shared::world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos, BlockId};
-use std::collections::HashMap;
+use shared::{
+    world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos, BlockId},
+    CHUNK_SIZE,
+};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {
@@ -13,9 +15,9 @@ pub enum GlobalMaterial {
 #[derive(Resource, Serialize, Deserialize)]
 pub struct WorldSeed(pub u32);
 
-#[derive(Clone, Default, Serialize, Deserialize)]
+#[derive(Clone, Default, Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub struct Chunk {
-    pub(super) map: HashMap<IVec3, BlockId>,
+    pub(crate) map: HashMap<IVec3, BlockId>,
     #[serde(skip)]
     pub(crate) entity: Option<Entity>,
 }
@@ -23,7 +25,7 @@ pub struct Chunk {
 #[derive(Resource, Default, Clone, Serialize, Deserialize)]
 pub struct WorldMap {
     pub name: String,
-    pub map: HashMap<IVec3, Chunk>,
+    pub map: HashMap<IVec3, crate::world::Chunk>,
     pub total_blocks_count: u64,
     pub total_chunks_count: u64,
 }
@@ -82,4 +84,15 @@ impl WorldMap {
         }
         chunk.map.insert(IVec3::new(sub_x, sub_y, sub_z), block);
     }
+}
+
+#[derive(Default, Debug)]
+pub struct QueuedEvents {
+    pub events: HashSet<WorldRenderRequestUpdateEvent>,
+}
+
+#[derive(Event, Debug, Copy, Clone, Hash, Eq, PartialEq)]
+pub enum WorldRenderRequestUpdateEvent {
+    ChunkToReload(IVec3),
+    BlockToReload(IVec3),
 }

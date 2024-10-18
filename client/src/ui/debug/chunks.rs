@@ -1,10 +1,12 @@
-use crate::constants::CHUNK_SIZE;
 use crate::player::Player;
 use crate::GameState;
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
 use bevy::render::mesh::PrimitiveTopology;
 use bevy::render::render_asset::RenderAssetUsages;
+use shared::CHUNK_SIZE;
+
+use super::DebugOptions;
 
 #[derive(Component)]
 pub struct ChunkGhost;
@@ -38,15 +40,16 @@ pub fn setup_chunk_ghost(
 
 pub fn chunk_ghost_update_system(
     mut ghost_query: Query<(&mut Transform, &mut Visibility), With<ChunkGhost>>,
-    player_query: Query<(&Transform, &Player), (With<Player>, Without<ChunkGhost>)>,
+    player_query: Query<&Transform, (With<Player>, Without<ChunkGhost>)>,
+    debug_options: Res<DebugOptions>,
 ) {
     let mut ghost = ghost_query.single_mut();
     let player = player_query.single();
 
-    let mut chunk = shared::world::block_vec3_to_chunk_v3_coord(player.0.translation);
+    let mut chunk = shared::world::block_vec3_to_chunk_v3_coord(player.translation);
     chunk.y = 0.0;
     ghost.0.translation = chunk * (CHUNK_SIZE as f32);
-    *ghost.1 = if player.1.is_chunk_debug_mode_enabled {
+    *ghost.1 = if debug_options.is_chunk_debug_mode_enabled {
         Visibility::Visible
     } else {
         Visibility::Hidden

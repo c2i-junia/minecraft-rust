@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::ui::chat::{render_chat, setup_chat};
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
+use inventory::Inventory;
 
 use crate::ui::debug::BlockDebugWireframeSettings;
 use crate::ui::pause::{render_pause_menu, setup_pause_menu};
@@ -48,11 +49,11 @@ pub fn game_plugin(app: &mut App) {
         .add_plugins(WireframePlugin)
         .add_plugins(bevy_simple_text_input::TextInputPlugin)
         .add_plugins(AtmospherePlugin)
+        .insert_resource(WorldSeed(0))
         .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 400.0,
         })
-        .insert_resource(WorldMap { ..default() })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
         .insert_resource(WireframeConfig {
             // The global wireframe config enables drawing of wireframes on every mesh,
@@ -67,6 +68,9 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(AtlasHandles { ..default() })
         .insert_resource(RenderDistance { ..default() })
         .insert_resource(UIMode::Closed)
+        .insert_resource(ViewMode::FirstPerson)
+        .insert_resource(DebugOptions::default() )
+        .insert_resource(Inventory::new())
         .add_event::<WorldRenderRequestUpdateEvent>()
         .add_event::<SaveRequestEvent>()
         .add_systems(
@@ -88,7 +92,7 @@ pub fn game_plugin(app: &mut App) {
             (
                 setup_materials,
                 spawn_player,
-                setup_world,
+                // setup_world,
                 setup_main_lighting,
                 spawn_camera,
                 spawn_reticle,
@@ -139,7 +143,7 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
         .add_systems(
             PostUpdate,
-            (world_render_system,).run_if(in_state(GameState::Game)),
+            (world_render_system).run_if(in_state(GameState::Game)),
         )
         .add_systems(
             Update,
