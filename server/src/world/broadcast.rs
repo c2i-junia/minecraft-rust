@@ -39,6 +39,10 @@ pub fn send_world_update(
 
                             // If chunk already exists, transmit it to client
                             if let Some(chunk) = chunk {
+                                if chunk.map.is_empty() {
+                                    continue;
+                                }
+                                
                                 map.insert(*c, chunk.clone());
                             } else {
                                 // If chunk does not exists, generate it before transmitting it
