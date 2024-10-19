@@ -4,8 +4,6 @@ use bevy::prelude::*;
 use bevy::render::mesh::{Indices, PrimitiveTopology};
 use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
 
-use super::Chunk;
-
 #[derive(Copy, Clone)]
 struct UvCoords {
     u0: f32,
@@ -27,10 +25,11 @@ fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords
 
 pub(crate) fn generate_chunk_mesh(
     world_map: &WorldMap,
-    chunk: &Chunk,
     chunk_pos: &IVec3,
     r_blocks: &Registry<BlockData>,
 ) -> Mesh {
+    let chunk = world_map.map.get(chunk_pos).unwrap();
+
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();
