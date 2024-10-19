@@ -60,8 +60,7 @@ fn update_chunk(
 
         let new_mesh = world::meshing::generate_chunk_mesh(&nmap, &npos, &nblocks);
 
-        // Test delay, to see if lag comes from threads being computed or not
-        // sleep(Duration::from_millis(200));
+        sleep(Duration::from_millis(200));
 
         let mut queue = CommandQueue::default();
 
