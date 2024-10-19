@@ -123,7 +123,7 @@ pub fn player_movement_system(
     );
 
     // If player changed chunks between this frame and the previous
-    if player_chunk.x != previous_player_chunk.x || player_chunk.z != previous_player_chunk.z {
+    if player_chunk != *previous_player_chunk {
         let r = render_distance.distance as i32;
         let mut requested_chunks: Vec<IVec3> = Vec::new();
 
@@ -135,6 +135,7 @@ pub fn player_movement_system(
 
                     if chunk.is_none() {
                         requested_chunks.push(chunk_pos);
+                    } else if !chunk_in_radius(&player_chunk, &chunk_pos, r) {
                     }
                 }
             }
@@ -142,10 +143,10 @@ pub fn player_movement_system(
 
         // Iterate through existing chunks, and remove them if necessary
         for (pos, chunk) in world_map.map.clone().iter() {
-            // println!(
-            //     "Chunk in radius : {}, radius={r}, pos={pos}",
-            //     chunk_in_radius(&player_chunk, pos, r)
-            // );
+            println!(
+                "Chunk in radius : {}, radius={r}, pos={pos}",
+                chunk_in_radius(&player_chunk, pos, r)
+            );
             // If chunk is empty, or not in render radius
             if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty() {
                 // Remove chunk, and delete its associated entity if it exists
