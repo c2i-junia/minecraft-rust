@@ -5,8 +5,6 @@ use crate::camera::BlockRaycastSet;
 use crate::world::{MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent};
 use crate::{world, GameState};
 use bevy::asset::Assets;
-use bevy::ecs::system::SystemState;
-use bevy::ecs::world::CommandQueue;
 use bevy::math::IVec3;
 use bevy::pbr::PbrBundle;
 use bevy::prelude::*;
@@ -18,7 +16,7 @@ use shared::CHUNK_SIZE;
 
 #[derive(Debug, Default, Resource)]
 pub struct QueuedMeshes {
-    pub meshes: Vec<Task<CommandQueue>>,
+    pub meshes: Vec<Task<HashMap<IVec3, Mesh>>>,
 }
 
 fn update_chunk(
@@ -58,19 +56,13 @@ fn update_chunk(
                 },
                 RaycastMesh::<BlockRaycastSet>::default(),
             ))
-            .with_children(|builder| {
-                builder.spawn(PbrBundle {
-                    mesh: meshes.add(Mesh::from(Cuboid::new(
-                        2.,
-                        2.,
-                        2.,
-                    ))),
-                    ..Default::default()
-                });
-            })
+            // .with_children(|builder| {
+            //     builder.spawn(PbrBundle {
+            //         mesh: meshes.add(Mesh::from(Cuboid::new(2., 2., 2.))),
+            //         ..Default::default()
+            //     });
+            // })
             .id();
-
-        println!("Chunk spawned with entity {:?} at pos {:?}, new map length : {}", new_entity, chunk_t, world_map.map.len());
 
         let ch = world_map.map.get_mut(chunk_pos).unwrap();
         ch.entity = Some(new_entity);
@@ -79,11 +71,12 @@ fn update_chunk(
 }
 
 pub fn world_render_system(
-    world_map: Res<WorldMap>,
+    mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut queued_events: Local<QueuedEvents>,
     mut queued_meshes: Local<QueuedMeshes>,
+    mut meshes: ResMut<Assets<Mesh>>,
     mut commands: Commands,
     r_blocks: Res<Registry<BlockData>>,
 ) {
@@ -147,47 +140,11 @@ pub fn world_render_system(
                 }
             }
 
-            let mut queue = CommandQueue::default();
-
             println!(
                 "============= Meshing done in {:?} ",
                 Instant::now() - start
             );
-
-            // Push a command to the queue, to spawn all chunks
-            queue.push(move |world: &mut World| {
-                let start = Instant::now();
-                // Request all necessary resources from the current world state
-                let mut system_state: SystemState<(
-                    Res<MaterialResource>,
-                    Commands,
-                    ResMut<Assets<Mesh>>,
-                    ResMut<WorldMap>,
-                )> = SystemState::new(world);
-
-                // Then, retrieve these resources
-                let (material_resource, mut commands, mut meshes, mut world_map) =
-                    system_state.get_mut(world);
-
-                // Update all the chunks by draining the meshes
-                for (chunk_pos, new_mesh) in chunk_meshes.drain() {
-                    if !world_map.map.contains_key(&chunk_pos) {
-                        continue;
-                    }
-
-                    update_chunk(
-                        &chunk_pos,
-                        &material_resource,
-                        &mut commands,
-                        &mut meshes,
-                        &mut world_map,
-                        new_mesh,
-                    );
-                }
-
-                println!(">>>>>>>>>>>>>>>>>> Chunks spawned in {:?} ", Instant::now() - start);
-            });
-            queue
+            chunk_meshes
         });
 
         queued_meshes.meshes.push(t);
@@ -196,17 +153,28 @@ pub fn world_render_system(
     // Iterate through queued meshes to see if they are completed
     queued_meshes.meshes.retain_mut(|task| {
         // If completed, then push the command to the command queue and delete it from the meshing queue
-        if let Some(mut commands_queue) = block_on(future::poll_once(task)) {
-            // Append the returned command queue to have it execute later
-            commands.append(&mut commands_queue);
+        if let Some(mut chunk_meshes) = block_on(future::poll_once(task)) {
+            // Update all the chunks by draining the meshes
+            for (chunk_pos, new_mesh) in chunk_meshes.drain() {
+                if !world_map.map.contains_key(&chunk_pos) {
+                    continue;
+                }
+
+                update_chunk(
+                    &chunk_pos,
+                    &material_resource,
+                    &mut commands,
+                    &mut meshes,
+                    &mut world_map,
+                    new_mesh,
+                );
+            }
             false
         } else {
             // Else, keep the task until it is done
             true
         }
     });
-
-    println!("Current number of chunks : {}", world_map.map.len());
 
     queued_events.events.clear();
 }
