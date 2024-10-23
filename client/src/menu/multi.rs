@@ -1,8 +1,4 @@
-use std::{
-    fs,
-    io::Write,
-    path::Path,
-};
+use std::{fs, io::Write, path::Path};
 
 use bevy::{
     asset::{AssetServer, Handle},
@@ -488,11 +484,11 @@ pub fn multiplayer_action(
                     }
                 }
                 MultiplayerButtonAction::Delete(serv_entity) => {
-                    println!("Old list : {:?}",list.servers);
+                    println!("Old list : {:?}", list.servers);
                     commands.entity(entity).remove_children(&[serv_entity]);
                     commands.entity(serv_entity).despawn_recursive();
                     list.servers.remove(&serv_entity);
-                    println!("New list : {:?}",list.servers);
+                    println!("New list : {:?}", list.servers);
                 }
             }
         }

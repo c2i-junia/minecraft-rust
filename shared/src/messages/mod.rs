@@ -5,6 +5,7 @@ mod system;
 mod world;
 
 pub use auth::*;
+use bevy::math::IVec3;
 pub use chat::*;
 pub use player::*;
 use serde::{Deserialize, Serialize};
@@ -17,6 +18,10 @@ pub enum ClientToServerMessage {
     ChatMessage(ChatMessage),
     ShutdownOrder(ShutdownOrder),
     PlayerInputs(PlayerInputs),
+    WorldUpdateRequest {
+        player_chunk_position: IVec3,
+        requested_chunks: Vec<IVec3>,
+    },
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

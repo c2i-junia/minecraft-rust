@@ -16,6 +16,6 @@ pub fn total_blocks_text_update_system(
         text.sections[0].value = format!("Loaded blocks: {}", world_map.total_blocks_count);
     }
     for mut text in query_chunks.iter_mut() {
-        text.sections[0].value = format!("Loaded chunks: {}", world_map.total_chunks_count);
+        text.sections[0].value = format!("Loaded chunks: {}", world_map.map.len());
     }
 }

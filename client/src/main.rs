@@ -75,6 +75,7 @@ fn main() {
         .insert_resource(Registry::<BlockData>::new())
         .insert_resource(Registry::<ItemData>::new())
         // Declare the game state, whose starting value is determined by the `Default` trait
+        .insert_resource(world::WorldMap { ..default() })
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

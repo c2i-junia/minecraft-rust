@@ -3,6 +3,8 @@ use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
 use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
+use crate::player::Player;
+use crate::world::{RenderDistance, WorldRenderRequestUpdateEvent};
 use crate::GameState;
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
@@ -63,16 +65,32 @@ fn poll_reliable_ordered_messages(
     }
 }
 
-fn poll_reliable_unordered_messages(client: &mut ResMut<RenetClient>) {
-    update_world_from_network(client);
+fn poll_reliable_unordered_messages(
+    client: &mut ResMut<RenetClient>,
+    world: &mut ResMut<crate::world::WorldMap>,
+    ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
+    player_pos: Query<&Transform, With<Player>>,
+    render_distance: Res<RenderDistance>,
+) {
+    update_world_from_network(client, world, ev_render, player_pos, render_distance);
 }
 
 pub fn poll_network_messages(
     mut client: ResMut<RenetClient>,
     mut chat_state: ResMut<CachedChatConversation>,
+    mut world: ResMut<crate::world::WorldMap>,
+    mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
+    player_pos: Query<&Transform, With<Player>>,
+    render_distance: Res<RenderDistance>,
 ) {
     poll_reliable_ordered_messages(&mut client, &mut chat_state);
-    poll_reliable_unordered_messages(&mut client);
+    poll_reliable_unordered_messages(
+        &mut client,
+        &mut world,
+        &mut ev_render,
+        player_pos,
+        render_distance,
+    );
 }
 
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {

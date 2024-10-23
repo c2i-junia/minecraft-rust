@@ -2,8 +2,7 @@ use super::{add_item_floating_stack, remove_item_floating_stack};
 use crate::constants::{MAX_HOTBAR_SLOTS, MAX_ITEM_STACK};
 use crate::input::data::GameAction;
 use crate::input::keyboard::is_action_just_pressed;
-use crate::player::inventory::{add_item_to_stack, remove_item_from_stack};
-use crate::player::Player;
+use crate::player::inventory::Inventory;
 use crate::ui::hotbar::Hotbar;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
 use crate::world::MaterialResource;
@@ -13,8 +12,8 @@ use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, Style, Text, UiImage, Val, Visibility, Window,
-    With,
+    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, UiImage, Val, Visibility,
+    Window, With,
 };
 use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
 use bevy::ui::{BorderColor, Interaction};
@@ -22,7 +21,6 @@ use bevy::window::PrimaryWindow;
 
 pub fn render_inventory_hotbar(
     queries: (
-        Query<&mut Player>,
         Query<&mut Text>,
         Query<&mut UiImage>,
         Query<(&mut Style, &mut FloatingStack, &Children), With<FloatingStack>>,
@@ -36,11 +34,11 @@ pub fn render_inventory_hotbar(
         Res<ButtonInput<MouseButton>>,
         Res<MaterialResource>,
         Res<KeyMap>,
+        ResMut<Inventory>,
     ),
     mut scroll: EventReader<MouseWheel>,
 ) {
     let (
-        mut player_query,
         mut text_query,
         mut image_query,
         mut floating_stack_query,
@@ -50,7 +48,7 @@ pub fn render_inventory_hotbar(
         mut hotbar_query,
     ) = queries;
 
-    let (keyboard_input, mouse_input, material_resource, key_map) = resources;
+    let (keyboard_input, mouse_input, material_resource, key_map, mut inventory) = resources;
 
     let mut vis = visibility_query.single_mut();
     if is_action_just_pressed(GameAction::ToggleInventory, &keyboard_input, &key_map) {
@@ -59,8 +57,6 @@ pub fn render_inventory_hotbar(
             _ => Visibility::Hidden,
         };
     }
-
-    let mut player = player_query.single_mut();
 
     let (mut style, mut floating_stack, children) = floating_stack_query.single_mut();
     let mut txt = text_query.get_mut(children[0]).unwrap();
@@ -107,7 +103,7 @@ pub fn render_inventory_hotbar(
             return;
         }
 
-        let stack = player.inventory.get(&cell.id);
+        let stack = inventory.inner.get(&cell.id);
         let mut txt = text_query.get_mut(children[0]).unwrap();
         let mut img = image_query.get_mut(children[1]).unwrap();
 
@@ -155,8 +151,7 @@ pub fn render_inventory_hotbar(
             {
                 let stack = *stack.unwrap();
                 let floating_items = floating_items.unwrap();
-                add_item_to_stack(
-                    &mut player,
+                inventory.add_item_to_stack(
                     floating_items.id,
                     cell.id,
                     remove_item_floating_stack(&mut floating_stack, MAX_ITEM_STACK - stack.nb),
@@ -167,14 +162,14 @@ pub fn render_inventory_hotbar(
                     floating_stack.items = Some(*stack);
                     // If no exchange is made with floating stack, clear cell
                     if !floating_exists {
-                        player.inventory.remove(&cell.id);
+                        inventory.inner.remove(&cell.id);
                     }
                 }
 
                 // Transfer items from floating stack to inventory cell
                 if floating_exists {
                     let floating_items = floating_items.unwrap();
-                    player.inventory.insert(cell.id, floating_items);
+                    inventory.inner.insert(cell.id, floating_items);
                     // If no exchange is made with cell, clear floating stack
                     if !stack_exists {
                         floating_stack.items = None;
@@ -196,14 +191,14 @@ pub fn render_inventory_hotbar(
 
                         remove_item_floating_stack(
                             &mut floating_stack,
-                            add_item_to_stack(&mut player, floating_items.id, cell.id, 1),
+                            inventory.add_item_to_stack(floating_items.id, cell.id, 1),
                         );
                     }
                 } else if floating_items.nb > 0 {
                     // Get added nb of items into inventory -> removes them from floating stack
                     remove_item_floating_stack(
                         &mut floating_stack,
-                        add_item_to_stack(&mut player, floating_items.id, cell.id, 1),
+                        inventory.add_item_to_stack(floating_items.id, cell.id, 1),
                     );
                 }
             }
@@ -214,7 +209,7 @@ pub fn render_inventory_hotbar(
                 // Get removed nb of items removed from inventory -> adds them into the floating stack
                 add_item_floating_stack(
                     &mut floating_stack,
-                    remove_item_from_stack(&mut player, cell.id, nb),
+                    inventory.remove_item_from_stack(cell.id, nb),
                     stack.id,
                 );
             }
