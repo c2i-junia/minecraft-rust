@@ -41,9 +41,6 @@ pub fn update_world_from_network(
 
                 println!("Chunks positions : {:?}", world_update.new_map.keys());
 
-                // Only retain chunks in the render radius
-                // world.map.retain(|k, _| chunk_in_radius(&player_pos, k, r));
-
                 for (pos, chunk) in world_update.new_map {
                     // If the chunk is not in render distance range or is empty, do not consider it
                     if !chunk_in_radius(&player_pos, &pos, r) || chunk.map.is_empty() {
@@ -52,7 +49,13 @@ pub fn update_world_from_network(
 
                     let chunk = crate::world::Chunk {
                         map: chunk.map,
-                        entity: None,
+                        entity: {
+                            if let Some(c) = world.map.get(&pos) {
+                                c.entity
+                            } else {
+                                None
+                            }
+                        },
                     };
 
                     world.map.insert(pos, chunk);

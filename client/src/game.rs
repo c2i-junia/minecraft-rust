@@ -92,7 +92,6 @@ pub fn game_plugin(app: &mut App) {
             (
                 setup_materials,
                 spawn_player,
-                // setup_world,
                 setup_main_lighting,
                 spawn_camera,
                 spawn_reticle,

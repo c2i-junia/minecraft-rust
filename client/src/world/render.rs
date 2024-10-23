@@ -32,8 +32,7 @@ fn update_chunk(
 
     if chunk.entity.is_some() {
         commands
-            .get_entity(chunk.entity.unwrap())
-            .unwrap()
+            .entity(chunk.entity.unwrap())
             .despawn_recursive();
         chunk.entity = None;
     }
@@ -44,7 +43,7 @@ fn update_chunk(
             (chunk_pos.y * CHUNK_SIZE) as f32,
             (chunk_pos.z * CHUNK_SIZE) as f32,
         );
-        // Cube
+        
         let new_entity = commands
             .spawn((
                 StateScoped(GameState::Game),
@@ -152,7 +151,7 @@ pub fn world_render_system(
 
     // Iterate through queued meshes to see if they are completed
     queued_meshes.meshes.retain_mut(|task| {
-        // If completed, then push the command to the command queue and delete it from the meshing queue
+        // If completed, then use the mesh to update the chunk and delete it from the meshing queue
         if let Some(mut chunk_meshes) = block_on(future::poll_once(task)) {
             // Update all the chunks by draining the meshes
             for (chunk_pos, new_mesh) in chunk_meshes.drain() {

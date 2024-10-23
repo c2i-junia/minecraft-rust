@@ -135,27 +135,24 @@ pub fn player_movement_system(
 
                     if chunk.is_none() {
                         requested_chunks.push(chunk_pos);
-                    } else if !chunk_in_radius(&player_chunk, &chunk_pos, r) {
                     }
                 }
             }
         }
 
-        // Iterate through existing chunks, and remove them if necessary
-        for (pos, chunk) in world_map.map.clone().iter() {
-            println!(
-                "Chunk in radius : {}, radius={r}, pos={pos}",
-                chunk_in_radius(&player_chunk, pos, r)
-            );
+        // Only retain chunks in the render radius
+        world_map.map.retain(|pos, chunk| {
             // If chunk is empty, or not in render radius
             if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty() {
                 // Remove chunk, and delete its associated entity if it exists
                 if let Some(entity) = chunk.entity {
                     commands.entity(entity).despawn_recursive();
                 }
-                world_map.map.remove(pos);
+                false
+            } else {
+                true
             }
-        }
+        });
 
         // Send a request to the server for the chunks to load
         request_world_update(&mut client, requested_chunks, player_chunk);
@@ -163,6 +160,7 @@ pub fn player_movement_system(
         // Update player chunk position
         *previous_player_chunk = player_chunk;
     }
+
 
     let material_handle = &*material_handle_mut_ref;
     match *view_mode {
