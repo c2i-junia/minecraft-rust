@@ -3,6 +3,8 @@ use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
 use shared::messages::{ChatMessage, ClientToServerMessage};
 
+use crate::world::RenderDistance;
+
 pub enum NetworkAction {
     ChatMessage(String),
     WorldUpdateRequest {
@@ -11,7 +13,7 @@ pub enum NetworkAction {
     },
 }
 
-pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkAction) {
+pub fn send_network_action(client: &mut ResMut<RenetClient>, render_distance: &RenderDistance, action: NetworkAction) {
     match action {
         NetworkAction::ChatMessage(msg) => {
             let timestamp_ms = std::time::SystemTime::now()
@@ -36,6 +38,7 @@ pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkActi
                 .serialize(&ClientToServerMessage::WorldUpdateRequest {
                     player_chunk_position: player_chunk_pos,
                     requested_chunks,
+                    render_distance: render_distance.distance
                 })
                 .unwrap();
 

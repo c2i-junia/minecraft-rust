@@ -155,7 +155,7 @@ pub fn player_movement_system(
         });
 
         // Send a request to the server for the chunks to load
-        request_world_update(&mut client, requested_chunks, player_chunk);
+        request_world_update(&mut client, requested_chunks, &render_distance, player_chunk);
 
         // Update player chunk position
         *previous_player_chunk = player_chunk;

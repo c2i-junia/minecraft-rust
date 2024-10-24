@@ -70,10 +70,12 @@ pub fn update_world_from_network(
 pub fn request_world_update(
     client: &mut ResMut<RenetClient>,
     requested_chunks: Vec<IVec3>,
+    render_distance: &RenderDistance,
     player_chunk_pos: IVec3,
 ) {
     send_network_action(
         client,
+        render_distance,
         super::api::NetworkAction::WorldUpdateRequest {
             requested_chunks,
             player_chunk_pos,

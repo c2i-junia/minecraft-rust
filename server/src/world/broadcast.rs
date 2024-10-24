@@ -16,6 +16,7 @@ use super::data::WorldSeed;
 pub struct WorldUpdateRequestEvent {
     pub client: ClientId,
     pub chunks: Vec<IVec3>,
+    pub render_distance: u32,
     pub player_chunk_position: IVec3,
 }
 
@@ -34,7 +35,7 @@ pub fn send_world_update(
                 new_map: {
                     let mut map: HashMap<IVec3, Chunk> = HashMap::new();
                     for c in event.chunks.iter() {
-                        if chunk_in_radius(&event.player_chunk_position, c, 3) {
+                        if chunk_in_radius(&event.player_chunk_position, c, event.render_distance as i32) {
                             let chunk = world_map.map.get(c);
 
                             // If chunk already exists, transmit it to client

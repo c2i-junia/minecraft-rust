@@ -20,6 +20,7 @@ pub enum ClientToServerMessage {
     PlayerInputs(PlayerInputs),
     WorldUpdateRequest {
         player_chunk_position: IVec3,
+        render_distance: u32,
         requested_chunks: Vec<IVec3>,
     },
 }
