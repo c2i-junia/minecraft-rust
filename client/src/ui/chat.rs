@@ -2,7 +2,6 @@ use crate::input::keyboard::is_action_just_pressed;
 use crate::input::keyboard::is_action_just_released;
 use crate::network::{send_chat_message, CachedChatConversation};
 use crate::ui::UiDialog;
-use crate::world::RenderDistance;
 use crate::KeyMap;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
@@ -115,8 +114,7 @@ pub fn render_chat(
         Res<AssetServer>,
         ResMut<RenetClient>,
         Res<ButtonInput<KeyCode>>,
-        Res<KeyMap>,
-        Res<RenderDistance>
+        Res<KeyMap>
     ),
     queries: (
         Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,
@@ -137,7 +135,7 @@ pub fn render_chat(
     mut event: EventReader<TextInputSubmitEvent>,
     mut commands: Commands,
 ) {
-    let (cached_conv, asset_server, mut client, keyboard_input, key_map, render_distance) = resources;
+    let (cached_conv, asset_server, mut client, keyboard_input, key_map) = resources;
     let (mut text_query, mut visibility_query, parent_query, mut animation_query) = queries;
 
     let (entity_check, mut inactive, mut value) = text_query.single_mut();
@@ -242,7 +240,7 @@ pub fn render_chat(
 
     for message in event.read() {
         if entity_check == message.entity {
-            send_chat_message(&mut client, &render_distance, &message.value);
+            send_chat_message(&mut client, &message.value);
         }
     }
 }

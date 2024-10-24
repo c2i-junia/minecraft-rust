@@ -3,17 +3,16 @@ use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
 use shared::messages::{ChatMessage, ClientToServerMessage};
 
-use crate::world::RenderDistance;
-
 pub enum NetworkAction {
     ChatMessage(String),
     WorldUpdateRequest {
         requested_chunks: Vec<IVec3>,
         player_chunk_pos: IVec3,
+        render_distance: u32
     },
 }
 
-pub fn send_network_action(client: &mut ResMut<RenetClient>, render_distance: &RenderDistance, action: NetworkAction) {
+pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkAction) {
     match action {
         NetworkAction::ChatMessage(msg) => {
             let timestamp_ms = std::time::SystemTime::now()
@@ -33,12 +32,13 @@ pub fn send_network_action(client: &mut ResMut<RenetClient>, render_distance: &R
         NetworkAction::WorldUpdateRequest {
             requested_chunks,
             player_chunk_pos,
+            render_distance,
         } => {
             let input_message = bincode::options()
                 .serialize(&ClientToServerMessage::WorldUpdateRequest {
                     player_chunk_position: player_chunk_pos,
                     requested_chunks,
-                    render_distance: render_distance.distance
+                    render_distance,
                 })
                 .unwrap();
 

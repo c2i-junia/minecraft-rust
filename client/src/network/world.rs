@@ -75,10 +75,10 @@ pub fn request_world_update(
 ) {
     send_network_action(
         client,
-        render_distance,
         super::api::NetworkAction::WorldUpdateRequest {
             requested_chunks,
             player_chunk_pos,
+            render_distance: render_distance.distance,
         },
     );
 }
