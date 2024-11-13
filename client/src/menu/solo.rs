@@ -1,3 +1,4 @@
+use crate::world::WorldMap;
 use std::{fs, path::Path};
 
 use bevy::{
@@ -221,6 +222,7 @@ pub fn list_worlds(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut WorldList, Entity)>,
+    mut world_map: ResMut<WorldMap>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
@@ -242,6 +244,7 @@ pub fn list_worlds(
                 &assets,
                 &mut list,
                 list_entity,
+                &mut world_map,
             );
         }
     }
@@ -253,11 +256,15 @@ fn add_world_item(
     asset_server: &Res<AssetServer>,
     list: &mut WorldList,
     list_entity: Entity,
+    world_map: &mut WorldMap,
 ) {
     println!(
         "Adding world to list : name = {:?}, entity={:?}",
         name, list_entity
     );
+
+    // udpate the name of the world_map
+    world_map.name = name.clone();
 
     let btn_style = Style {
         display: Display::Flex,
@@ -369,6 +376,7 @@ pub fn solo_action(
     mut load_event: EventWriter<LoadWorldEvent>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,
+    mut world_map: ResMut<WorldMap>,
 ) {
     let (interaction_query, mut name_query, mut list_query) = queries;
     if list_query.is_empty() {
@@ -390,6 +398,7 @@ pub fn solo_action(
                             &asset_server,
                             &mut list,
                             entity,
+                            &mut world_map,
                         );
 
                         name.0 = "".into();
