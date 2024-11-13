@@ -240,7 +240,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             MenuButtonAction::Solo,
                         ))
                         .with_children(|parent| {
-                            let icon = asset_server.load("./right.png");
+                            let icon = asset_server.load("./graphics/right.png");
                             parent.spawn(ImageBundle {
                                 style: button_icon_style.clone(),
                                 image: UiImage::new(icon),
@@ -260,7 +260,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             MenuButtonAction::Multi,
                         ))
                         .with_children(|parent| {
-                            let icon = asset_server.load("./multi.png");
+                            let icon = asset_server.load("./graphics/multi.png");
                             parent.spawn(ImageBundle {
                                 style: button_icon_style.clone(),
                                 image: UiImage::new(icon),
@@ -282,7 +282,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             MenuButtonAction::Settings,
                         ))
                         .with_children(|parent| {
-                            let icon = asset_server.load("./wrench.png");
+                            let icon = asset_server.load("./graphics/wrench.png");
                             parent.spawn(ImageBundle {
                                 style: button_icon_style.clone(),
                                 image: UiImage::new(icon),
@@ -303,7 +303,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                             MenuButtonAction::Quit,
                         ))
                         .with_children(|parent| {
-                            let icon = asset_server.load("./exitRight.png");
+                            let icon = asset_server.load("./graphics/exitRight.png");
                             parent.spawn(ImageBundle {
                                 style: button_icon_style,
                                 image: UiImage::new(icon),

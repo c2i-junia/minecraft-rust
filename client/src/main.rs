@@ -65,6 +65,10 @@ fn main() {
                     ..default()
                 }),
                 ..default()
+            })
+            .set(AssetPlugin {
+                file_path: "../data".to_string(),
+                ..Default::default()
             }),
     );
     app.add_event::<LoadWorldEvent>();

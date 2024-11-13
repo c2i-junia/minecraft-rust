@@ -307,7 +307,7 @@ fn add_world_item(
             },
         ))
         .with_children(|btn| {
-            let icon = asset_server.load("./play.png");
+            let icon = asset_server.load("./graphics/play.png");
             btn.spawn(ImageBundle {
                 image: UiImage::new(icon),
                 style: img_style.clone(),
@@ -325,7 +325,7 @@ fn add_world_item(
             },
         ))
         .with_children(|btn| {
-            let icon = asset_server.load("./trash.png");
+            let icon = asset_server.load("./graphics/trash.png");
             btn.spawn(ImageBundle {
                 image: UiImage::new(icon),
                 style: img_style.clone(),

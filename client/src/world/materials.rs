@@ -46,7 +46,7 @@ pub fn setup_materials(
     // Root directory for asset server : /assets/
     // TODO : atlas textures (currently only supports 1 texture per cube, for all 6 faces)
     let grass_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("textures/grass.png")),
+        base_color_texture: Some(asset_server.load("graphics/textures/grass.png")),
         base_color: Color::srgb(0.2, 0.85, 0.3),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
@@ -57,19 +57,19 @@ pub fn setup_materials(
     // Modifying color based on noise generation values could be interesting tho
 
     let dirt_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("textures/dirt.png")),
+        base_color_texture: Some(asset_server.load("graphics/textures/dirt.png")),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
     });
     let stone_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("textures/stone.png")),
+        base_color_texture: Some(asset_server.load("graphics/textures/stone.png")),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
     });
     let bedrock_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("textures/bedrock.png")),
+        base_color_texture: Some(asset_server.load("graphics/textures/bedrock.png")),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
@@ -109,7 +109,7 @@ pub fn setup_materials(
     );
     material_resource.item_textures.insert(
         *r_items.get_id("bedrock").unwrap(),
-        asset_server.load("textures/bedrock.png"),
+        asset_server.load("graphics/textures/bedrock.png"),
     );
 
     let image_paths = [
