@@ -45,7 +45,13 @@ pub fn save_world_system(
 
     // If a save was requested by the user
     if save_requested {
-        let transform = player_query.single();
+        let transform = match player_query.iter().next() {
+            Some(transform) => transform,
+            None => {
+                eprintln!("No player transform found!");
+                return;
+            }
+        };
 
         let data = Save {
             map: world_map.map.clone(),
