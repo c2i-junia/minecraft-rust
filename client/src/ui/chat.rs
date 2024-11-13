@@ -114,7 +114,7 @@ pub fn render_chat(
         Res<AssetServer>,
         ResMut<RenetClient>,
         Res<ButtonInput<KeyCode>>,
-        Res<KeyMap>
+        Res<KeyMap>,
     ),
     queries: (
         Query<(Entity, &mut TextInputInactive, &mut TextInputValue), With<ChatInput>>,

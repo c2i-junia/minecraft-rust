@@ -35,7 +35,11 @@ pub fn send_world_update(
                 new_map: {
                     let mut map: HashMap<IVec3, Chunk> = HashMap::new();
                     for c in event.chunks.iter() {
-                        if chunk_in_radius(&event.player_chunk_position, c, event.render_distance as i32) {
+                        if chunk_in_radius(
+                            &event.player_chunk_position,
+                            c,
+                            event.render_distance as i32,
+                        ) {
                             let chunk = world_map.map.get(c);
 
                             // If chunk already exists, transmit it to client
@@ -43,7 +47,7 @@ pub fn send_world_update(
                                 if chunk.map.is_empty() {
                                     continue;
                                 }
-                                
+
                                 map.insert(*c, chunk.clone());
                             } else {
                                 // If chunk does not exists, generate it before transmitting it

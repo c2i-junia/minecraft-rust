@@ -121,7 +121,7 @@ fn server_update_system(
                 ClientToServerMessage::WorldUpdateRequest {
                     player_chunk_position,
                     requested_chunks,
-                    render_distance
+                    render_distance,
                 } => {
                     ev_world_update_request.send(WorldUpdateRequestEvent {
                         render_distance,

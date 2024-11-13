@@ -31,9 +31,7 @@ fn update_chunk(
     let texture = material_resource.atlas_texture.clone().unwrap();
 
     if chunk.entity.is_some() {
-        commands
-            .entity(chunk.entity.unwrap())
-            .despawn_recursive();
+        commands.entity(chunk.entity.unwrap()).despawn_recursive();
         chunk.entity = None;
     }
 
@@ -43,7 +41,7 @@ fn update_chunk(
             (chunk_pos.y * CHUNK_SIZE) as f32,
             (chunk_pos.z * CHUNK_SIZE) as f32,
         );
-        
+
         let new_entity = commands
             .spawn((
                 StateScoped(GameState::Game),

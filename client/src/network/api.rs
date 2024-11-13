@@ -8,7 +8,7 @@ pub enum NetworkAction {
     WorldUpdateRequest {
         requested_chunks: Vec<IVec3>,
         player_chunk_pos: IVec3,
-        render_distance: u32
+        render_distance: u32,
     },
 }
 
