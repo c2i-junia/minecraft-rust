@@ -2,16 +2,19 @@ use std::{
     collections::BTreeMap,
     fs::{self, File},
     io::Write,
-    path::Path,
+    path::PathBuf,
 };
-
-use crate::input::data::GameAction;
-use crate::KeyMap;
 use bevy::{
     input::ButtonInput,
     prelude::{KeyCode, Res},
 };
 use ron::{from_str, ser::PrettyConfig};
+use crate::{
+    constants::BINDS_PATH,
+    input::data::GameAction,
+    KeyMap,
+};
+use shared::world::get_game_folder;
 
 pub fn is_action_pressed(
     action: GameAction,
@@ -62,11 +65,12 @@ pub fn get_action_keys(action: GameAction, key_map: &KeyMap) -> Vec<KeyCode> {
     key_map.map.get(&action).unwrap().to_vec()
 }
 
-const BINDS_PATH: &str = "keybindings.ron";
-
 pub fn get_bindings() -> KeyMap {
+
+    let binds_path: PathBuf = get_game_folder().join(BINDS_PATH);
+
     // Try to get & serialize existing binds
-    if let Ok(content) = fs::read_to_string(Path::new(BINDS_PATH)) {
+    if let Ok(content) = fs::read_to_string(binds_path.as_path()) {
         if let Ok(key_map) = from_str::<KeyMap>(&content) {
             return key_map;
         }
@@ -111,17 +115,26 @@ pub fn get_bindings() -> KeyMap {
 }
 
 pub fn save_keybindings(key_map: Res<KeyMap>) {
+
+    let binds_path: PathBuf = get_game_folder().join(BINDS_PATH);
+
     let pretty_config = PrettyConfig::new()
         .with_depth_limit(3)
         .with_separate_tuple_members(true)
         .with_enumerate_arrays(true);
+
     if let Ok(serialized) = ron::ser::to_string_pretty(key_map.into_inner(), pretty_config) {
-        if let Ok(mut file) = File::create(Path::new(BINDS_PATH)) {
-            if let Err(e) = file.write_all(serialized.as_bytes()) {
-                println!("Error while saving keybindings : {}", e);
-            } else {
-                println!("Keybindings saved");
+        match File::create(&binds_path) {
+            Ok(mut file) => {
+                if let Err(e) = file.write_all(serialized.as_bytes()) {
+                    eprintln!("Error while saving keybindings to {:?}: {}", binds_path, e);
+                } else {
+                    println!("Keybindings successfully saved to {:?}", binds_path);
+                }
             }
+            Err(e) => eprintln!("Failed to create keybindings file at {:?}: {}", binds_path, e),
         }
+    } else {
+        eprintln!("Failed to serialize keybindings");
     }
 }

@@ -1,18 +1,9 @@
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
-use std::{fs, io};
-
-use crate::constants::SAVE_PATH;
-use crate::player::inventory::Inventory;
-use crate::ui::items::Item;
-use crate::world::data::*;
+use crate::{constants::SAVE_PATH, player::inventory::Inventory, ui::items::Item, world::data::*};
 use bevy::prelude::*;
-
 use ron::ser::PrettyConfig;
 use serde::{Deserialize, Serialize};
-use shared::world::{BlockData, ItemData, Registry, RegistryId};
+use shared::world::{get_game_folder, BlockData, ItemData, Registry, RegistryId};
+use std::{collections::HashMap, fs, fs::File, io, io::Write, path::Path};
 
 #[derive(Event)]
 pub struct SaveRequestEvent;
@@ -76,8 +67,14 @@ pub fn save_world_system(
         };
 
         // Sauvegarde le monde et la graine dans leurs fichiers respectifs
-        if let Err(e) = save_world_map(&data, &format!("{}{}_save.ron", SAVE_PATH, world_map.name))
-        {
+        if let Err(e) = save_world_map(
+            &data,
+            &format!(
+                "{}{}_save.ron",
+                get_game_folder().join(SAVE_PATH).display(),
+                world_map.name
+            ),
+        ) {
             eprintln!("Failed to save world: {}", e);
         } else {
             println!("World saved successfully ! Name : {}", world_map.name);
@@ -85,7 +82,11 @@ pub fn save_world_system(
 
         if let Err(e) = save_world_seed(
             &world_seed,
-            &format!("{}{}_seed.ron", SAVE_PATH, world_map.name),
+            &format!(
+                "{}{}_seed.ron",
+                get_game_folder().join(SAVE_PATH).display(),
+                world_map.name
+            ),
         ) {
             eprintln!("Failed to save world seed: {}", e);
         } else {
@@ -126,7 +127,11 @@ pub fn save_world_seed(
 
 pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
     // Supprime `world_save.ron`
-    match fs::remove_file(format!("{}{}_save.ron", SAVE_PATH, world_name)) {
+    match fs::remove_file(format!(
+        "{}{}_save.ron",
+        get_game_folder().join(SAVE_PATH).display(),
+        world_name
+    )) {
         Ok(_) => println!("Successfully deleted world_save.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             println!("world_save.ron not found, skipping.")
@@ -135,7 +140,11 @@ pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
     }
 
     // Supprime `world_seed.ron`
-    match fs::remove_file(format!("{}{}_seed.ron", SAVE_PATH, world_name)) {
+    match fs::remove_file(format!(
+        "{}{}_seed.ron",
+        get_game_folder().join(SAVE_PATH).display(),
+        world_name
+    )) {
         Ok(_) => println!("Successfully deleted world_seed.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             println!("world_seed.ron not found, skipping.")

@@ -1,32 +1,33 @@
-use crate::world::WorldMap;
-use std::{fs, path::Path};
-
-use bevy::{
-    prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, NextState, NodeBundle,
-        ResMut, StateScoped, TextBundle,
-    },
-    text::TextStyle,
-    ui::{AlignItems, FlexDirection, JustifyContent, Overflow, Style, UiRect, Val},
-};
-
-use crate::{constants::SAVE_PATH, world::delete_save_files, GameState, LoadWorldEvent};
-
 use super::{MenuButtonAction, MenuState, ScrollingList};
+use crate::{
+    constants::SAVE_PATH,
+    world::{delete_save_files, WorldMap},
+    GameState, LoadWorldEvent,
+};
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
-    prelude::{Button, Changed, DespawnRecursiveExt, Entity, ImageBundle, Query, Res, With},
-    text::{Font, Text, TextSection},
+    prelude::{
+        BuildChildren, Button, ButtonBundle, Changed, Commands, Component, DespawnRecursiveExt,
+        Entity, EventWriter, ImageBundle, NextState, NodeBundle, Query, Res, ResMut, StateScoped,
+        Text, TextBundle, With,
+    },
+    text::{Font, TextSection, TextStyle},
     ui::{
-        AlignContent, BackgroundColor, BorderColor, Display, GridPlacement, GridTrack, Interaction,
-        UiImage,
+        AlignContent, AlignItems, BackgroundColor, BorderColor, Display, FlexDirection,
+        GridPlacement, GridTrack, Interaction, JustifyContent, Overflow, Style, UiImage, UiRect,
+        Val,
     },
     utils::hashbrown::HashMap,
 };
 use bevy_simple_text_input::{
     TextInputBundle, TextInputInactive, TextInputPlaceholder, TextInputSettings,
     TextInputTextStyle, TextInputValue,
+};
+use shared::world::get_game_folder;
+use std::{
+    fs,
+    path::{Path, PathBuf},
 };
 
 pub struct WorldItem {
@@ -226,8 +227,9 @@ pub fn list_worlds(
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
-    let path = Path::new(SAVE_PATH);
-
+    // create save folder if it not exist
+    let save_path: PathBuf = get_game_folder().join(SAVE_PATH);
+    let path: &Path = save_path.as_path();
     if !fs::exists(path).unwrap() && fs::create_dir_all(path).is_ok() {
         println!("Successfully created the saves folder : {}", path.display());
     }

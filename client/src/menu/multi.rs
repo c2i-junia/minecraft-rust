@@ -1,5 +1,5 @@
-use std::{fs, io::Write, path::Path};
-
+use super::{MenuButtonAction, MenuState, ScrollingList};
+use crate::constants::SERVER_LIST_SAVE_NAME;
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -20,10 +20,12 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 use ron::{from_str, ser::PrettyConfig};
-
-use crate::constants::{SAVE_PATH, SERVER_LIST_SAVE_NAME};
-
-use super::{MenuButtonAction, MenuState, ScrollingList};
+use shared::world::get_game_folder;
+use std::{
+    fs,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
 pub struct ServerItem {
@@ -370,23 +372,25 @@ pub fn load_server_list(
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
-    let txt = format!("{}{}", SAVE_PATH, SERVER_LIST_SAVE_NAME);
-
-    let path = Path::new(&txt);
+    let game_folder_path: PathBuf = get_game_folder().join(SERVER_LIST_SAVE_NAME);
+    let path: &Path = game_folder_path.as_path();
 
     // If no server list save, returns
     if !fs::exists(path).unwrap() {
+        println!("No server list found at {:?}", path);
         return;
     }
 
     let txt = fs::read_to_string(path);
     if txt.is_err() {
+        eprintln!("Failed to read server list from {:?}", path);
         return;
     }
     let txt = txt.unwrap();
 
     let servers = from_str::<Vec<ServerItem>>(&txt);
     if servers.is_err() {
+        eprintln!("Failed to parse server list from {:?}", path);
         return;
     }
     let servers = servers.unwrap();
@@ -406,38 +410,35 @@ pub fn load_server_list(
 pub fn save_server_list(list: Query<&ServerList>) {
     let list = list.single();
 
-    let path = Path::new(SAVE_PATH);
+    // Chemin complet du fichier de sauvegarde
+    let save_path: PathBuf = get_game_folder().join(SERVER_LIST_SAVE_NAME);
 
-    if !fs::exists(path).unwrap() {
-        if fs::create_dir_all(path).is_ok() {
-            println!("Successfully created the saves folder : {}", path.display());
-        } else {
-            println!("Could not create the saves folder, server list save aborted");
-            return;
-        }
-    }
-
+    // Config de sérialisation RON
     let pretty_config = PrettyConfig::new()
         .with_depth_limit(3)
         .with_separate_tuple_members(true)
         .with_enumerate_arrays(true);
 
-    if let Ok(data) = ron::ser::to_string_pretty(
-        &list
-            .servers
-            .values()
-            .map(|v| (*v).clone())
-            .collect::<Vec<ServerItem>>(),
-        pretty_config,
-    ) {
-        if let Ok(mut file) = fs::File::create(Path::new(&format!(
-            "{}{}",
-            SAVE_PATH, SERVER_LIST_SAVE_NAME
-        ))) {
-            if file.write_all(data.as_bytes()).is_ok() {
-                println!("Server list saved")
+    // Convertit la liste des serveurs en une chaîne RON
+    let server_items: Vec<ServerItem> = list.servers.values().cloned().collect();
+    match ron::ser::to_string_pretty(&server_items, pretty_config) {
+        Ok(data) => {
+            // Crée le fichier de sauvegarde et écrit les données
+            match fs::File::create(&save_path) {
+                Ok(mut file) => {
+                    if file.write_all(data.as_bytes()).is_ok() {
+                        println!("Server list saved to {:?}", save_path);
+                    } else {
+                        eprintln!("Failed to write server list to {:?}", save_path);
+                    }
+                }
+                Err(e) => eprintln!(
+                    "Failed to create server list file at {:?}: {}",
+                    save_path, e
+                ),
             }
         }
+        Err(e) => eprintln!("Failed to serialize server list: {}", e),
     }
 }
 

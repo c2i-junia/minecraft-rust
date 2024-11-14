@@ -19,5 +19,6 @@ pub const HOTBAR_CELL_SIZE: f32 = 50.;
 pub const HOTBAR_PADDING: f32 = 5.;
 pub const HOTBAR_BORDER: f32 = 5.;
 
-pub const SAVE_PATH: &str = "../saves/";
+pub const SAVE_PATH: &str = "saves/";
 pub const SERVER_LIST_SAVE_NAME: &str = "servers.ron";
+pub const BINDS_PATH: &str = "keybindings.ron";

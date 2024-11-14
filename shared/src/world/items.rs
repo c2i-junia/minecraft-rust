@@ -1,3 +1,4 @@
+use crate::world::get_game_folder;
 use std::collections::hash_map::Iter;
 use std::fs;
 use std::{collections::HashMap, fmt::Debug};
@@ -177,7 +178,10 @@ pub fn load_blocks_items(
     println!("Begin items & blocks loading...");
 
     // First, load all items
-    for p in fs::read_dir("../data/items").unwrap().flatten() {
+    for p in fs::read_dir(get_game_folder().join("data/items"))
+        .unwrap()
+        .flatten()
+    {
         if let Ok(contents) = fs::read_to_string(p.path()) {
             if let Ok(item) = from_str::<TempItem>(&contents) {
                 // Insert item into registry
@@ -193,7 +197,10 @@ pub fn load_blocks_items(
     }
 
     // Then, load all blocks
-    for p in fs::read_dir("../data/blocks").unwrap().flatten() {
+    for p in fs::read_dir(get_game_folder().join("data/blocks"))
+        .unwrap()
+        .flatten()
+    {
         if let Ok(contents) = fs::read_to_string(p.path()) {
             if let Ok(block) = from_str::<TempBlock>(&contents) {
                 let mut d: Vec<(u16, RegistryId)> = Vec::new();
