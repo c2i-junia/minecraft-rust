@@ -5,6 +5,8 @@ use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFor
 use shared::world::{BlockData, ItemData, Registry, RegistryId};
 use std::collections::HashMap;
 
+const TEXTURE_PATH: &str = "graphics/textures/";
+
 #[derive(Resource, Default)]
 pub struct MaterialResource {
     pub block_materials: HashMap<RegistryId, Handle<StandardMaterial>>,
@@ -46,7 +48,7 @@ pub fn setup_materials(
     // Root directory for asset server : /assets/
     // TODO : atlas textures (currently only supports 1 texture per cube, for all 6 faces)
     let grass_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("graphics/textures/grass.png")),
+        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "grass.png"))),
         base_color: Color::srgb(0.2, 0.85, 0.3),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
@@ -57,19 +59,19 @@ pub fn setup_materials(
     // Modifying color based on noise generation values could be interesting tho
 
     let dirt_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("graphics/textures/dirt.png")),
+        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "dirt.png"))),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
     });
     let stone_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("graphics/textures/stone.png")),
+        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "stone.png"))),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
     });
     let bedrock_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load("graphics/textures/bedrock.png")),
+        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "bedrock.png"))),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
         ..default()
@@ -97,32 +99,27 @@ pub fn setup_materials(
 
     material_resource.item_textures.insert(
         *r_items.get_id("grass").unwrap(),
-        asset_server.load("textures/grass.png"),
+        asset_server.load(&(TEXTURE_PATH.to_owned() + "grass.png")),
     );
     material_resource.item_textures.insert(
         *r_items.get_id("dirt").unwrap(),
-        asset_server.load("textures/dirt.png"),
+        asset_server.load(&(TEXTURE_PATH.to_owned() + "dirt.png")),
     );
     material_resource.item_textures.insert(
         *r_items.get_id("stone").unwrap(),
-        asset_server.load("textures/stone.png"),
+        asset_server.load(&(TEXTURE_PATH.to_owned() + "stone.png")),
     );
     material_resource.item_textures.insert(
         *r_items.get_id("bedrock").unwrap(),
-        asset_server.load("graphics/textures/bedrock.png"),
+        asset_server.load(&(TEXTURE_PATH.to_owned() + "bedrock.png")),
     );
 
-    let image_paths = [
-        "textures/moss.png",
-        "textures/dirt.png",
-        "textures/stone.png",
-        "textures/bedrock.png",
-    ];
+    let image_paths = ["moss.png", "dirt.png", "stone.png", "bedrock.png"];
 
     // Load the images asynchronously
     let handles: Vec<Handle<Image>> = image_paths
         .iter()
-        .map(|path| asset_server.load(*path))
+        .map(|filename| asset_server.load(&(TEXTURE_PATH.to_owned() + filename)))
         .collect();
 
     atlas_handles.handles = handles;
