@@ -132,7 +132,7 @@ pub fn game_plugin(app: &mut App) {
                 toggle_hud_system,
                 chunk_ghost_update_system,
                 toggle_wireframe_system,
-                set_mouse_visibility,
+                handle_mouse_system,
                 update_celestial_bodies,
                 render_distance_update_system,
             )
