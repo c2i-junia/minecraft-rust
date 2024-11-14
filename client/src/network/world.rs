@@ -32,37 +32,34 @@ pub fn update_world_from_network(
         let msg = bincode::options()
             .deserialize::<ServerToClientMessage>(&bytes)
             .unwrap();
-        match msg {
-            ServerToClientMessage::WorldUpdate(world_update) => {
-                println!(
-                    "Received world update, {} chunks received",
-                    world_update.new_map.len()
-                );
+        if let ServerToClientMessage::WorldUpdate(world_update) = msg {
+            println!(
+                "Received world update, {} chunks received",
+                world_update.new_map.len()
+            );
 
-                println!("Chunks positions : {:?}", world_update.new_map.keys());
+            println!("Chunks positions : {:?}", world_update.new_map.keys());
 
-                for (pos, chunk) in world_update.new_map {
-                    // If the chunk is not in render distance range or is empty, do not consider it
-                    if !chunk_in_radius(&player_pos, &pos, r) || chunk.map.is_empty() {
-                        continue;
-                    }
-
-                    let chunk = crate::world::Chunk {
-                        map: chunk.map,
-                        entity: {
-                            if let Some(c) = world.map.get(&pos) {
-                                c.entity
-                            } else {
-                                None
-                            }
-                        },
-                    };
-
-                    world.map.insert(pos, chunk);
-                    ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(pos));
+            for (pos, chunk) in world_update.new_map {
+                // If the chunk is not in render distance range or is empty, do not consider it
+                if !chunk_in_radius(&player_pos, &pos, r) || chunk.map.is_empty() {
+                    continue;
                 }
+
+                let chunk = crate::world::Chunk {
+                    map: chunk.map,
+                    entity: {
+                        if let Some(c) = world.map.get(&pos) {
+                            c.entity
+                        } else {
+                            None
+                        }
+                    },
+                };
+
+                world.map.insert(pos, chunk);
+                ev_render.send(WorldRenderRequestUpdateEvent::ChunkToReload(pos));
             }
-            _ => {}
         }
     }
 }

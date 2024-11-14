@@ -48,7 +48,7 @@ fn update_chunk(
                 PbrBundle {
                     mesh: meshes.add(new_mesh),
                     material: texture.clone(),
-                    transform: chunk_t.clone(),
+                    transform: chunk_t,
                     ..Default::default()
                 },
                 RaycastMesh::<BlockRaycastSet>::default(),
@@ -67,6 +67,7 @@ fn update_chunk(
     // println!("Chunk updated : len={}", chunk.map.len());
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn world_render_system(
     mut world_map: ResMut<WorldMap>,
     material_resource: Res<MaterialResource>,
