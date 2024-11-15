@@ -12,5 +12,5 @@ release:
 	cp -r data minecraft-rust/
 	touch minecraft-rust/servers.ron
 
-clean:
+remove-game-folder:
 	rm -rf minecraft-rust

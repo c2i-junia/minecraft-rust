@@ -52,6 +52,8 @@ pub fn menu_plugin(app: &mut App) {
             OnEnter(MenuState::SettingsSound),
             settings::sound_settings_menu_setup,
         )
+        // save the keybings when lauching the game, and when exiting settings
+        .add_systems(OnEnter(GameState::Menu), save_keybindings)
         .add_systems(OnExit(MenuState::SettingsControls), save_keybindings)
         .add_systems(
             Update,

@@ -1,20 +1,16 @@
+use crate::{constants::BINDS_PATH, input::data::GameAction, KeyMap};
+use bevy::{
+    input::ButtonInput,
+    prelude::{KeyCode, Res},
+};
+use ron::{from_str, ser::PrettyConfig};
+use shared::world::get_game_folder;
 use std::{
     collections::BTreeMap,
     fs::{self, File},
     io::Write,
     path::PathBuf,
 };
-use bevy::{
-    input::ButtonInput,
-    prelude::{KeyCode, Res},
-};
-use ron::{from_str, ser::PrettyConfig};
-use crate::{
-    constants::BINDS_PATH,
-    input::data::GameAction,
-    KeyMap,
-};
-use shared::world::get_game_folder;
 
 pub fn is_action_pressed(
     action: GameAction,
@@ -66,7 +62,6 @@ pub fn get_action_keys(action: GameAction, key_map: &KeyMap) -> Vec<KeyCode> {
 }
 
 pub fn get_bindings() -> KeyMap {
-
     let binds_path: PathBuf = get_game_folder().join(BINDS_PATH);
 
     // Try to get & serialize existing binds
@@ -115,7 +110,6 @@ pub fn get_bindings() -> KeyMap {
 }
 
 pub fn save_keybindings(key_map: Res<KeyMap>) {
-
     let binds_path: PathBuf = get_game_folder().join(BINDS_PATH);
 
     let pretty_config = PrettyConfig::new()
@@ -132,7 +126,10 @@ pub fn save_keybindings(key_map: Res<KeyMap>) {
                     println!("Keybindings successfully saved to {:?}", binds_path);
                 }
             }
-            Err(e) => eprintln!("Failed to create keybindings file at {:?}: {}", binds_path, e),
+            Err(e) => eprintln!(
+                "Failed to create keybindings file at {:?}: {}",
+                binds_path, e
+            ),
         }
     } else {
         eprintln!("Failed to serialize keybindings");
