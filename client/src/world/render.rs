@@ -1,18 +1,24 @@
 use std::collections::HashMap;
 use std::time::Instant;
 
-use crate::camera::BlockRaycastSet;
-use crate::world::{MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent};
-use crate::{world, GameState};
-use bevy::asset::Assets;
-use bevy::math::IVec3;
-use bevy::pbr::PbrBundle;
-use bevy::prelude::*;
-use bevy::prelude::{Commands, Mesh, Res, Transform};
-use bevy::tasks::{block_on, futures_lite::future, AsyncComputeTaskPool, Task};
+use bevy::{
+    asset::Assets,
+    math::IVec3,
+    pbr::PbrBundle,
+    prelude::*,
+    tasks::{block_on, futures_lite::future, AsyncComputeTaskPool, Task},
+};
 use bevy_mod_raycast::deferred::RaycastMesh;
-use shared::world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS};
-use shared::CHUNK_SIZE;
+use shared::{
+    world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS},
+    CHUNK_SIZE,
+};
+
+use crate::{
+    camera::BlockRaycastSet,
+    world::{self, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent},
+    GameState,
+};
 
 #[derive(Debug, Default, Resource)]
 pub struct QueuedMeshes {
@@ -83,7 +89,7 @@ pub fn world_render_system(
     }
 
     if material_resource.atlas_texture.is_none() {
-        // let's wait until it's ready
+        // Wait until the texture is ready
         return;
     }
 
@@ -100,6 +106,7 @@ pub fn world_render_system(
             let mut chunk_meshes: HashMap<IVec3, Mesh> = HashMap::new();
             for event in &events {
                 //println!("world_render_system event {:?}", event);
+
                 let target_chunk_pos = match event {
                     WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
                     WorldRenderRequestUpdateEvent::BlockToReload(pos) => {

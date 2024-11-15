@@ -1,6 +1,8 @@
 use std::fs;
 use std::path::Path;
-
+use bevy::{math::Vec3, utils::hashbrown::HashMap};
+use ron::de::from_str;
+use shared::world::{BlockData, Item, ItemData, Registry, RegistryId};
 use crate::{
     constants::SAVE_PATH,
     player::Player,
@@ -9,9 +11,6 @@ use crate::{
         Save,
     },
 };
-use bevy::{math::Vec3, utils::hashbrown::HashMap};
-use ron::de::from_str;
-use shared::world::{BlockData, Item, ItemData, Registry, RegistryId};
 
 pub fn load_world_map(
     file_name: &str,
@@ -20,13 +19,13 @@ pub fn load_world_map(
     r_items: &Registry<ItemData>,
     r_blocks: &Registry<BlockData>,
 ) -> Result<WorldMap, Box<dyn std::error::Error>> {
-    let file_path = format!("{}{}_save.ron", SAVE_PATH, file_name);
-    let path = Path::new(&file_path);
-    let contents = fs::read_to_string(path)?;
-    let mut save = from_str::<Save>(&contents)?; // Désérialisation avec RON
+    let file_path: String = format!("{}{}_save.ron", SAVE_PATH, file_name);
+    let path: &Path = Path::new(&file_path);
+    let contents: String = fs::read_to_string(path)?;
+    let mut save: Save = from_str::<Save>(&contents)?; // Deserialization using RON
 
-    // Build map : old ItemId -> new ItemId, in case the blocks aren't the same
-    let mut items_changed = false;
+    // Build map: old ItemId -> new ItemId, in case the blocks aren't the same
+    let mut items_changed: bool = false;
     let mut items_id_map: HashMap<RegistryId, RegistryId> = HashMap::new();
     for (old_id, name) in save.id_to_item.iter() {
         if let Some(new_id) = r_items.get_id(name) {
@@ -38,7 +37,7 @@ pub fn load_world_map(
     }
 
     // Same for blocks
-    let mut blocks_changed = false;
+    let mut blocks_changed: bool = false;
     let mut blocks_id_map: HashMap<RegistryId, RegistryId> = HashMap::new();
     for (old_id, name) in save.id_to_block.iter() {
         if let Some(new_id) = r_blocks.get_id(name) {
@@ -49,7 +48,7 @@ pub fn load_world_map(
         }
     }
 
-    let world_map = WorldMap {
+    let world_map: WorldMap = WorldMap {
         name: file_name.into(),
         map: {
             if blocks_changed {
@@ -69,7 +68,7 @@ pub fn load_world_map(
     };
 
     player.inventory = if items_changed {
-        let mut inv = save.inventory.clone();
+        let mut inv: HashMap<u32, Item> = save.inventory.clone();
         for (id, item) in save.inventory.iter() {
             if let Some(item_id) = items_id_map.get(&item.id) {
                 inv.insert(
@@ -94,9 +93,9 @@ pub fn load_world_map(
 }
 
 pub fn load_world_seed(file_name: &str) -> Result<WorldSeed, Box<dyn std::error::Error>> {
-    let file_path = format!("{}{}_seed.ron", SAVE_PATH, file_name);
-    let path = Path::new(&file_path);
-    let contents = fs::read_to_string(path)?;
-    let world_seed: WorldSeed = from_str(&contents)?; // Désérialisation avec RON
+    let file_path: String = format!("{}{}_seed.ron", SAVE_PATH, file_name);
+    let path: &Path = Path::new(&file_path);
+    let contents: String = fs::read_to_string(path)?;
+    let world_seed: WorldSeed = from_str(&contents)?; // Deserialization using RON
     Ok(world_seed)
 }

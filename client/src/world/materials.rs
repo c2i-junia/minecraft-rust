@@ -149,10 +149,10 @@ pub fn build_atlas(
     }
 
     // Assuming each image is 16x16 and there are `n` images
-    let image_count = loaded_images.len();
-    let atlas_width = (image_count * 16) as u32;
-    let atlas_height = 16;
-    let mut atlas_data = vec![0u8; (atlas_width * atlas_height * 4) as usize]; // RGBA format
+    let image_count: usize = loaded_images.len();
+    let atlas_width: u32 = (image_count * 16) as u32;
+    let atlas_height: u32 = 16;
+    let mut atlas_data: Vec<u8> = vec![0u8; (atlas_width * atlas_height * 4) as usize]; // RGBA format
 
     // Copy the pixels of each image into the correct position in the atlas
     for (i, image) in loaded_images.iter().enumerate() {

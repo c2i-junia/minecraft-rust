@@ -12,5 +12,8 @@ release:
 	cp -r data minecraft-rust/
 	touch minecraft-rust/servers.ron
 
+check: 
+	cargo check
+
 remove-game-folder:
 	rm -rf minecraft-rust

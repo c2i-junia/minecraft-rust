@@ -20,8 +20,7 @@ use bevy::{
         RenderPlugin,
     },
 };
-use input::data::GameAction;
-use input::keyboard::get_bindings;
+use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use serde::{Deserialize, Serialize};
 use shared::world::{load_blocks_items, BlockData, ItemData, Registry};
@@ -60,7 +59,7 @@ fn main() {
             .set(ImagePlugin::default_nearest())
             .set(RenderPlugin {
                 render_creation: RenderCreation::Automatic(WgpuSettings {
-                    // WARN this is a native only feature. It will not work with webgl or webgpu
+                    // WARNING: This is a native-only feature. It will not work with WebGL or WebGPU
                     features: WgpuFeatures::POLYGON_MODE_LINE,
                     ..default()
                 }),

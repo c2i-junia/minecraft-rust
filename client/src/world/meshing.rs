@@ -1,10 +1,11 @@
-use crate::world::WorldMap;
-use bevy::math::IVec3;
-use bevy::prelude::*;
-use bevy::render::mesh::{Indices, PrimitiveTopology};
-use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
-
 use super::Chunk;
+use crate::world::WorldMap;
+use bevy::{
+    math::IVec3,
+    prelude::*,
+    render::mesh::{Indices, PrimitiveTopology},
+};
+use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
 
 #[derive(Copy, Clone)]
 struct UvCoords {

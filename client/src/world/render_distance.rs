@@ -1,6 +1,6 @@
-use crate::input::data::GameAction;
 use crate::{
-    constants::DEFAULT_CHUNK_RENDER_DISTANCE_RADIUS, input::keyboard::is_action_just_pressed,
+    constants::DEFAULT_CHUNK_RENDER_DISTANCE_RADIUS,
+    input::{data::GameAction, keyboard::is_action_just_pressed},
     KeyMap,
 };
 use bevy::prelude::*;

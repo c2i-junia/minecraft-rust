@@ -1,3 +1,3 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
-./minecraft-rust/bin/minecraft-rust
+make debug && ./minecraft-rust/bin/minecraft-rust

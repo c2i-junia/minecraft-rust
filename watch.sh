@@ -9,4 +9,8 @@ else
     echo "cargo-watch is already installed."
 fi
 
-cargo watch --watch src -x "run --features bevy/dynamic_linking"
+cargo watch \
+    --watch client/src \
+    --watch server/src \
+    --watch shared/src \
+    -- bash -c "make && ./run.sh"

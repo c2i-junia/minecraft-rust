@@ -25,7 +25,6 @@ In world :
 | Toggle Block Debug  | F6 |
 | Decrease Render Distance  | O |
 | Increase Render Distance  | P |
-| Save World  | L |
 | Exit Game           | Escape |
 
 In inventory :
@@ -66,15 +65,11 @@ git clone https://github.com/your-repo/minecraft-rust.git
 # Navigate to the project directory
 cd minecraft-rust
 
-# Navigate to the client directory
-cd client
+# Build the project in debug or release mode
+make debug    # or `make release`
 
-# Start the client in dev mode
-sh run.sh
-
-# Alternative: start the client in release mode 
-# Warning: slow compilation, but better runtime performance
-cargo run --release
+# Run the executable
+./minecraft-rust/bin/minecraft-rust
 ```
 
 <br>
