@@ -8,9 +8,9 @@ use bevy_ecs::system::ResMut;
 use bevy_renet::renet::{ClientId, DefaultChannel, RenetServer};
 use bincode::Options;
 use shared::messages::{ServerToClientMessage, WorldUpdate};
-use shared::world::{chunk_in_radius, BlockData, Chunk, Registry, WorldMap};
+use shared::world::{chunk_in_radius, BlockData, Registry, ServerChunk, ServerWorldMap};
 
-use super::data::WorldSeed;
+use shared::world::data::WorldSeed;
 
 #[derive(Event, Debug)]
 pub struct WorldUpdateRequestEvent {
@@ -24,7 +24,7 @@ pub fn send_world_update(
     mut server: ResMut<RenetServer>,
     ticker: Res<TickCounter>,
     seed: Res<WorldSeed>,
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ServerWorldMap>,
     r_blocks: Res<Registry<BlockData>>,
     mut ev_update: EventReader<WorldUpdateRequestEvent>,
 ) {
@@ -33,7 +33,7 @@ pub fn send_world_update(
             .serialize(&ServerToClientMessage::WorldUpdate(WorldUpdate {
                 tick: ticker.tick,
                 new_map: {
-                    let mut map: HashMap<IVec3, Chunk> = HashMap::new();
+                    let mut map: HashMap<IVec3, ServerChunk> = HashMap::new();
                     for c in event.chunks.iter() {
                         if chunk_in_radius(
                             &event.player_chunk_position,
@@ -76,7 +76,7 @@ pub fn send_world_update(
 pub fn broadcast_world_state(
     mut server: ResMut<RenetServer>,
     ticker: Res<TickCounter>,
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ServerWorldMap>,
 ) {
     if ticker.tick % 60 != 0 {
         return;
@@ -90,11 +90,11 @@ pub fn broadcast_world_state(
         .unwrap();
     server.broadcast_message(DefaultChannel::ReliableUnordered, payload);
 }
-fn to_network(world_map: &mut WorldMap, tick: u64) -> WorldUpdate {
+fn to_network(world_map: &mut ServerWorldMap, tick: u64) -> WorldUpdate {
     WorldUpdate {
         tick,
         new_map: {
-            let mut m: HashMap<IVec3, Chunk> = HashMap::new();
+            let mut m: HashMap<IVec3, ServerChunk> = HashMap::new();
             // Only send chunks that must be updated
             for v in world_map.chunks_to_update.iter() {
                 m.insert(*v, world_map.map.get(v).unwrap().clone());

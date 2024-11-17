@@ -1,11 +1,10 @@
-use crate::world::data::*;
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
 use rand::random;
 use shared::{world::*, CHUNK_SIZE};
 use std::collections::HashMap;
 
-pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData>) -> Chunk {
+pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData>) -> ServerChunk {
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
@@ -16,7 +15,7 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData
     let cy = chunk_pos.y;
     let cz = chunk_pos.z;
 
-    let mut chunk = Chunk {
+    let mut chunk = ServerChunk {
         map: HashMap::new(),
         ts: std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -62,7 +61,7 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData
 
 pub fn setup_world(
     mut commands: Commands,
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ServerWorldMap>,
     r_blocks: Res<Registry<BlockData>>,
 ) {
     println!("Registry : {:?}", r_blocks);

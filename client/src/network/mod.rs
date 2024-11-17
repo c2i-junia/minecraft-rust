@@ -2,6 +2,7 @@ mod api;
 mod chat;
 mod cleanup;
 mod inputs;
+pub mod save;
 mod setup;
 mod world;
 

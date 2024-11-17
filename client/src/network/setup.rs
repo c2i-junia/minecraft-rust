@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 
+use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
 use crate::player::Player;
@@ -39,15 +40,26 @@ pub fn add_base_netcode(app: &mut App) {
     });
 }
 
-pub fn launch_local_server_system(mut target: ResMut<TargetServer>) {
-    println!("Launching local server...");
-    let socket = server::acquire_local_ephemeral_udp_socket();
-    let addr = socket.local_addr().unwrap();
-    println!("Obtained UDP socket: {}", addr);
-    thread::spawn(|| {
-        server::init(socket);
-    });
-    target.address = Some(addr);
+pub fn launch_local_server_system(
+    mut target: ResMut<TargetServer>,
+    selected_world: Res<SelectedWorld>,
+) {
+    if let Some(world_name) = &selected_world.name {
+        println!("Launching local server with world: {}", world_name);
+
+        let socket = server::acquire_local_ephemeral_udp_socket();
+        let addr = socket.local_addr().unwrap();
+        println!("Obtained UDP socket: {}", addr);
+
+        let world_name_clone = world_name.clone();
+        thread::spawn(move || {
+            server::init(socket, world_name_clone);
+        });
+
+        target.address = Some(addr);
+    } else {
+        println!("Error: No world selected. Unable to launch the server.");
+    }
 }
 
 fn poll_reliable_ordered_messages(
@@ -67,7 +79,7 @@ fn poll_reliable_ordered_messages(
 
 fn poll_reliable_unordered_messages(
     client: &mut ResMut<RenetClient>,
-    world: &mut ResMut<crate::world::WorldMap>,
+    world: &mut ResMut<crate::world::ClientWorldMap>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,
@@ -78,7 +90,7 @@ fn poll_reliable_unordered_messages(
 pub fn poll_network_messages(
     mut client: ResMut<RenetClient>,
     mut chat_state: ResMut<CachedChatConversation>,
-    mut world: ResMut<crate::world::WorldMap>,
+    mut world: ResMut<crate::world::ClientWorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,

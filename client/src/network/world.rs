@@ -15,7 +15,7 @@ use super::api::send_network_action;
 
 pub fn update_world_from_network(
     client: &mut ResMut<RenetClient>,
-    world: &mut ResMut<crate::world::WorldMap>,
+    world: &mut ResMut<crate::world::ClientWorldMap>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,
@@ -46,7 +46,7 @@ pub fn update_world_from_network(
                     continue;
                 }
 
-                let chunk = crate::world::Chunk {
+                let chunk = crate::world::ClientChunk {
                     map: chunk.map,
                     entity: {
                         if let Some(c) = world.map.get(&pos) {

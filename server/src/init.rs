@@ -11,6 +11,9 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
+use crate::world::load_from_file::{load_world_map, load_world_seed};
+use shared::world::{ServerWorldMap, WorldSeed};
+
 use crate::dispatcher;
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
 use bevy_renet::transport::NetcodeServerPlugin;
@@ -54,7 +57,7 @@ pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
     app.insert_resource(transport);
 }
 
-pub fn init(socket: UdpSocket) {
+pub fn init(socket: UdpSocket, world_name: String) {
     println!("Starting server on {}", socket.local_addr().unwrap());
     let mut app = App::new();
     app.add_plugins(
@@ -76,6 +79,31 @@ pub fn init(socket: UdpSocket) {
     add_netcode_network(&mut app, socket);
 
     dispatcher::setup_resources_and_events(&mut app);
+
+    // Load world from files
+    let world_map = match load_world_map(
+        &world_name,
+        // app.world().resource::<Registry<ItemData>>(),
+        app.world().resource::<Registry<BlockData>>(),
+    ) {
+        Ok(world) => world,
+        Err(e) => {
+            println!("Error loading world: {}. Generating a new one.", e);
+            ServerWorldMap::default()
+        }
+    };
+
+    let world_seed = match load_world_seed(&world_name) {
+        Ok(seed) => seed,
+        Err(e) => {
+            println!("Error loading seed: {}. Generating a new one.", e);
+            WorldSeed(rand::random::<u32>())
+        }
+    };
+
+    // Insert world_map and seed into ressources
+    app.insert_resource(world_map);
+    app.insert_resource(world_seed);
 
     dispatcher::register_systems(&mut app);
 

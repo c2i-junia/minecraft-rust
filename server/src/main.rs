@@ -12,9 +12,12 @@ mod world;
 struct Args {
     #[arg(short, long, default_value_t = 0)]
     port: u16,
+
+    #[arg(short, long, default_value = "default")]
+    world: String,
 }
 
 fn main() {
     let args = Args::parse();
-    init::init(acquire_socket_by_port(args.port));
+    init::init(acquire_socket_by_port(args.port), args.world);
 }

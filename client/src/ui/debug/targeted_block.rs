@@ -2,7 +2,7 @@ use crate::{
     camera::BlockRaycastSet,
     constants::{CUBE_SIZE, INTERACTION_DISTANCE},
     player::Player,
-    world::WorldMap,
+    world::ClientWorldMap,
 };
 use bevy::{math::NormedVectorSpace, prelude::*};
 use bevy_mod_raycast::prelude::RaycastSource;
@@ -13,7 +13,7 @@ pub struct BlockText;
 // Updates UI to tell which block the player is looking at (or none if no block is within INTERACTION_DISTANCE)
 pub fn block_text_update_system(
     player: Query<&Transform, With<Player>>,
-    world_map: Res<WorldMap>,
+    world_map: Res<ClientWorldMap>,
     mut query: Query<&mut Text, With<BlockText>>,
     raycast_source: Query<&RaycastSource<BlockRaycastSet>>, // raycast (to get current "selected" block)
 ) {

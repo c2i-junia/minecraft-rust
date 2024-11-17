@@ -1,4 +1,4 @@
-use crate::world::WorldMap;
+use crate::world::ClientWorldMap;
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -10,7 +10,7 @@ pub struct ChunksNumberText;
 pub fn total_blocks_text_update_system(
     mut query_blocks: Query<&mut Text, With<BlocksNumberText>>,
     mut query_chunks: Query<&mut Text, (With<ChunksNumberText>, Without<BlocksNumberText>)>,
-    world_map: Res<WorldMap>,
+    world_map: Res<ClientWorldMap>,
 ) {
     for mut text in query_blocks.iter_mut() {
         text.sections[0].value = format!("Loaded blocks: {}", world_map.total_blocks_count);

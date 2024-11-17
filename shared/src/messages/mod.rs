@@ -23,6 +23,7 @@ pub enum ClientToServerMessage {
         render_distance: u32,
         requested_chunks: Vec<IVec3>,
     },
+    SaveWorldRequest(SaveWorldRequest),
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

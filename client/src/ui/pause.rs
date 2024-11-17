@@ -1,11 +1,12 @@
+use crate::network::save::send_save_request_to_server;
 use bevy::{
     asset::AssetServer,
     color::{Alpha, Color},
     core::Name,
     input::ButtonInput,
     prelude::{
-        BuildChildren, ButtonBundle, Commands, Component, EventWriter, KeyCode, NextState,
-        NodeBundle, Query, Res, ResMut, StateScoped, TextBundle, Visibility, With,
+        BuildChildren, ButtonBundle, Commands, Component, KeyCode, NextState, NodeBundle, Query,
+        Res, ResMut, StateScoped, TextBundle, Visibility, With,
     },
     text::{Text, TextStyle},
     ui::{
@@ -13,8 +14,9 @@ use bevy::{
         JustifyContent, Style, UiRect, Val, ZIndex,
     },
 };
+use bevy_renet::renet::RenetClient;
 
-use crate::{input::keyboard::is_action_just_pressed, world::SaveRequestEvent, GameState, KeyMap};
+use crate::{input::keyboard::is_action_just_pressed, GameState, KeyMap};
 
 use super::UiDialog;
 
@@ -114,8 +116,8 @@ pub fn render_pause_menu(
     ),
     input: Res<ButtonInput<KeyCode>>,
     mut game_state: ResMut<NextState<GameState>>,
-    mut save_event: EventWriter<SaveRequestEvent>,
     key_map: Res<KeyMap>,
+    mut client: ResMut<RenetClient>,
 ) {
     let (mut button, mut visibility) = queries;
     let mut vis = visibility.single_mut();
@@ -141,7 +143,7 @@ pub fn render_pause_menu(
                     *vis = Visibility::Hidden;
                 }
                 PauseButtonAction::Save => {
-                    save_event.send(SaveRequestEvent);
+                    send_save_request_to_server(&mut client);
                 }
             },
             Interaction::Hovered => {

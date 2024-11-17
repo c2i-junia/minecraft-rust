@@ -1,7 +1,7 @@
 use bevy::{math::IVec3, prelude::ResMut};
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
-use shared::messages::{ChatMessage, ClientToServerMessage};
+use shared::messages::{ChatMessage, ClientToServerMessage, SaveWorldRequest};
 
 pub enum NetworkAction {
     ChatMessage(String),
@@ -10,6 +10,7 @@ pub enum NetworkAction {
         player_chunk_pos: IVec3,
         render_distance: u32,
     },
+    SaveWorldRequest,
 }
 
 pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkAction) {
@@ -41,6 +42,16 @@ pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkActi
                     render_distance,
                 })
                 .unwrap();
+
+            client.send_message(DefaultChannel::ReliableOrdered, input_message);
+        }
+        NetworkAction::SaveWorldRequest => {
+            let save_request =
+                ClientToServerMessage::SaveWorldRequest(SaveWorldRequest { session_token: 0 });
+
+            let input_message = bincode::options()
+                .serialize(&save_request)
+                .expect("Failed to serialize SaveWorldRequest");
 
             client.send_message(DefaultChannel::ReliableOrdered, input_message);
         }

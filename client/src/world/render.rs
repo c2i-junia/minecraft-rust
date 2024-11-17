@@ -16,7 +16,7 @@ use shared::{
 
 use crate::{
     camera::BlockRaycastSet,
-    world::{self, MaterialResource, QueuedEvents, WorldMap, WorldRenderRequestUpdateEvent},
+    world::{self, ClientWorldMap, MaterialResource, QueuedEvents, WorldRenderRequestUpdateEvent},
     GameState,
 };
 
@@ -30,7 +30,7 @@ fn update_chunk(
     material_resource: &MaterialResource,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
-    world_map: &mut WorldMap,
+    world_map: &mut ClientWorldMap,
     new_mesh: Mesh,
 ) {
     let chunk = world_map.map.get_mut(chunk_pos).unwrap();
@@ -70,12 +70,12 @@ fn update_chunk(
         let ch = world_map.map.get_mut(chunk_pos).unwrap();
         ch.entity = Some(new_entity);
     }
-    // println!("Chunk updated : len={}", chunk.map.len());
+    // println!("ClientChunk updated : len={}", chunk.map.len());
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn world_render_system(
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ClientWorldMap>,
     material_resource: Res<MaterialResource>,
     mut ev_render: EventReader<WorldRenderRequestUpdateEvent>,
     mut queued_events: Local<QueuedEvents>,

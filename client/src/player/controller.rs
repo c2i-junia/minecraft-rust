@@ -6,13 +6,13 @@ use crate::network::request_world_update;
 use crate::player::{Player, ViewMode};
 use crate::ui::debug::DebugOptions;
 use crate::ui::UIMode;
-use crate::world::{RenderDistance, WorldMap};
+use crate::world::{ClientWorldMap, RenderDistance};
 use crate::KeyMap;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use shared::world::{block_to_chunk_coord, chunk_in_radius};
 
-fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
+fn is_block_at_position(position: Vec3, world_map: &ClientWorldMap) -> bool {
     world_map
         .get_block_by_coordinates(&IVec3::new(
             position.x.floor() as i32,
@@ -22,7 +22,11 @@ fn is_block_at_position(position: Vec3, world_map: &WorldMap) -> bool {
         .is_some()
 }
 
-fn check_player_collision(player_position: Vec3, player: &Player, world_map: &WorldMap) -> bool {
+fn check_player_collision(
+    player_position: Vec3,
+    player: &Player,
+    world_map: &ClientWorldMap,
+) -> bool {
     // Vérification de la collision avec les pieds et la tête du joueur
     let foot_position = Vec3::new(
         player_position.x,
@@ -74,7 +78,7 @@ pub fn player_movement_system(
         Res<UIMode>,
         Res<KeyMap>,
         ResMut<Assets<StandardMaterial>>,
-        ResMut<WorldMap>,
+        ResMut<ClientWorldMap>,
         Res<RenderDistance>,
         ResMut<ViewMode>,
         ResMut<DebugOptions>,

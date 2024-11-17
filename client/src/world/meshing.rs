@@ -1,5 +1,5 @@
-use super::Chunk;
-use crate::world::WorldMap;
+use super::ClientChunk;
+use crate::world::ClientWorldMap;
 use bevy::{
     math::IVec3,
     prelude::*,
@@ -27,8 +27,8 @@ fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords
 }
 
 pub(crate) fn generate_chunk_mesh(
-    world_map: &WorldMap,
-    chunk: &Chunk,
+    world_map: &ClientWorldMap,
+    chunk: &ClientChunk,
     chunk_pos: &IVec3,
     r_blocks: &Registry<BlockData>,
 ) -> Mesh {
@@ -359,7 +359,7 @@ pub(crate) fn generate_chunk_mesh(
 }
 
 pub(crate) fn is_block_surrounded(
-    world_map: &WorldMap,
+    world_map: &ClientWorldMap,
     chunk_pos: &IVec3,
     local_block_pos: &IVec3,
 ) -> bool {

@@ -26,6 +26,7 @@ use crate::camera::*;
 use crate::input::*;
 use crate::player::*;
 use crate::ui::inventory::*;
+use shared::world::WorldSeed;
 
 use crate::menu::game_loading_screen::load_loading_screen;
 use crate::network::{
@@ -72,7 +73,6 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(DebugOptions::default())
         .insert_resource(Inventory::new())
         .add_event::<WorldRenderRequestUpdateEvent>()
-        .add_event::<SaveRequestEvent>()
         .add_systems(
             OnEnter(GameState::PreGameLoading),
             (
@@ -139,7 +139,6 @@ pub fn game_plugin(app: &mut App) {
                 .chain()
                 .run_if(in_state(GameState::Game)),
         )
-        .add_systems(Update, save_world_system.run_if(in_state(GameState::Game)))
         .add_systems(
             PostUpdate,
             (world_render_system).run_if(in_state(GameState::Game)),
@@ -159,7 +158,7 @@ pub fn game_plugin(app: &mut App) {
         );
 }
 
-fn clear_resources(mut world_map: ResMut<WorldMap>) {
+fn clear_resources(mut world_map: ResMut<ClientWorldMap>) {
     world_map.map = HashMap::new();
     world_map.total_blocks_count = 0;
     world_map.total_chunks_count = 0;

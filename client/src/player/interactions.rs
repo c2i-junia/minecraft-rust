@@ -4,7 +4,7 @@ use crate::player::inventory::*;
 use crate::player::spawn::Player;
 use crate::ui::hotbar::Hotbar;
 use crate::ui::{items, UIMode};
-use crate::world::WorldMap;
+use crate::world::ClientWorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
@@ -25,7 +25,7 @@ pub fn handle_block_interactions(
         Query<&Hotbar>,
     ),
     resources: (
-        ResMut<WorldMap>,
+        ResMut<ClientWorldMap>,
         Res<ButtonInput<MouseButton>>,
         Res<UIMode>,
         Res<Registry<BlockData>>,

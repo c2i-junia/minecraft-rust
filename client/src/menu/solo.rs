@@ -1,9 +1,6 @@
 use super::{MenuButtonAction, MenuState, ScrollingList};
-use crate::{
-    constants::SAVE_PATH,
-    world::{delete_save_files, WorldMap},
-    GameState, LoadWorldEvent,
-};
+use crate::{constants::SAVE_PATH, world::ClientWorldMap, GameState, LoadWorldEvent};
+use bevy::prelude::Resource;
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -25,6 +22,7 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 use shared::world::get_game_folder;
+use std::io;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -48,6 +46,11 @@ pub enum MultiplayerButtonAction {
 
 #[derive(Component)]
 pub struct WorldNameInput;
+
+#[derive(Resource, Default, Debug, Clone)]
+pub struct SelectedWorld {
+    pub name: Option<String>,
+}
 
 pub const BACKGROUND_COLOR: Color = Color::srgb(0.5, 0.5, 0.5);
 
@@ -223,7 +226,7 @@ pub fn list_worlds(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut WorldList, Entity)>,
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ClientWorldMap>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
@@ -258,7 +261,7 @@ fn add_world_item(
     asset_server: &Res<AssetServer>,
     list: &mut WorldList,
     list_entity: Entity,
-    world_map: &mut WorldMap,
+    world_map: &mut ClientWorldMap,
 ) {
     println!(
         "Adding world to list : name = {:?}, entity={:?}",
@@ -378,7 +381,8 @@ pub fn solo_action(
     mut load_event: EventWriter<LoadWorldEvent>,
     mut menu_state: ResMut<NextState<MenuState>>,
     mut game_state: ResMut<NextState<GameState>>,
-    mut world_map: ResMut<WorldMap>,
+    mut world_map: ResMut<ClientWorldMap>,
+    mut selected_world: ResMut<SelectedWorld>,
 ) {
     let (interaction_query, mut name_query, mut list_query) = queries;
     if list_query.is_empty() {
@@ -408,6 +412,9 @@ pub fn solo_action(
                 }
                 MultiplayerButtonAction::Load(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
+                        // update ressource name
+                        selected_world.name = Some(world.name.clone());
+
                         load_event.send(LoadWorldEvent {
                             world_name: world.name.clone(),
                         });
@@ -428,4 +435,34 @@ pub fn solo_action(
             }
         }
     }
+}
+
+pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
+    // Delete `world_save.ron`
+    match fs::remove_file(format!(
+        "{}{}_save.ron",
+        get_game_folder().join(SAVE_PATH).display(),
+        world_name
+    )) {
+        Ok(_) => println!("Successfully deleted world_save.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_save.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_save.ron: {}", e),
+    }
+
+    // Delete `world_seed.ron`
+    match fs::remove_file(format!(
+        "{}{}_seed.ron",
+        get_game_folder().join(SAVE_PATH).display(),
+        world_name
+    )) {
+        Ok(_) => println!("Successfully deleted world_seed.ron"),
+        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+            println!("world_seed.ron not found, skipping.")
+        }
+        Err(e) => println!("Failed to delete world_seed.ron: {}", e),
+    }
+
+    Ok(())
 }
