@@ -1,8 +1,8 @@
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use crate::init::{ServerLobby, TickCounter};
 use crate::player::handle_player_inputs;
-use crate::world::generation::setup_world;
 use crate::world::save::SaveRequestEvent;
+use crate::world::BlockInteractionEvent;
 use crate::world::WorldUpdateRequestEvent;
 use crate::{chat, world};
 use bevy::prelude::*;
@@ -10,7 +10,6 @@ use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
 use rand::random;
 use shared::messages::{AuthRegisterResponse, ChatConversation, ClientToServerMessage};
-use shared::world::ServerWorldMap;
 
 #[derive(Resource)]
 pub struct BroadcastTimer {
@@ -22,14 +21,14 @@ pub fn setup_resources_and_events(app: &mut App) {
         timer: Timer::from_seconds(2.0, TimerMode::Repeating),
     })
     .add_event::<WorldUpdateRequestEvent>()
-    .add_event::<SaveRequestEvent>();
+    .add_event::<SaveRequestEvent>()
+    .add_event::<BlockInteractionEvent>();
 
     setup_chat_resources(app);
 }
 
 pub fn register_systems(app: &mut App) {
-    app.insert_resource(ServerWorldMap { ..default() });
-    app.add_systems(Startup, setup_world);
+    // app.add_systems(Startup, setup_world);
 
     app.add_systems(Update, server_update_system);
 
@@ -41,6 +40,7 @@ pub fn register_systems(app: &mut App) {
     );
 
     app.add_systems(Update, world::save::save_world_system);
+    app.add_systems(Update, world::handle_block_interactions);
 }
 
 fn server_update_system(
@@ -56,11 +56,17 @@ fn server_update_system(
         EventWriter<AppExit>,
         EventWriter<WorldUpdateRequestEvent>,
         EventWriter<SaveRequestEvent>,
+        EventWriter<BlockInteractionEvent>,
     ),
 ) {
     let (mut server, mut chat_conversation, mut lobby, tick) = resources;
-    let (mut ev_chat, mut ev_app_exit, mut ev_world_update_request, mut ev_save_request) =
-        event_writers;
+    let (
+        mut ev_chat,
+        mut ev_app_exit,
+        mut ev_world_update_request,
+        mut ev_save_request,
+        mut ev_block_interaction,
+    ) = event_writers;
 
     for event in server_events.read() {
         println!("event received");
@@ -142,6 +148,20 @@ fn server_update_system(
                         client: client_id,
                         chunks: requested_chunks,
                         player_chunk_position,
+                    });
+                }
+                ClientToServerMessage::BlockInteraction {
+                    position,
+                    block_type,
+                } => {
+                    println!(
+                        "Block interaction received at {:?}: {:?}",
+                        position, block_type
+                    );
+
+                    ev_block_interaction.send(BlockInteractionEvent {
+                        position,
+                        block_type,
                     });
                 }
             }

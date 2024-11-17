@@ -17,6 +17,8 @@ use shared::messages::{AuthRegisterRequest, ChatConversation, ClientToServerMess
 use std::net::SocketAddr;
 use std::{net::UdpSocket, thread, time::SystemTime};
 
+use crate::world::ClientWorldMap;
+
 #[derive(Resource, Debug)]
 pub struct TargetServer {
     pub address: Option<SocketAddr>,
@@ -79,7 +81,7 @@ fn poll_reliable_ordered_messages(
 
 fn poll_reliable_unordered_messages(
     client: &mut ResMut<RenetClient>,
-    world: &mut ResMut<crate::world::ClientWorldMap>,
+    world: &mut ResMut<ClientWorldMap>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,
@@ -90,7 +92,7 @@ fn poll_reliable_unordered_messages(
 pub fn poll_network_messages(
     mut client: ResMut<RenetClient>,
     mut chat_state: ResMut<CachedChatConversation>,
-    mut world: ResMut<crate::world::ClientWorldMap>,
+    mut world: ResMut<ClientWorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,

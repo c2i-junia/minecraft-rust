@@ -13,7 +13,7 @@ use crate::world::data::SAVE_PATH;
 
 // System to save the world when "L" is pressed
 pub fn save_world_system(
-    world_map: Res<ServerWorldMap>,
+    world_map: ResMut<ServerWorldMap>,
     world_seed: Res<WorldSeed>, // Add `WorldSeed` as a resource here
     // r_items: Res<Registry<ItemData>>,
     r_blocks: Res<Registry<BlockData>>,
@@ -30,6 +30,10 @@ pub fn save_world_system(
 
     // If a save was requested by the user
     if save_requested {
+        println!(
+            "!!!! une save est requested, worldmap name : {}",
+            world_map.name
+        );
         // let transform = match player_query.iter().next() {
         //     Some(transform) => transform,
         //     None => {

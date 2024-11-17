@@ -1,4 +1,4 @@
-use super::ClientChunk;
+use crate::world::ClientChunk;
 use crate::world::ClientWorldMap;
 use bevy::{
     math::IVec3,

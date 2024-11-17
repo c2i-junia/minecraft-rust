@@ -12,7 +12,6 @@ use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 
 use crate::world::load_from_file::{load_world_map, load_world_seed};
-use shared::world::{ServerWorldMap, WorldSeed};
 
 use crate::dispatcher;
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
@@ -89,7 +88,7 @@ pub fn init(socket: UdpSocket, world_name: String) {
         Ok(world) => world,
         Err(e) => {
             println!("Error loading world: {}. Generating a new one.", e);
-            ServerWorldMap::default()
+            panic!();
         }
     };
 
@@ -97,11 +96,14 @@ pub fn init(socket: UdpSocket, world_name: String) {
         Ok(seed) => seed,
         Err(e) => {
             println!("Error loading seed: {}. Generating a new one.", e);
-            WorldSeed(rand::random::<u32>())
+            panic!();
         }
     };
 
     // Insert world_map and seed into ressources
+
+    println!("!!!!! WORLDMAP NAME : {}", world_map.name);
+
     app.insert_resource(world_map);
     app.insert_resource(world_seed);
 

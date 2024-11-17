@@ -16,9 +16,11 @@ use shared::{
 
 use crate::{
     camera::BlockRaycastSet,
-    world::{self, ClientWorldMap, MaterialResource, QueuedEvents, WorldRenderRequestUpdateEvent},
+    world::{self, MaterialResource, QueuedEvents, WorldRenderRequestUpdateEvent},
     GameState,
 };
+
+use crate::world::ClientWorldMap;
 
 #[derive(Debug, Default, Resource)]
 pub struct QueuedMeshes {

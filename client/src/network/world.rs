@@ -1,3 +1,4 @@
+use crate::world::ClientChunk;
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
@@ -5,6 +6,8 @@ use shared::{
     messages::ServerToClientMessage,
     world::{block_to_chunk_coord, chunk_in_radius},
 };
+
+use crate::world::ClientWorldMap;
 
 use crate::{
     player::Player,
@@ -15,7 +18,7 @@ use super::api::send_network_action;
 
 pub fn update_world_from_network(
     client: &mut ResMut<RenetClient>,
-    world: &mut ResMut<crate::world::ClientWorldMap>,
+    world: &mut ResMut<ClientWorldMap>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     player_pos: Query<&Transform, With<Player>>,
     render_distance: Res<RenderDistance>,
@@ -46,7 +49,7 @@ pub fn update_world_from_network(
                     continue;
                 }
 
-                let chunk = crate::world::ClientChunk {
+                let chunk = ClientChunk {
                     map: chunk.map,
                     entity: {
                         if let Some(c) = world.map.get(&pos) {

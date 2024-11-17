@@ -12,6 +12,7 @@ mod splash_screen;
 mod ui;
 mod world;
 
+use crate::world::ClientWorldMap;
 use bevy::{
     prelude::*,
     render::{
@@ -80,7 +81,7 @@ fn main() {
         .insert_resource(Registry::<ItemData>::new())
         .insert_resource(SelectedWorld::default())
         // Declare the game state, whose starting value is determined by the `Default` trait
-        .insert_resource(world::ClientWorldMap { ..default() })
+        .insert_resource(ClientWorldMap { ..default() })
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

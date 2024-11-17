@@ -1,5 +1,6 @@
 use super::{MenuButtonAction, MenuState, ScrollingList};
-use crate::{constants::SAVE_PATH, world::ClientWorldMap, GameState, LoadWorldEvent};
+use crate::world::ClientWorldMap;
+use crate::{constants::SAVE_PATH, GameState, LoadWorldEvent};
 use bevy::prelude::Resource;
 use bevy::{
     asset::{AssetServer, Handle},

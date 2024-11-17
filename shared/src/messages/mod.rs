@@ -4,6 +4,7 @@ mod player;
 mod system;
 mod world;
 
+use crate::world::BlockId;
 pub use auth::*;
 use bevy::math::IVec3;
 pub use chat::*;
@@ -24,6 +25,10 @@ pub enum ClientToServerMessage {
         requested_chunks: Vec<IVec3>,
     },
     SaveWorldRequest(SaveWorldRequest),
+    BlockInteraction {
+        position: IVec3,
+        block_type: Option<BlockId>,
+    },
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

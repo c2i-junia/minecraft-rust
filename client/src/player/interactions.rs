@@ -1,5 +1,7 @@
 use crate::camera::*;
 use crate::constants::{CUBE_SIZE, INTERACTION_DISTANCE};
+use crate::network::api::send_network_action;
+use crate::network::api::NetworkAction;
 use crate::player::inventory::*;
 use crate::player::spawn::Player;
 use crate::ui::hotbar::Hotbar;
@@ -9,6 +11,7 @@ use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
+use bevy_renet::renet::RenetClient;
 use shared::world::{BlockData, ItemData, Registry};
 
 // Helper function to snap a Vec3 position to the grid
@@ -31,11 +34,13 @@ pub fn handle_block_interactions(
         Res<Registry<BlockData>>,
         Res<Registry<ItemData>>,
         ResMut<Inventory>,
+        ResMut<RenetClient>,
     ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (player_query, mut p_transform, raycast_source, hotbar) = queries;
-    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items, mut inventory) = resources;
+    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items, mut inventory, mut client) =
+        resources;
 
     let player = player_query.single().clone();
 
@@ -75,6 +80,15 @@ pub fn handle_block_interactions(
                     ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
                         global_block_coords,
                     ));
+
+                    // Send the bloc to the serveur to delete it
+                    send_network_action(
+                        &mut client,
+                        NetworkAction::BlockInteraction {
+                            position: global_block_coords,
+                            block_type: None, // None signify suppression
+                        },
+                    );
                 }
             }
         }
@@ -119,6 +133,15 @@ pub fn handle_block_interactions(
                         world_map.set_block(&block_pos, block);
 
                         ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(block_pos));
+
+                        // Send to server the bloc to add
+                        send_network_action(
+                            &mut client,
+                            NetworkAction::BlockInteraction {
+                                position: block_pos,
+                                block_type: Some(block), // Some signify adding
+                            },
+                        );
                     }
                 }
             }

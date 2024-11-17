@@ -5,6 +5,8 @@ use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
 use inventory::Inventory;
 
+use crate::world::ClientWorldMap;
+
 use crate::ui::debug::BlockDebugWireframeSettings;
 use crate::ui::pause::{render_pause_menu, setup_pause_menu};
 use crate::ui::reticle::spawn_reticle;

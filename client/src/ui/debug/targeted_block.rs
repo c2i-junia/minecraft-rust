@@ -1,8 +1,8 @@
+use crate::world::ClientWorldMap;
 use crate::{
     camera::BlockRaycastSet,
     constants::{CUBE_SIZE, INTERACTION_DISTANCE},
     player::Player,
-    world::ClientWorldMap,
 };
 use bevy::{math::NormedVectorSpace, prelude::*};
 use bevy_mod_raycast::prelude::RaycastSource;

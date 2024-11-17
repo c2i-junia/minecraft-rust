@@ -2,6 +2,7 @@ use bevy::{math::IVec3, prelude::ResMut};
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
 use shared::messages::{ChatMessage, ClientToServerMessage, SaveWorldRequest};
+use shared::world::BlockId;
 
 pub enum NetworkAction {
     ChatMessage(String),
@@ -11,6 +12,10 @@ pub enum NetworkAction {
         render_distance: u32,
     },
     SaveWorldRequest,
+    BlockInteraction {
+        position: IVec3,
+        block_type: Option<BlockId>, // None = suppression, Some = ajout
+    },
 }
 
 pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkAction) {
@@ -54,6 +59,19 @@ pub fn send_network_action(client: &mut ResMut<RenetClient>, action: NetworkActi
                 .expect("Failed to serialize SaveWorldRequest");
 
             client.send_message(DefaultChannel::ReliableOrdered, input_message);
+        }
+        NetworkAction::BlockInteraction {
+            position,
+            block_type,
+        } => {
+            let message = bincode::options()
+                .serialize(&ClientToServerMessage::BlockInteraction {
+                    position,
+                    block_type,
+                })
+                .unwrap();
+
+            client.send_message(DefaultChannel::ReliableOrdered, message);
         }
     }
 }

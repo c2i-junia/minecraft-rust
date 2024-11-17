@@ -1,10 +1,15 @@
 use bevy::prelude::*;
+use std::collections::HashSet;
+
+use bevy::math::IVec3;
+use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
-use shared::{
-    world::{block_to_chunk_coord, global_block_to_chunk_pos, to_local_pos, BlockId},
-    CHUNK_SIZE,
-};
-use std::collections::{HashMap, HashSet};
+use shared::world::block_to_chunk_coord;
+use shared::world::global_block_to_chunk_pos;
+use shared::world::to_local_pos;
+use shared::world::BlockId;
+use shared::CHUNK_SIZE;
+use std::collections::HashMap;
 
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {

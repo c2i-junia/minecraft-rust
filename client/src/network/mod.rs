@@ -1,4 +1,4 @@
-mod api;
+pub mod api;
 mod chat;
 mod cleanup;
 mod inputs;

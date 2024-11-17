@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use noise::{NoiseFn, Perlin};
-use rand::random;
 use shared::{world::*, CHUNK_SIZE};
 use std::collections::HashMap;
 
@@ -59,26 +58,26 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData
     chunk
 }
 
-pub fn setup_world(
-    mut commands: Commands,
-    mut world_map: ResMut<ServerWorldMap>,
-    r_blocks: Res<Registry<BlockData>>,
-) {
-    println!("Registry : {:?}", r_blocks);
-    let seed = random::<u32>();
-    commands.insert_resource(WorldSeed(seed));
-
-    println!("Generating a new world with seed: {}", seed);
-
-    for x in -1..=1 {
-        for y in 0..=8 {
-            for z in -1..=1 {
-                let pos = IVec3::new(x, y, z);
-
-                let chunk = generate_chunk(pos, seed, &r_blocks);
-                world_map.map.insert(pos, chunk);
-                world_map.chunks_to_update.push(pos);
-            }
-        }
-    }
-}
+// pub fn setup_world(
+//     mut commands: Commands,
+//     mut world_map: ResMut<ServerWorldMap>,
+//     r_blocks: Res<Registry<BlockData>>,
+// ) {
+//     println!("Registry : {:?}", r_blocks);
+//     let seed = random::<u32>();
+//     commands.insert_resource(WorldSeed(seed));
+//
+//     println!("Generating a new world with seed: {}", seed);
+//
+//     for x in -1..=1 {
+//         for y in 0..=8 {
+//             for z in -1..=1 {
+//                 let pos = IVec3::new(x, y, z);
+//
+//                 let chunk = generate_chunk(pos, seed, &r_blocks);
+//                 world_map.map.insert(pos, chunk);
+//                 world_map.chunks_to_update.push(pos);
+//             }
+//         }
+//     }
+// }
