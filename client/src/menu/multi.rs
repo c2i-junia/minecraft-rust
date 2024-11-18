@@ -1,5 +1,7 @@
 use super::{MenuButtonAction, MenuState, ScrollingList};
 use crate::constants::SERVER_LIST_SAVE_NAME;
+use crate::network::TargetServer;
+use crate::GameState;
 use bevy::prelude::*;
 use bevy::{
     asset::{AssetServer, Handle},
@@ -452,6 +454,9 @@ pub fn multiplayer_action(
     ),
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut target_server: ResMut<TargetServer>,
+    mut game_state: ResMut<NextState<GameState>>,
+    mut menu_state: ResMut<NextState<MenuState>>,
 ) {
     let (interaction_query, name_query, ip_query, mut list_query) = queries;
     if list_query.is_empty() {
@@ -483,6 +488,9 @@ pub fn multiplayer_action(
                         info!("Server : name={}, ip={}", srv.name, srv.ip);
 
                         // TODO : try to connect player with srv.ip provided
+                        target_server.address = Some(srv.ip.parse().unwrap());
+                        game_state.set(GameState::PreGameLoading);
+                        menu_state.set(MenuState::Disabled);
                     }
                 }
                 MultiplayerButtonAction::Delete(serv_entity) => {

@@ -92,7 +92,7 @@ fn server_update_system(
 
             match msg {
                 ClientToServerMessage::AuthRegisterRequest(auth_req) => {
-                    debug!("Auth request received {:?}", auth_req);
+                    info!("Auth request received {:?}", auth_req);
 
                     if lobby.players.values().any(|v| *v == auth_req.username) {
                         debug!("Username already in map: {}", &auth_req.username);
@@ -113,7 +113,7 @@ fn server_update_system(
                     server.send_message(client_id, DefaultChannel::ReliableOrdered, payload);
                 }
                 ClientToServerMessage::ChatMessage(chat_msg) => {
-                    debug!("Chat message received: {:?}", &chat_msg);
+                    info!("Chat message received: {:?}", &chat_msg);
                     chat_conversation.messages.push(chat_msg);
                     ev_chat.send(ChatMessageEvent);
                 }

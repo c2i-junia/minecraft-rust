@@ -35,9 +35,10 @@ pub fn add_base_netcode(app: &mut App) {
     // Setup the transport layer
     app.add_plugins(NetcodeClientPlugin);
 
+    // TODO: change username
     app.insert_resource(TargetServer {
         address: None,
-        username: None,
+        username: Some("Player".into()),
         session_token: None,
     });
 }
@@ -46,6 +47,11 @@ pub fn launch_local_server_system(
     mut target: ResMut<TargetServer>,
     selected_world: Res<SelectedWorld>,
 ) {
+    if target.address.is_some() {
+        debug!("Skipping launch local server");
+        return;
+    }
+
     if let Some(world_name) = &selected_world.name {
         info!("Launching local server with world: {}", world_name);
 
