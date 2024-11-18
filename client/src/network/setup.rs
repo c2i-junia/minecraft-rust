@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
+use shared::GameServerConfig;
 
 use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
@@ -61,7 +62,13 @@ pub fn launch_local_server_system(
 
         let world_name_clone = world_name.clone();
         thread::spawn(move || {
-            server::init(socket, world_name_clone);
+            server::init(
+                socket,
+                GameServerConfig {
+                    world_name: world_name_clone,
+                    is_solo: true,
+                },
+            );
         });
 
         target.address = Some(addr);

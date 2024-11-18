@@ -6,7 +6,10 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
-use shared::world::{load_blocks_items, BlockData, ItemData, Registry};
+use shared::{
+    world::{load_blocks_items, BlockData, ItemData, Registry},
+    GameServerConfig,
+};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -56,7 +59,7 @@ pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
     app.insert_resource(transport);
 }
 
-pub fn init(socket: UdpSocket, world_name: String) {
+pub fn init(socket: UdpSocket, config: GameServerConfig) {
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -74,6 +77,10 @@ pub fn init(socket: UdpSocket, world_name: String) {
         .add_systems(PreStartup, load_blocks_items);
 
     app.insert_resource(ServerLobby::default());
+
+    let world_name = &config.world_name.clone();
+
+    app.insert_resource(config);
 
     info!("Starting server on {}", socket.local_addr().unwrap());
 

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
-pub struct ShutdownOrder {
+pub struct ExitOrder {
     pub session_token: u128,
 }
 

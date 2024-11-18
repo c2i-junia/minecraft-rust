@@ -1,5 +1,6 @@
 use crate::init::acquire_socket_by_port;
 use clap::Parser;
+use shared::GameServerConfig;
 
 mod chat;
 mod dispatcher;
@@ -19,5 +20,12 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    init::init(acquire_socket_by_port(args.port), args.world);
+    let socket = acquire_socket_by_port(args.port);
+    init::init(
+        socket,
+        GameServerConfig {
+            world_name: args.world,
+            is_solo: false,
+        },
+    );
 }

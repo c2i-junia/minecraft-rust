@@ -10,6 +10,7 @@ use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
 use rand::random;
 use shared::messages::{AuthRegisterResponse, ChatConversation, ClientToServerMessage};
+use shared::GameServerConfig;
 
 #[derive(Resource)]
 pub struct BroadcastTimer {
@@ -56,6 +57,7 @@ fn server_update_system(
         EventWriter<SaveRequestEvent>,
         EventWriter<BlockInteractionEvent>,
     ),
+    config: Res<GameServerConfig>,
 ) {
     let (mut server, mut chat_conversation, mut lobby, tick) = resources;
     let (
@@ -117,11 +119,16 @@ fn server_update_system(
                     chat_conversation.messages.push(chat_msg);
                     ev_chat.send(ChatMessageEvent);
                 }
-                ClientToServerMessage::ShutdownOrder(order) => {
+                ClientToServerMessage::Exit(order) => {
                     debug!("Received shutdown order... {:?}", order);
                     // TODO: add permission checks
-                    debug!("Server is going down...");
-                    ev_app_exit.send(AppExit::Success);
+                    if config.is_solo {
+                        info!("Server is going down...");
+                        ev_app_exit.send(AppExit::Success);
+                    } else {
+                        info!("Player {:?} disconnected", client_id)
+                        // TODO: handle disconnect
+                    }
                 }
                 ClientToServerMessage::PlayerInputs(inputs) => {
                     handle_player_inputs(inputs, &tick);

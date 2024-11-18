@@ -17,7 +17,7 @@ pub use world::*;
 pub enum ClientToServerMessage {
     AuthRegisterRequest(AuthRegisterRequest),
     ChatMessage(ChatMessage),
-    ShutdownOrder(ShutdownOrder),
+    Exit(ExitOrder),
     PlayerInputs(PlayerInputs),
     WorldUpdateRequest {
         player_chunk_position: IVec3,
