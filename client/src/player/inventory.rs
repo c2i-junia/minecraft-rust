@@ -59,7 +59,13 @@ impl Inventory {
     /// Add items to stack at specified position\
     /// Stacks cannot exceed MAX_ITEM_STACK number of items\
     /// Returns number of items really added to the stack
-    pub fn add_item_to_stack(&mut self, stack: u32, mut nb: u32, id: ItemId, item_type: ItemType) -> u32 {
+    pub fn add_item_to_stack(
+        &mut self,
+        stack: u32,
+        mut nb: u32,
+        id: ItemId,
+        item_type: ItemType,
+    ) -> u32 {
         let item_option = self.inner.get(&stack);
         let mut new_item = ItemStack {
             item_id: id,

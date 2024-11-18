@@ -82,9 +82,7 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
     dispatcher::setup_resources_and_events(&mut app);
 
     // Load world from files
-    let world_map = match load_world_map(
-        &world_name,
-    ) {
+    let world_map = match load_world_map(&world_name) {
         Ok(world) => world,
         Err(e) => {
             error!("Error loading world: {}. Generating a new one.", e);

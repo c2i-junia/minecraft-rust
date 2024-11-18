@@ -37,8 +37,7 @@ pub fn handle_block_interactions(
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (player_query, mut p_transform, raycast_source, hotbar) = queries;
-    let (mut world_map, mouse_input, ui_mode, mut inventory, mut client) =
-        resources;
+    let (mut world_map, mouse_input, ui_mode, mut inventory, mut client) = resources;
 
     let player = player_query.single().clone();
 
@@ -74,7 +73,7 @@ pub fn handle_block_interactions(
                         inventory.add_item_to_inventory(ItemStack {
                             item_id,
                             item_type: ItemType::Block(block.id),
-                            nb
+                            nb,
                         });
                     }
 

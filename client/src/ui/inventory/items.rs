@@ -26,7 +26,7 @@ pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
     item_id: ItemId,
-    item_type: ItemType
+    item_type: ItemType,
 ) -> u32 {
     if nb == 0 {
         0
@@ -40,7 +40,11 @@ pub fn add_item_floating_stack(
         if nb > item_id.get_max_stack() {
             nb = item_id.get_max_stack();
         }
-        floating_stack.items = Some(ItemStack { item_id, item_type, nb });
+        floating_stack.items = Some(ItemStack {
+            item_id,
+            item_type,
+            nb,
+        });
         nb
     }
 }

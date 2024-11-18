@@ -153,9 +153,12 @@ pub fn render_inventory_hotbar(
                 let floating_items = floating_items.unwrap();
                 inventory.add_item_to_stack(
                     cell.id,
-                    remove_item_floating_stack(&mut floating_stack, stack.item_id.get_max_stack() - stack.nb),
+                    remove_item_floating_stack(
+                        &mut floating_stack,
+                        stack.item_id.get_max_stack() - stack.nb,
+                    ),
                     floating_items.item_id,
-                    stack.item_type
+                    stack.item_type,
                 );
             } else {
                 if stack_exists {
@@ -192,14 +195,24 @@ pub fn render_inventory_hotbar(
 
                         remove_item_floating_stack(
                             &mut floating_stack,
-                            inventory.add_item_to_stack(cell.id, 1, floating_items.item_id, floating_items.item_type),
+                            inventory.add_item_to_stack(
+                                cell.id,
+                                1,
+                                floating_items.item_id,
+                                floating_items.item_type,
+                            ),
                         );
                     }
                 } else if floating_items.nb > 0 {
                     // Get added nb of items into inventory -> removes them from floating stack
                     remove_item_floating_stack(
                         &mut floating_stack,
-                        inventory.add_item_to_stack(cell.id, 1, floating_items.item_id, floating_items.item_type),
+                        inventory.add_item_to_stack(
+                            cell.id,
+                            1,
+                            floating_items.item_id,
+                            floating_items.item_type,
+                        ),
                     );
                 }
             }
@@ -212,7 +225,7 @@ pub fn render_inventory_hotbar(
                     &mut floating_stack,
                     inventory.remove_item_from_stack(cell.id, nb),
                     stack.item_id,
-                    stack.item_type
+                    stack.item_type,
                 );
             }
         } else {

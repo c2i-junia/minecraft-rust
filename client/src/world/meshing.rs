@@ -5,8 +5,8 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
 };
-use shared::world::BlockId;
 use shared::world::to_global_pos;
+use shared::world::BlockId;
 
 #[derive(Copy, Clone)]
 struct UvCoords {

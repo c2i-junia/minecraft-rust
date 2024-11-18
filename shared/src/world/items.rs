@@ -4,12 +4,14 @@ use serde::{Deserialize, Serialize};
 
 use super::BlockId;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash,
+)]
 pub enum ItemId {
     Bedrock,
     Dirt,
     Grass,
-    Stone
+    Stone,
 }
 
 impl ItemId {
@@ -21,14 +23,12 @@ impl ItemId {
 /// Data associated with a given `BlockId`
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BlockData {
-    pub id: BlockId
+    pub id: BlockId,
 }
 
 impl BlockData {
-    pub fn new(id:BlockId) -> Self {
-        BlockData {
-            id
-        }
+    pub fn new(id: BlockId) -> Self {
+        BlockData { id }
     }
 }
 
