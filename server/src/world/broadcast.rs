@@ -6,7 +6,7 @@ use bevy_ecs::system::ResMut;
 use bevy_renet::renet::{ClientId, DefaultChannel, RenetServer};
 use bincode::Options;
 use shared::messages::{ServerToClientMessage, WorldUpdate};
-use shared::world::{chunk_in_radius, BlockData, Registry, ServerChunk, ServerWorldMap};
+use shared::world::{chunk_in_radius, ServerChunk, ServerWorldMap};
 use std::collections::HashMap;
 
 use shared::world::data::WorldSeed;
@@ -24,7 +24,6 @@ pub fn send_world_update(
     ticker: Res<TickCounter>,
     seed: Res<WorldSeed>,
     mut world_map: ResMut<ServerWorldMap>,
-    r_blocks: Res<Registry<BlockData>>,
     mut ev_update: EventReader<WorldUpdateRequestEvent>,
 ) {
     for event in ev_update.read() {
@@ -50,7 +49,7 @@ pub fn send_world_update(
                                 map.insert(*c, chunk.clone());
                             } else {
                                 // If chunk does not exists, generate it before transmitting it
-                                let chunk = generate_chunk(*c, seed.0, &r_blocks);
+                                let chunk = generate_chunk(*c, seed.0);
 
                                 // If chunk is empty, do not create it to prevent unnecessary data transmission
                                 if chunk.map.is_empty() {

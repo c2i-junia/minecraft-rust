@@ -10,13 +10,13 @@ use bevy::prelude::IVec3;
 use bevy::prelude::ResMut;
 use bevy::prelude::*;
 pub use broadcast::*;
-use shared::world::BlockId;
+use shared::world::BlockData;
 use shared::world::ServerWorldMap;
 
 #[derive(Event, Debug)]
 pub struct BlockInteractionEvent {
     pub position: IVec3,
-    pub block_type: Option<BlockId>, // None = suppression, Some = ajout
+    pub block_type: Option<BlockData>, // None = suppression, Some = ajout
 }
 
 pub fn handle_block_interactions(

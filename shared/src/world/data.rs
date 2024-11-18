@@ -1,23 +1,24 @@
 use crate::world::block_to_chunk_coord;
 use crate::world::global_block_to_chunk_pos;
 use crate::world::to_local_pos;
-use crate::world::BlockId;
 use crate::CHUNK_SIZE;
 use bevy::math::IVec3;
 use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use super::RegistryId;
+use super::BlockData;
+use super::ItemId;
+use super::ItemType;
 
-#[derive(Clone, Default, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct ServerChunk {
-    pub map: HashMap<IVec3, RegistryId>,
+    pub map: HashMap<IVec3, BlockData>,
     /// Timestamp marking the last update this chunk has received
     pub ts: u64,
 }
 
-#[derive(Resource, Default, Clone, Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Resource, Default, Clone, Serialize, Deserialize, Debug)]
 pub struct ServerWorldMap {
     pub name: String,
     pub map: HashMap<IVec3, ServerChunk>,
@@ -28,13 +29,14 @@ pub struct ServerWorldMap {
 pub struct WorldSeed(pub u32);
 
 #[derive(Debug, Clone, Serialize, Deserialize, Copy)]
-pub struct Item {
-    pub id: RegistryId,
+pub struct ItemStack {
+    pub item_id: ItemId,
+    pub item_type: ItemType,
     pub nb: u32,
 }
 
 impl ServerWorldMap {
-    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockId> {
+    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockData> {
         let x: i32 = position.x;
         let y: i32 = position.y;
         let z: i32 = position.z;
@@ -53,9 +55,9 @@ impl ServerWorldMap {
         }
     }
 
-    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<BlockId> {
-        let block: &BlockId = self.get_block_by_coordinates(global_block_pos)?;
-        let kind: BlockId = *block;
+    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<BlockData> {
+        let block: &BlockData = self.get_block_by_coordinates(global_block_pos)?;
+        let kind: BlockData = *block;
 
         let chunk_pos: IVec3 = global_block_to_chunk_pos(global_block_pos);
 
@@ -70,7 +72,7 @@ impl ServerWorldMap {
         Some(kind)
     }
 
-    pub fn set_block(&mut self, position: &IVec3, block: BlockId) {
+    pub fn set_block(&mut self, position: &IVec3, block: BlockData) {
         let x: i32 = position.x;
         let y: i32 = position.y;
         let z: i32 = position.z;

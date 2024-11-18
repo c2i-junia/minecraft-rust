@@ -1,39 +1,6 @@
-use rand::Rng;
-use shared::world::{BlockData, ItemData, ItemType, Registry, RegistryId};
+use shared::world::{ItemId, ItemStack, ItemType};
 
-use crate::constants::MAX_ITEM_STACK;
 use crate::ui::inventory::FloatingStack;
-
-pub type Item = shared::world::Item;
-
-pub fn item_from_block(block: &RegistryId, r_blocks: &Registry<BlockData>) -> Option<RegistryId> {
-    let pool = r_blocks.get(block).unwrap().drops.clone();
-    let total = pool
-        .clone()
-        .into_iter()
-        .reduce(|a, b| (a.0 + b.0, a.1))
-        .unwrap()
-        .0;
-    let mut nb = rand::thread_rng().gen_range(0..total);
-
-    // Choose drop item
-    for item in pool {
-        if nb < item.0 {
-            return Some(item.1);
-        } else {
-            nb -= item.0;
-        }
-    }
-    None
-}
-
-pub fn block_from_item(item: &RegistryId, r_items: &Registry<ItemData>) -> Option<RegistryId> {
-    if let ItemType::Block(block) = r_items.get(item).unwrap().kind {
-        Some(block)
-    } else {
-        None
-    }
-}
 
 /// Removes `nb` items from the floating stack\
 /// Cannot go lower than `0` items\
@@ -58,21 +25,22 @@ pub fn remove_item_floating_stack(floating_stack: &mut FloatingStack, nb: u32) -
 pub fn add_item_floating_stack(
     floating_stack: &mut FloatingStack,
     mut nb: u32,
-    item_type: RegistryId,
+    item_id: ItemId,
+    item_type: ItemType
 ) -> u32 {
     if nb == 0 {
         0
     } else if let Some(mut item) = floating_stack.items {
-        if nb + item.nb > MAX_ITEM_STACK {
-            nb = MAX_ITEM_STACK - item.nb;
+        if nb + item.nb > item.item_id.get_max_stack() {
+            nb = item.item_id.get_max_stack() - item.nb;
         }
         item.nb += nb;
         nb
     } else {
-        if nb > MAX_ITEM_STACK {
-            nb = MAX_ITEM_STACK;
+        if nb > item_id.get_max_stack() {
+            nb = item_id.get_max_stack();
         }
-        floating_stack.items = Some(Item { id: item_type, nb });
+        floating_stack.items = Some(ItemStack { item_id, item_type, nb });
         nb
     }
 }

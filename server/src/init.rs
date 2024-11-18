@@ -6,10 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
-use shared::{
-    world::{load_blocks_items, BlockData, ItemData, Registry},
-    GameServerConfig,
-};
+use shared::GameServerConfig;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -72,10 +69,6 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
     app.add_plugins(LogDiagnosticsPlugin::default());
     app.add_plugins(bevy::log::LogPlugin::default());
 
-    app.insert_resource(Registry::<BlockData>::new())
-        .insert_resource(Registry::<ItemData>::new())
-        .add_systems(PreStartup, load_blocks_items);
-
     app.insert_resource(ServerLobby::default());
 
     let world_name = &config.world_name.clone();
@@ -91,8 +84,6 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
     // Load world from files
     let world_map = match load_world_map(
         &world_name,
-        // app.world().resource::<Registry<ItemData>>(),
-        app.world().resource::<Registry<BlockData>>(),
     ) {
         Ok(world) => world,
         Err(e) => {

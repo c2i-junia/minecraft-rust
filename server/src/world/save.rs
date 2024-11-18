@@ -3,8 +3,8 @@ use bevy::prelude::*;
 use ron::ser::PrettyConfig;
 use shared::world::ServerWorldMap;
 use shared::world::WorldSeed;
-use shared::world::{get_game_folder, BlockData, Registry, RegistryId};
-use std::{collections::HashMap, fs::File, io::Write, path::Path};
+use shared::world::get_game_folder;
+use std::{fs::File, io::Write, path::Path};
 
 #[derive(Event)]
 pub struct SaveRequestEvent;
@@ -15,8 +15,6 @@ use crate::world::data::SAVE_PATH;
 pub fn save_world_system(
     world_map: ResMut<ServerWorldMap>,
     world_seed: Res<WorldSeed>, // Add `WorldSeed` as a resource here
-    // r_items: Res<Registry<ItemData>>,
-    r_blocks: Res<Registry<BlockData>>,
     // inventory: Res<Inventory>,
     // player_query: Query<&Transform>,
     mut event: EventReader<SaveRequestEvent>,
@@ -42,14 +40,6 @@ pub fn save_world_system(
             map: world_map.map.clone(),
             // player_pos: transform.translation,
             // inventory: inventory.inner.clone(),
-            id_to_block: {
-                // Create reversed map: BlockId -> String, to save
-                let mut rbmap: HashMap<RegistryId, String> = HashMap::new();
-                for (key, value) in r_blocks.iter_names() {
-                    rbmap.insert(*value, key.clone());
-                }
-                rbmap
-            },
             // id_to_item: {
             //     // Same for ItemId -> String
             //     let mut rimap: HashMap<RegistryId, String> = HashMap::new();

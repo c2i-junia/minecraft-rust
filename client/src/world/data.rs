@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use shared::world::BlockData;
 use std::collections::HashSet;
 
 use bevy::math::IVec3;
@@ -7,7 +8,6 @@ use serde::{Deserialize, Serialize};
 use shared::world::block_to_chunk_coord;
 use shared::world::global_block_to_chunk_pos;
 use shared::world::to_local_pos;
-use shared::world::BlockId;
 use shared::CHUNK_SIZE;
 use std::collections::HashMap;
 
@@ -17,9 +17,9 @@ pub enum GlobalMaterial {
     Moon,
 }
 
-#[derive(Clone, Default, Serialize, Deserialize, PartialEq, Eq, Debug)]
+#[derive(Clone, Default, Serialize, Deserialize, Debug)]
 pub struct ClientChunk {
-    pub map: HashMap<IVec3, BlockId>, // Maps block positions within a chunk to block IDs
+    pub map: HashMap<IVec3, BlockData>, // Maps block positions within a chunk to block IDs
     #[serde(skip)]
     pub entity: Option<Entity>,
 }
@@ -33,7 +33,7 @@ pub struct ClientWorldMap {
 }
 
 impl ClientWorldMap {
-    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockId> {
+    pub fn get_block_by_coordinates(&self, position: &IVec3) -> Option<&BlockData> {
         let x: i32 = position.x;
         let y: i32 = position.y;
         let z: i32 = position.z;
@@ -52,9 +52,9 @@ impl ClientWorldMap {
         }
     }
 
-    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<BlockId> {
-        let block: &BlockId = self.get_block_by_coordinates(global_block_pos)?;
-        let kind: BlockId = *block;
+    pub fn remove_block_by_coordinates(&mut self, global_block_pos: &IVec3) -> Option<BlockData> {
+        let block: &BlockData = self.get_block_by_coordinates(global_block_pos)?;
+        let kind: BlockData = *block;
 
         let chunk_pos: IVec3 = global_block_to_chunk_pos(global_block_pos);
 
@@ -69,7 +69,7 @@ impl ClientWorldMap {
         Some(kind)
     }
 
-    pub fn set_block(&mut self, position: &IVec3, block: BlockId) {
+    pub fn set_block(&mut self, position: &IVec3, block: BlockData) {
         let x: i32 = position.x;
         let y: i32 = position.y;
         let z: i32 = position.z;
