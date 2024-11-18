@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use bevy::utils::hashbrown::HashMap;
 use ron::de::from_str;
 use shared::world::data::{ServerWorldMap, WorldSeed};
@@ -24,7 +25,7 @@ pub fn load_world_map(
     let path: &Path = Path::new(&file_path);
 
     if !path.exists() {
-        println!(
+        info!(
             "World map file not found: {}. Returning default world.",
             file_path
         );
@@ -113,7 +114,7 @@ pub fn load_world_seed(file_name: &str) -> Result<WorldSeed, Box<dyn std::error:
     let path: &Path = Path::new(&file_path);
 
     if !path.exists() {
-        println!(
+        info!(
             "World seed file not found: {}. Generating a random seed.",
             file_path
         );

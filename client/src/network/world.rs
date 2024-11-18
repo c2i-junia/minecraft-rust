@@ -36,12 +36,12 @@ pub fn update_world_from_network(
             .deserialize::<ServerToClientMessage>(&bytes)
             .unwrap();
         if let ServerToClientMessage::WorldUpdate(world_update) = msg {
-            println!(
+            trace!(
                 "Received world update, {} chunks received",
                 world_update.new_map.len()
             );
 
-            println!("Chunks positions : {:?}", world_update.new_map.keys());
+            trace!("Chunks positions : {:?}", world_update.new_map.keys());
 
             for (pos, chunk) in world_update.new_map {
                 // If the chunk is not in render distance range or is empty, do not consider it

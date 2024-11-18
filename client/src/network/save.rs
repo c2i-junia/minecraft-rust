@@ -5,5 +5,5 @@ use bevy_renet::renet::RenetClient;
 // Send save request to server
 pub fn send_save_request_to_server(client: &mut ResMut<RenetClient>) {
     send_network_action(client, NetworkAction::SaveWorldRequest);
-    println!("Save request sent to server.");
+    debug!("Save request sent to server.");
 }

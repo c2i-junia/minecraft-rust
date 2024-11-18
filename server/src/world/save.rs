@@ -30,14 +30,10 @@ pub fn save_world_system(
 
     // If a save was requested by the user
     if save_requested {
-        println!(
-            "!!!! une save est requested, worldmap name : {}",
-            world_map.name
-        );
         // let transform = match player_query.iter().next() {
         //     Some(transform) => transform,
         //     None => {
-        //         eprintln!("No player transform found!");
+        //         error!("No player transform found!");
         //         return;
         //     }
         // };
@@ -73,9 +69,9 @@ pub fn save_world_system(
                 world_map.name
             ),
         ) {
-            eprintln!("Failed to save world: {}", e);
+            error!("Failed to save world: {}", e);
         } else {
-            println!("World saved successfully! Name: {}", world_map.name);
+            info!("World saved successfully! Name: {}", world_map.name);
         }
 
         if let Err(e) = save_world_seed(
@@ -86,9 +82,9 @@ pub fn save_world_system(
                 world_map.name
             ),
         ) {
-            eprintln!("Failed to save world seed: {}", e);
+            error!("Failed to save world seed: {}", e);
         } else {
-            println!("World seed saved successfully!");
+            info!("World seed saved successfully!");
         }
     }
 }
@@ -103,7 +99,7 @@ pub fn save_world_map(save: &Save, file_path: &str) -> Result<(), Box<dyn std::e
     let path = Path::new(file_path);
     let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
-    println!("ServerWorldMap saved to {}", file_path);
+    info!("ServerWorldMap saved to {}", file_path);
     Ok(())
 }
 
@@ -119,6 +115,6 @@ pub fn save_world_seed(
     let path = Path::new(file_path);
     let mut file = File::create(path)?;
     file.write_all(serialized.as_bytes())?;
-    println!("WorldSeed saved to {}", file_path);
+    info!("WorldSeed saved to {}", file_path);
     Ok(())
 }

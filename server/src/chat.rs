@@ -21,14 +21,14 @@ pub fn broadcast_chat_messages(
 ) {
     timer.timer.tick(time.delta());
     if timer.timer.finished() || !ev_chat.is_empty() {
-        println!(
+        trace!(
             "Broadcasting chat history, {} messages",
             chat_messages.messages.len()
         );
         let cm: ChatConversation = chat_messages.into_inner().clone();
         let serialized = bincode::options().serialize(&cm).unwrap();
-        println!("world {:?}", cm);
-        println!("serialized: {:?}", serialized);
+        trace!("world {:?}", cm);
+        trace!("serialized: {:?}", serialized);
         server.broadcast_message(DefaultChannel::ReliableOrdered, serialized);
         ev_chat.clear();
         timer.timer.reset();

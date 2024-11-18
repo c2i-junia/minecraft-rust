@@ -1,14 +1,13 @@
-use std::collections::HashMap;
-
 use crate::init::TickCounter;
 use crate::world::generation::generate_chunk;
 use bevy::math::IVec3;
-use bevy_ecs::prelude::*;
+use bevy::prelude::*;
 use bevy_ecs::system::ResMut;
 use bevy_renet::renet::{ClientId, DefaultChannel, RenetServer};
 use bincode::Options;
 use shared::messages::{ServerToClientMessage, WorldUpdate};
 use shared::world::{chunk_in_radius, BlockData, Registry, ServerChunk, ServerWorldMap};
+use std::collections::HashMap;
 
 use shared::world::data::WorldSeed;
 
@@ -63,7 +62,7 @@ pub fn send_world_update(
                             }
                         }
                     }
-                    println!("Update event yippeee :D    len={}", map.len());
+                    trace!("Update event yippeee :D    len={}", map.len());
                     map
                 },
             }))
@@ -81,7 +80,7 @@ pub fn broadcast_world_state(
     if ticker.tick % 60 != 0 {
         return;
     }
-    println!("Broadcast world update");
+    trace!("Broadcast world update");
     let payload = bincode::options()
         .serialize(&ServerToClientMessage::WorldUpdate(to_network(
             &mut world_map,

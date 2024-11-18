@@ -1,4 +1,5 @@
 use crate::world::get_game_folder;
+use bevy::prelude::*;
 use std::collections::hash_map::Iter;
 use std::fs;
 use std::{collections::HashMap, fmt::Debug};
@@ -175,7 +176,7 @@ pub fn load_blocks_items(
     mut item_r: ResMut<Registry<ItemData>>,
     mut blocks_r: ResMut<Registry<BlockData>>,
 ) {
-    println!("Begin items & blocks loading...");
+    debug!("Begin items & blocks loading...");
 
     // First, load all items
     for p in fs::read_dir(get_game_folder().join("data/items"))
@@ -231,9 +232,9 @@ pub fn load_blocks_items(
         item_r.edit(*id, item);
     }
 
-    println!("--------------------------------------------");
-    println!("Final items :  {:?}\n\n{:?}", blocks_r, item_r);
-    println!("--------------------------------------------");
+    debug!("--------------------------------------------");
+    debug!("Final items :  {:?}\n\n{:?}", blocks_r, item_r);
+    debug!("--------------------------------------------");
 }
 
 pub enum BlockType {

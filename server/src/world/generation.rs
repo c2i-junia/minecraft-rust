@@ -63,11 +63,11 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData
 //     mut world_map: ResMut<ServerWorldMap>,
 //     r_blocks: Res<Registry<BlockData>>,
 // ) {
-//     println!("Registry : {:?}", r_blocks);
+//     debug!("Registry : {:?}", r_blocks);
 //     let seed = random::<u32>();
 //     commands.insert_resource(WorldSeed(seed));
 //
-//     println!("Generating a new world with seed: {}", seed);
+//     debug!("Generating a new world with seed: {}", seed);
 //
 //     for x in -1..=1 {
 //         for y in 0..=8 {

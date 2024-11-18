@@ -72,7 +72,7 @@ fn update_chunk(
         let ch = world_map.map.get_mut(chunk_pos).unwrap();
         ch.entity = Some(new_entity);
     }
-    // println!("ClientChunk updated : len={}", chunk.map.len());
+    // debug!("ClientChunk updated : len={}", chunk.map.len());
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -107,7 +107,7 @@ pub fn world_render_system(
 
             let mut chunk_meshes: HashMap<IVec3, Mesh> = HashMap::new();
             for event in &events {
-                //println!("world_render_system event {:?}", event);
+                //debug!("world_render_system event {:?}", event);
 
                 let target_chunk_pos = match event {
                     WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
@@ -147,10 +147,7 @@ pub fn world_render_system(
                 }
             }
 
-            println!(
-                "============= Meshing done in {:?} ",
-                Instant::now() - start
-            );
+            trace!("Meshing done in {:?} ", Instant::now() - start);
             chunk_meshes
         });
 

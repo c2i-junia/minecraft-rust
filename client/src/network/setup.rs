@@ -47,11 +47,11 @@ pub fn launch_local_server_system(
     selected_world: Res<SelectedWorld>,
 ) {
     if let Some(world_name) = &selected_world.name {
-        println!("Launching local server with world: {}", world_name);
+        info!("Launching local server with world: {}", world_name);
 
         let socket = server::acquire_local_ephemeral_udp_socket();
         let addr = socket.local_addr().unwrap();
-        println!("Obtained UDP socket: {}", addr);
+        debug!("Obtained UDP socket: {}", addr);
 
         let world_name_clone = world_name.clone();
         thread::spawn(move || {
@@ -60,7 +60,7 @@ pub fn launch_local_server_system(
 
         target.address = Some(addr);
     } else {
-        println!("Error: No world selected. Unable to launch the server.");
+        error!("Error: No world selected. Unable to launch the server.");
     }
 }
 
@@ -74,7 +74,7 @@ fn poll_reliable_ordered_messages(
             Ok(data) => {
                 update_cached_chat_state(chat_state, data);
             }
-            Err(e) => println!("err {}", e),
+            Err(e) => error!("err {}", e),
         };
     }
 }
@@ -133,13 +133,13 @@ pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>)
 
         world.insert_resource(CachedChatConversation { ..default() });
 
-        println!("Network subsystem initialized");
+        info!("Network subsystem initialized");
     })
 }
 
 pub fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportError>) {
     for e in renet_error.read() {
-        println!("network error: {}", e);
+        error!("network error: {}", e);
     }
 }
 
@@ -149,14 +149,14 @@ pub fn establish_authenticated_connection_to_server(
     mut game_state: ResMut<NextState<GameState>>,
 ) {
     if target.session_token.is_some() {
-        println!(
+        info!(
             "Successfully acquired a session token as {}",
             &target.username.clone().unwrap()
         );
         game_state.set(GameState::Game);
         return;
     }
-    println!("trying to connect...");
+    debug!("trying to connect...");
 
     let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
         username: "Player".into(),
@@ -170,7 +170,7 @@ pub fn establish_authenticated_connection_to_server(
         if let Ok(message) = message {
             target.username = Some(message.username);
             target.session_token = Some(message.session_token);
-            println!("Connected! {:?}", target);
+            info!("Connected! {:?}", target);
         }
     }
 }

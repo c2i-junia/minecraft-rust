@@ -2,6 +2,7 @@ use super::{MenuButtonAction, MenuState, ScrollingList};
 use crate::world::ClientWorldMap;
 use crate::{constants::SAVE_PATH, GameState, LoadWorldEvent};
 use bevy::prelude::Resource;
+use bevy::prelude::*;
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -235,7 +236,7 @@ pub fn list_worlds(
     let save_path: PathBuf = get_game_folder().join(SAVE_PATH);
     let path: &Path = save_path.as_path();
     if !fs::exists(path).unwrap() && fs::create_dir_all(path).is_ok() {
-        println!("Successfully created the saves folder : {}", path.display());
+        info!("Successfully created the saves folder : {}", path.display());
     }
 
     let paths = fs::read_dir(path).unwrap();
@@ -264,7 +265,7 @@ fn add_world_item(
     list_entity: Entity,
     world_map: &mut ClientWorldMap,
 ) {
-    println!(
+    info!(
         "Adding world to list : name = {:?}, entity={:?}",
         name, list_entity
     );
@@ -426,7 +427,7 @@ pub fn solo_action(
                 MultiplayerButtonAction::Delete(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
                         if let Err(e) = delete_save_files(&world.name) {
-                            println!("Error while deleting save files: {}", e);
+                            error!("Error while deleting save files: {}", e);
                         }
                         list.worlds.remove(&world_entity);
                     }
@@ -445,11 +446,11 @@ pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
         get_game_folder().join(SAVE_PATH).display(),
         world_name
     )) {
-        Ok(_) => println!("Successfully deleted world_save.ron"),
+        Ok(_) => info!("Successfully deleted world_save.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-            println!("world_save.ron not found, skipping.")
+            error!("world_save.ron not found, skipping.")
         }
-        Err(e) => println!("Failed to delete world_save.ron: {}", e),
+        Err(e) => error!("Failed to delete world_save.ron: {}", e),
     }
 
     // Delete `world_seed.ron`
@@ -458,11 +459,11 @@ pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
         get_game_folder().join(SAVE_PATH).display(),
         world_name
     )) {
-        Ok(_) => println!("Successfully deleted world_seed.ron"),
+        Ok(_) => info!("Successfully deleted world_seed.ron"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-            println!("world_seed.ron not found, skipping.")
+            error!("world_seed.ron not found, skipping.")
         }
-        Err(e) => println!("Failed to delete world_seed.ron: {}", e),
+        Err(e) => error!("Failed to delete world_seed.ron: {}", e),
     }
 
     Ok(())

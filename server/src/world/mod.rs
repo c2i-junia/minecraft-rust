@@ -8,6 +8,7 @@ use bevy::prelude::Event;
 use bevy::prelude::EventReader;
 use bevy::prelude::IVec3;
 use bevy::prelude::ResMut;
+use bevy::prelude::*;
 pub use broadcast::*;
 use shared::world::BlockId;
 use shared::world::ServerWorldMap;
@@ -27,12 +28,12 @@ pub fn handle_block_interactions(
             Some(block) => {
                 // Ajouter un bloc
                 world_map.set_block(&event.position, block.clone());
-                println!("Block added at {:?}: {:?}", event.position, block);
+                debug!("Block added at {:?}: {:?}", event.position, block);
             }
             None => {
                 // Supprimer un bloc
                 world_map.remove_block_by_coordinates(&event.position);
-                println!("Block removed at {:?}", event.position);
+                info!("Block removed at {:?}", event.position);
             }
         }
     }

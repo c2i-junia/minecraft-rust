@@ -1,4 +1,5 @@
 use crate::{constants::BINDS_PATH, input::data::GameAction, KeyMap};
+use bevy::prelude::*;
 use bevy::{
     input::ButtonInput,
     prelude::{KeyCode, Res},
@@ -121,17 +122,17 @@ pub fn save_keybindings(key_map: Res<KeyMap>) {
         match File::create(&binds_path) {
             Ok(mut file) => {
                 if let Err(e) = file.write_all(serialized.as_bytes()) {
-                    eprintln!("Error while saving keybindings to {:?}: {}", binds_path, e);
+                    error!("Error while saving keybindings to {:?}: {}", binds_path, e);
                 } else {
-                    println!("Keybindings successfully saved to {:?}", binds_path);
+                    info!("Keybindings successfully saved to {:?}", binds_path);
                 }
             }
-            Err(e) => eprintln!(
+            Err(e) => error!(
                 "Failed to create keybindings file at {:?}: {}",
                 binds_path, e
             ),
         }
     } else {
-        eprintln!("Failed to serialize keybindings");
+        error!("Failed to serialize keybindings");
     }
 }

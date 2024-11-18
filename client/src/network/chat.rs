@@ -25,5 +25,5 @@ pub fn update_cached_chat_state(
     chat_state.last_update = now;
     chat_state.data = Some(new_state);
 
-    println!("new CachedChatConversation: {:?}", &chat_state);
+    trace!("new CachedChatConversation: {:?}", &chat_state);
 }

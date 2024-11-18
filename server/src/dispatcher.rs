@@ -69,13 +69,13 @@ fn server_update_system(
     ) = event_writers;
 
     for event in server_events.read() {
-        println!("event received");
+        debug!("event received");
         match event {
             ServerEvent::ClientConnected { client_id } => {
-                println!("Player {} connected.", client_id);
+                info!("Player {} connected.", client_id);
             }
             ServerEvent::ClientDisconnected { client_id, reason } => {
-                println!("Player {} disconnected: {}", client_id, reason);
+                info!("Player {} disconnected: {}", client_id, reason);
             }
         }
     }
@@ -83,23 +83,23 @@ fn server_update_system(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, DefaultChannel::ReliableOrdered)
         {
-            //println!("msg received {:?}", &message);
+            //debug!("msg received {:?}", &message);
 
             let msg = bincode::options().deserialize::<ClientToServerMessage>(&message);
             let msg = match msg {
                 Ok(msg) => msg,
                 Err(e) => {
-                    println!("Failed to parse incoming message: {}", e);
+                    error!("Failed to parse incoming message: {}", e);
                     continue;
                 }
             };
 
             match msg {
                 ClientToServerMessage::AuthRegisterRequest(auth_req) => {
-                    println!("Auth request received {:?}", auth_req);
+                    debug!("Auth request received {:?}", auth_req);
 
                     if lobby.players.values().any(|v| *v == auth_req.username) {
-                        println!("Username already in map: {}", &auth_req.username);
+                        debug!("Username already in map: {}", &auth_req.username);
                         return;
                     }
 
@@ -107,7 +107,7 @@ fn server_update_system(
                     lobby
                         .players
                         .insert(new_session_token, auth_req.username.clone());
-                    println!("New lobby : {:?}", lobby);
+                    debug!("New lobby : {:?}", lobby);
                     // TODO: add cleanup system if no heartbeat
                     let msg = &AuthRegisterResponse {
                         username: auth_req.username,
@@ -117,21 +117,21 @@ fn server_update_system(
                     server.send_message(client_id, DefaultChannel::ReliableOrdered, payload);
                 }
                 ClientToServerMessage::ChatMessage(chat_msg) => {
-                    println!("Chat message received: {:?}", &chat_msg);
+                    debug!("Chat message received: {:?}", &chat_msg);
                     chat_conversation.messages.push(chat_msg);
                     ev_chat.send(ChatMessageEvent);
                 }
                 ClientToServerMessage::ShutdownOrder(order) => {
-                    println!("Received shutdown order... {:?}", order);
+                    debug!("Received shutdown order... {:?}", order);
                     // TODO: add permission checks
-                    println!("Server is going down...");
+                    debug!("Server is going down...");
                     ev_app_exit.send(AppExit::Success);
                 }
                 ClientToServerMessage::PlayerInputs(inputs) => {
                     handle_player_inputs(inputs, &tick);
                 }
                 ClientToServerMessage::SaveWorldRequest(save_req) => {
-                    println!(
+                    debug!(
                         "Save request received from client with session token: {}",
                         save_req.session_token
                     );
@@ -143,6 +143,13 @@ fn server_update_system(
                     requested_chunks,
                     render_distance,
                 } => {
+                    debug!(
+                        "Received WorldUpdateRequest: client_id = {}, player_chunk_position = {:?}, render_distance = {}, requested_chunks = {}",
+                        client_id,
+                        player_chunk_position,
+                        render_distance,
+                        requested_chunks.len(),
+                    );
                     ev_world_update_request.send(WorldUpdateRequestEvent {
                         render_distance,
                         client: client_id,
@@ -154,7 +161,7 @@ fn server_update_system(
                     position,
                     block_type,
                 } => {
-                    println!(
+                    debug!(
                         "Block interaction received at {:?}: {:?}",
                         position, block_type
                     );

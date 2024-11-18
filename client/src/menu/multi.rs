@@ -1,5 +1,6 @@
 use super::{MenuButtonAction, MenuState, ScrollingList};
 use crate::constants::SERVER_LIST_SAVE_NAME;
+use bevy::prelude::*;
 use bevy::{
     asset::{AssetServer, Handle},
     color::Color,
@@ -248,7 +249,7 @@ pub fn add_server_item(
     list: &mut ServerList,
     list_entity: Entity,
 ) {
-    println!("Adding server to list : name = {:?}, ip = {:?}", name, ip);
+    info!("Adding server to list : name = {:?}, ip = {:?}", name, ip);
 
     let btn_style = Style {
         display: Display::Flex,
@@ -377,20 +378,20 @@ pub fn load_server_list(
 
     // If no server list save, returns
     if !fs::exists(path).unwrap() {
-        println!("No server list found at {:?}", path);
+        error!("No server list found at {:?}", path);
         return;
     }
 
     let txt = fs::read_to_string(path);
     if txt.is_err() {
-        eprintln!("Failed to read server list from {:?}", path);
+        error!("Failed to read server list from {:?}", path);
         return;
     }
     let txt = txt.unwrap();
 
     let servers = from_str::<Vec<ServerItem>>(&txt);
     if servers.is_err() {
-        eprintln!("Failed to parse server list from {:?}", path);
+        error!("Failed to parse server list from {:?}", path);
         return;
     }
     let servers = servers.unwrap();
@@ -427,18 +428,18 @@ pub fn save_server_list(list: Query<&ServerList>) {
             match fs::File::create(&save_path) {
                 Ok(mut file) => {
                     if file.write_all(data.as_bytes()).is_ok() {
-                        println!("Server list saved to {:?}", save_path);
+                        info!("Server list saved to {:?}", save_path);
                     } else {
-                        eprintln!("Failed to write server list to {:?}", save_path);
+                        error!("Failed to write server list to {:?}", save_path);
                     }
                 }
-                Err(e) => eprintln!(
+                Err(e) => error!(
                     "Failed to create server list file at {:?}: {}",
                     save_path, e
                 ),
             }
         }
-        Err(e) => eprintln!("Failed to serialize server list: {}", e),
+        Err(e) => error!("Failed to serialize server list: {}", e),
     }
 }
 
@@ -479,17 +480,17 @@ pub fn multiplayer_action(
                 }
                 MultiplayerButtonAction::Connect(serv_entity) => {
                     if let Some(srv) = list.servers.get(&serv_entity) {
-                        println!("Server : name={}, ip={}", srv.name, srv.ip);
+                        info!("Server : name={}, ip={}", srv.name, srv.ip);
 
                         // TODO : try to connect player with srv.ip provided
                     }
                 }
                 MultiplayerButtonAction::Delete(serv_entity) => {
-                    println!("Old list : {:?}", list.servers);
+                    debug!("Old list : {:?}", list.servers);
                     commands.entity(entity).remove_children(&[serv_entity]);
                     commands.entity(serv_entity).despawn_recursive();
                     list.servers.remove(&serv_entity);
-                    println!("New list : {:?}", list.servers);
+                    debug!("New list : {:?}", list.servers);
                 }
             }
         }

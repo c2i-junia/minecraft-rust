@@ -39,9 +39,9 @@ use crate::network::{
 use crate::{DisplayQuality, GameState, Volume};
 
 fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
-    println!("Entering GameState::Game");
-    println!("Current Display Quality: {:?}", *display_quality);
-    println!("Current Volume: {:?}", *volume);
+    info!("Entering GameState::Game");
+    info!("Current Display Quality: {:?}", *display_quality);
+    info!("Current Volume: {:?}", *volume);
 }
 
 // This plugin will contain the game. In this case, it's just be a screen that will

@@ -57,7 +57,7 @@ pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
 }
 
 pub fn init(socket: UdpSocket, world_name: String) {
-    println!("Starting server on {}", socket.local_addr().unwrap());
+    info!("Starting server on {}", socket.local_addr().unwrap());
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -87,7 +87,7 @@ pub fn init(socket: UdpSocket, world_name: String) {
     ) {
         Ok(world) => world,
         Err(e) => {
-            println!("Error loading world: {}. Generating a new one.", e);
+            error!("Error loading world: {}. Generating a new one.", e);
             panic!();
         }
     };
@@ -95,14 +95,12 @@ pub fn init(socket: UdpSocket, world_name: String) {
     let world_seed = match load_world_seed(&world_name) {
         Ok(seed) => seed,
         Err(e) => {
-            println!("Error loading seed: {}. Generating a new one.", e);
+            error!("Error loading seed: {}. Generating a new one.", e);
             panic!();
         }
     };
 
     // Insert world_map and seed into ressources
-
-    println!("!!!!! WORLDMAP NAME : {}", world_map.name);
 
     app.insert_resource(world_map);
     app.insert_resource(world_seed);
@@ -140,6 +138,6 @@ fn heartbeat_system(
     ticker.tick += 1;
     timer.timer.tick(time.delta());
     if timer.timer.finished() {
-        println!("Server heartbeat, tick={}", ticker.tick);
+        trace!("Server heartbeat, tick={}", ticker.tick);
     }
 }

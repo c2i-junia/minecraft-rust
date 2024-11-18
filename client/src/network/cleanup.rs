@@ -8,7 +8,7 @@ pub fn terminate_server_connection(
     mut client: ResMut<RenetClient>,
     mut target: ResMut<TargetServer>,
 ) {
-    println!("Terminating server connection");
+    info!("Terminating server connection");
     let order = ClientToServerMessage::ShutdownOrder(ShutdownOrder {
         session_token: target.session_token.unwrap(),
     });
