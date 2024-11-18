@@ -411,7 +411,14 @@ pub fn load_server_list(
 }
 
 pub fn save_server_list(list: Query<&ServerList>) {
-    let list = list.single();
+    let list = list.get_single();
+    let list = match list {
+        Ok(v) => v,
+        Err(_) => {
+            warn!("save_server_list: list is not single");
+            return;
+        }
+    };
 
     // Chemin complet du fichier de sauvegarde
     let save_path: PathBuf = get_game_folder().join(SERVER_LIST_SAVE_NAME);
