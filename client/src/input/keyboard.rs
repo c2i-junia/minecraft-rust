@@ -105,6 +105,7 @@ pub fn get_bindings() -> KeyMap {
             map.insert(GameAction::OpenChat, vec![KeyCode::KeyT]);
             map.insert(GameAction::RenderDistanceMinus, vec![KeyCode::KeyO]);
             map.insert(GameAction::RenderDistancePlus, vec![KeyCode::KeyP]);
+            map.insert(GameAction::ReloadChunks, vec![KeyCode::KeyR]);
             map
         },
     }
