@@ -1,56 +1,78 @@
 # minecraft-rust
 
-A Minecraft game clone written in Rust, using the Bevy game engine.
+Minecraft game clone written in Rust, using the Bevy game engine.
+
+<details open>
+  <summary>game preview :</summary>
+  <img src="https://github.com/eztaah/minecraft-rust/blob/main/docs/gameplay.gif" alt="Aperçu du projet" width="500">
+</details>
+
+<br>
+
+## Table of contents
+
+- [Controls](#controls)
+
+- [Building from source](#building-from-source)
+
+- [Contributing](#contributing)
 
 <br>
 
 ## Controls
 
-In world : 
+#### Movement
+| Action             | Key               |
+|--------------------|-------------------|
+| Jump               | `Space`           |
+| Strafe Left        | `A` / `Arrow Left`|
+| Strafe Right       | `D` / `Arrow Right` |
+| Walk Backward      | `S` / `Arrow Down` |
+| Walk Forward       | `W` / `Arrow Up`  |
+| Toggle Fly Mode    | `F`               |
+| Fly Up             | `Space`           |
+| Fly Down           | `Left Shift`      |
 
-| Action | Bind |
-|----------------|----|
-| Move Forward        | W / Arrow Up |
-| Move Backward       | S / Arrow Down |
-| Move Left           | A / Arrow Left |
-| Move Right          | D / Arrow Right |
-| Jump                | Space |
-| Inventory           | E |
-| Toggle Fly Mode     | F |
-| Fly Up              | Space (only in Fly Mode) |
-| Fly Down            | Left Shift (only in Fly Mode) |
-| Toggle FPS Display  | F3 |
-| Toggle View Mode    | F5 (First-Person / Third-Person) |
-| Toggle Chunk Debug  | F4 |
-| Toggle Block Debug  | F6 |
-| Decrease Render Distance  | O |
-| Increase Render Distance  | P |
-| Exit Game           | Escape |
+#### Gameplay
+| Action             | Key               |
+|--------------------|-------------------|
+| Destroy Block      | `Left Mouse Button` |
+| Place Block        | `Right Mouse Button` |
 
-In inventory :
+#### Inventory
+| Action                        | Key/Mouse                        |
+|-------------------------------|-----------------------------------|
+| Open/Close Inventory          | `E`                              |
+| Pick up stack                 | `Left Click`                     |
+| Pick up half of stack         | `Right Click` (with empty mouse) |
+| Deposit 1 item                | `Right Click` (over valid stack) |
+| Deposit MAX items             | `Left Click` (over valid stack)  |
+| Exchange stacks               | `Left Click` (over a different stack or full valid stack) |
 
-| Action | Bind |
-| --- | --- |
-| Pick up stack | Left click |
-| Pick up half of stack | Right click (with empty mouse) |
-| Deposit 1 item | Right click (holding items, over valid stack) |
-| Deposit MAX items | Left click (holding items, over valid stack) |
-| Exchange stacks | Left click (holding items, over different stack / already full valid stack) |
+> *A "valid stack" refers to a stack in the inventory that is either empty or contains the same items as the mouse cursor.*
 
-> [!NOTE]
-> In this context, "valid stack" means a stack in inventory, either empty or holding the same items as the mouse
+#### Miscellaneous
+| Action                        | Key               |
+|-------------------------------|-------------------|
+| Toggle FPS Display            | `F3`             |
+| Toggle Perspective            | `F5`             |
+| Toggle Chunk Debug            | `F4`             |
+| Toggle Block Debug            | `F6`             |
+| Decrease Render Distance      | `O`              |
+| Increase Render Distance      | `P`              |
+| Exit Game                     | `Escape`         |
 
 <br>
 
-## Getting Started
+## Building from source
 
 ### Prerequisites
 
 To run this project, you need to have the following installed:
 
-- **Rust** (Stable toolchain)
+- **Rust** (Stable toolchain) (This can be installed in several ways depending on your setup, the most standard way is to use rustup.rs.)
+- **Make**
 
-This can be installed in several ways depending on your setup, the most standard way is to use rustup.rs.
 
 ### Running the Project
 
@@ -60,7 +82,7 @@ Note: the first compilation will be slow depending on your hardware, next compil
 
 ```sh
 # Clone the repository
-git clone https://github.com/your-repo/minecraft-rust.git
+git clone https://github.com/c2i-junia/minecraft-rust
 
 # Navigate to the project directory
 cd minecraft-rust
