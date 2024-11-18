@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
+use rand::Rng;
 use shared::GameServerConfig;
 
 use crate::menu::solo::SelectedWorld;
@@ -20,7 +21,7 @@ use std::{net::UdpSocket, thread, time::SystemTime};
 
 use crate::world::ClientWorldMap;
 
-#[derive(Resource, Debug)]
+#[derive(Resource, Debug, Clone)]
 pub struct TargetServer {
     pub address: Option<SocketAddr>,
     pub username: Option<String>,
@@ -121,6 +122,9 @@ pub fn poll_network_messages(
 }
 
 pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {
+    let mut rng = rand::thread_rng();
+    let random_client_id: u64 = rng.gen();
+
     let addr = target.address.unwrap();
     commands.add(move |world: &mut World| {
         world.remove_resource::<RenetClient>();
@@ -132,7 +136,7 @@ pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>)
 
         let authentication = ClientAuthentication::Unsecure {
             server_addr: addr,
-            client_id: 0,
+            client_id: random_client_id,
             user_data: None,
             protocol_id: shared::PROTOCOL_ID,
         };
@@ -171,8 +175,10 @@ pub fn establish_authenticated_connection_to_server(
     }
     debug!("trying to connect... {:?}", target);
 
+    let username = target.username.as_ref().unwrap();
+
     let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
-        username: "Player".into(),
+        username: username.clone(),
     });
     let auth_msg_encoded = bincode::options().serialize(&auth_msg).unwrap();
     client.send_message(DefaultChannel::ReliableOrdered, auth_msg_encoded);
