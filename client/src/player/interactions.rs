@@ -5,14 +5,14 @@ use crate::network::api::NetworkAction;
 use crate::player::inventory::*;
 use crate::player::spawn::Player;
 use crate::ui::hotbar::Hotbar;
-use crate::ui::{items, UIMode};
+use crate::ui::UIMode;
 use crate::world::ClientWorldMap;
 use crate::world::WorldRenderRequestUpdateEvent;
 use bevy::math::NormedVectorSpace;
 use bevy::prelude::*;
 use bevy_mod_raycast::prelude::*;
 use bevy_renet::renet::RenetClient;
-use shared::world::{BlockData, ItemData, Registry};
+use shared::world::{BlockData, ItemStack, ItemType};
 
 // Helper function to snap a Vec3 position to the grid
 fn snap_to_grid(position: Vec3) -> Vec3 {
@@ -31,16 +31,13 @@ pub fn handle_block_interactions(
         ResMut<ClientWorldMap>,
         Res<ButtonInput<MouseButton>>,
         Res<UIMode>,
-        Res<Registry<BlockData>>,
-        Res<Registry<ItemData>>,
         ResMut<Inventory>,
         ResMut<RenetClient>,
     ),
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (player_query, mut p_transform, raycast_source, hotbar) = queries;
-    let (mut world_map, mouse_input, ui_mode, r_blocks, r_items, mut inventory, mut client) =
-        resources;
+    let (mut world_map, mouse_input, ui_mode, mut inventory, mut client) = resources;
 
     let player = player_query.single().clone();
 
@@ -70,11 +67,14 @@ pub fn handle_block_interactions(
 
                 if let Some(block) = block {
                     // add the block to the player's inventory
-                    let item_type = items::item_from_block(&block, &r_blocks);
 
                     // If block has corresponding item, add it to inventory
-                    if let Some(item_type) = item_type {
-                        inventory.add_item_to_inventory(item_type, 1);
+                    for (item_id, nb) in block.id.get_drops(1) {
+                        inventory.add_item_to_inventory(ItemStack {
+                            item_id,
+                            item_type: ItemType::Block(block.id),
+                            nb,
+                        });
                     }
 
                     ev_render.send(WorldRenderRequestUpdateEvent::BlockToReload(
@@ -126,9 +126,10 @@ pub fn handle_block_interactions(
                     inventory.remove_item_from_stack(hotbar.single().selected, 1);
 
                     // Check if the item has a block counterpart
-                    if let Some(block) = items::block_from_item(&item.id, &r_items) {
+                    if let ItemType::Block(block_id) = item.item_type {
                         let block_pos =
                             IVec3::new(position.x as i32, position.y as i32, position.z as i32);
+                        let block = BlockData::new(block_id);
 
                         world_map.set_block(&block_pos, block);
 

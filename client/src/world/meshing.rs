@@ -5,7 +5,8 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
 };
-use shared::world::{to_global_pos, BlockData, Registry, RegistryId};
+use shared::world::to_global_pos;
+use shared::world::BlockId;
 
 #[derive(Copy, Clone)]
 struct UvCoords {
@@ -15,9 +16,9 @@ struct UvCoords {
     v1: f32,
 }
 
-fn get_uv_coords(block: &RegistryId, r_blocks: &Registry<BlockData>) -> UvCoords {
+fn get_uv_coords(block: &BlockId) -> UvCoords {
     // should be refactored later
-    let res = r_blocks.get(block).unwrap().uvs;
+    let res = block.get_uvs();
     UvCoords {
         u0: res[0],
         u1: res[1],
@@ -30,7 +31,6 @@ pub(crate) fn generate_chunk_mesh(
     world_map: &ClientWorldMap,
     chunk: &ClientChunk,
     chunk_pos: &IVec3,
-    r_blocks: &Registry<BlockData>,
 ) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -270,7 +270,7 @@ pub(crate) fn generate_chunk_mesh(
         let mut local_normals: Vec<[f32; 3]> = vec![];
         let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-        let uv_coords = get_uv_coords(block, r_blocks);
+        let uv_coords = get_uv_coords(&block.id);
 
         if should_render_front_face(global_block_pos) {
             render_front_face(

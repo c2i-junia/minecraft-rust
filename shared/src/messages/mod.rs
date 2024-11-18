@@ -4,7 +4,7 @@ mod player;
 mod system;
 mod world;
 
-use crate::world::BlockId;
+use crate::world::BlockData;
 pub use auth::*;
 use bevy::math::IVec3;
 pub use chat::*;
@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 pub use system::*;
 pub use world::*;
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum ClientToServerMessage {
     AuthRegisterRequest(AuthRegisterRequest),
     ChatMessage(ChatMessage),
@@ -27,11 +27,11 @@ pub enum ClientToServerMessage {
     SaveWorldRequest(SaveWorldRequest),
     BlockInteraction {
         position: IVec3,
-        block_type: Option<BlockId>,
+        block_type: Option<BlockData>,
     },
 }
 
-#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum ServerToClientMessage {
     AuthRegisterResponse(AuthRegisterResponse),
     ChatConversation(ChatConversation),

@@ -24,7 +24,7 @@ pub struct InventoryCell {
 /// The current selected stack, not considered in the player's inventory
 #[derive(Component)]
 pub struct FloatingStack {
-    pub items: Option<Item>,
+    pub items: Option<ItemStack>,
 }
 
 #[derive(PartialEq, Eq, Clone, Copy, Resource)]
@@ -50,3 +50,4 @@ mod setup;
 pub use display::*;
 use items::*;
 pub use setup::*;
+use shared::world::ItemStack;

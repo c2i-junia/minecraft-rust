@@ -10,7 +10,7 @@ use bevy::{
 };
 use bevy_mod_raycast::deferred::RaycastMesh;
 use shared::{
-    world::{global_block_to_chunk_pos, BlockData, Registry, SIX_OFFSETS},
+    world::{global_block_to_chunk_pos, SIX_OFFSETS},
     CHUNK_SIZE,
 };
 
@@ -84,7 +84,6 @@ pub fn world_render_system(
     mut queued_meshes: Local<QueuedMeshes>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut commands: Commands,
-    r_blocks: Res<Registry<BlockData>>,
 ) {
     for event in ev_render.read() {
         queued_events.events.insert(*event);
@@ -99,7 +98,6 @@ pub fn world_render_system(
 
     let events = queued_events.events.clone();
     let map_ptr = Arc::new(world_map.clone());
-    let registry_ptr = Arc::new(r_blocks.clone());
     let mut chunks_to_reload: HashSet<IVec3> = HashSet::new();
 
     if !events.is_empty() {
@@ -129,12 +127,11 @@ pub fn world_render_system(
 
                 // Define variables to move to the thread
                 let map_clone = Arc::clone(&map_ptr);
-                let registry_clone = Arc::clone(&registry_ptr);
                 let ch = chunk.clone();
                 let t = pool.spawn(async move {
                     (
                         pos,
-                        world::meshing::generate_chunk_mesh(&map_clone, &ch, &pos, &registry_clone),
+                        world::meshing::generate_chunk_mesh(&map_clone, &ch, &pos),
                     )
                 });
                 queued_meshes.meshes.push(t);

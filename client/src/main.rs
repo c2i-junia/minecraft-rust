@@ -25,7 +25,6 @@ use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
 use serde::{Deserialize, Serialize};
-use shared::world::{load_blocks_items, BlockData, ItemData, Registry};
 use std::collections::BTreeMap;
 
 #[derive(Component)]
@@ -77,8 +76,6 @@ fn main() {
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
         .insert_resource(get_bindings())
-        .insert_resource(Registry::<BlockData>::new())
-        .insert_resource(Registry::<ItemData>::new())
         .insert_resource(SelectedWorld::default())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .insert_resource(ClientWorldMap { ..default() })
@@ -90,6 +87,5 @@ fn main() {
             menu::menu_plugin,
             game::game_plugin,
         ))
-        .add_systems(PreStartup, load_blocks_items)
         .run();
 }

@@ -2,7 +2,7 @@ use bevy::{math::IVec3, prelude::ResMut};
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
 use shared::messages::{ChatMessage, ClientToServerMessage, SaveWorldRequest};
-use shared::world::BlockId;
+use shared::world::BlockData;
 
 pub enum NetworkAction {
     ChatMessage(String),
@@ -14,7 +14,7 @@ pub enum NetworkAction {
     SaveWorldRequest,
     BlockInteraction {
         position: IVec3,
-        block_type: Option<BlockId>, // None = suppression, Some = ajout
+        block_type: Option<BlockData>, // None = suppression, Some = ajout
     },
 }
 

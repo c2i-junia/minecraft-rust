@@ -3,7 +3,7 @@ use noise::{NoiseFn, Perlin};
 use shared::{world::*, CHUNK_SIZE};
 use std::collections::HashMap;
 
-pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData>) -> ServerChunk {
+pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
     let perlin = Perlin::new(seed);
 
     let scale = 0.1;
@@ -40,18 +40,18 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32, r_blocks: &Registry<BlockData
                 }
 
                 let block = if y == 0 {
-                    BlockType::Bedrock.get_name()
+                    BlockId::Bedrock
                 } else if y < terrain_height - 2 {
-                    BlockType::Stone.get_name()
+                    BlockId::Stone
                 } else if y < terrain_height {
-                    BlockType::Dirt.get_name()
+                    BlockId::Dirt
                 } else {
-                    BlockType::Grass.get_name()
+                    BlockId::Grass
                 };
 
                 chunk
                     .map
-                    .insert(IVec3::new(dx, dy, dz), *r_blocks.get_id(&block).unwrap());
+                    .insert(IVec3::new(dx, dy, dz), BlockData::new(block));
             }
         }
     }
