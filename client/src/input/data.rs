@@ -22,5 +22,5 @@ pub enum GameAction {
     OpenChat,
     RenderDistanceMinus,
     RenderDistancePlus,
-    ReloadChunks
+    ReloadChunks,
 }

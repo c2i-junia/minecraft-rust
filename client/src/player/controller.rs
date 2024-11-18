@@ -120,10 +120,13 @@ pub fn player_movement_system(
         }
     }
 
-    let force_chunk_reload = if is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map) { 
-        debug!("Forced chunk reload");
-        true
-    } else { false };
+    let force_chunk_reload =
+        if is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map) {
+            debug!("Forced chunk reload");
+            true
+        } else {
+            false
+        };
 
     // Render chunks around player
     let player_chunk = IVec3::new(
@@ -154,7 +157,8 @@ pub fn player_movement_system(
         // Only retain chunks in the render radius
         world_map.map.retain(|pos, chunk| {
             // If chunk is empty, or not in render radius
-            if force_chunk_reload || !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty() {
+            if force_chunk_reload || !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty()
+            {
                 // Remove chunk, and delete its associated entity if it exists
                 if let Some(entity) = chunk.entity {
                     commands.entity(entity).despawn_recursive();
