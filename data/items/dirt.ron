@@ -1,5 +1,0 @@
-(
-    id: "dirt",
-    kind: Block(0),
-    stack: 64
-)

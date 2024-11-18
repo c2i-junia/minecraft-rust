@@ -1,5 +1,0 @@
-(
-    id: "bedrock",
-    kind: Block(0),
-    stack: 64
-)

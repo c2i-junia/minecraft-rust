@@ -1,6 +1,0 @@
-(
-    id: "grass",
-    drops: [(5, "dirt"), (1, "grass")],
-    break_time: 1.,
-    uvs: (0.0, 0.25, 0.0, 1.0)
-)
