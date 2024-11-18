@@ -9,7 +9,7 @@ pub const DEFAULT_CHUNK_RENDER_DISTANCE_RADIUS: u32 = 1;
 
 pub const CELESTIAL_SIZE: f32 = 10.;
 pub const CELESTIAL_DISTANCE: f32 = 50.; // Low value for testing ; will be increased later
-pub const DAY_DURATION: f32 = 20.; // Length of a full day/night cycle, in seconds
+pub const DAY_DURATION: f32 = 60.; // Length of a full day/night cycle, in seconds
 
 pub const MAX_ITEM_STACK: u32 = 64;
 pub const MAX_INVENTORY_SLOTS: u32 = 4 * 9;
