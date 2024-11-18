@@ -18,7 +18,7 @@ else
 endif
 
 debug:
-	cargo build
+	cargo build --features bevy/dynamic_linking
 	$(MAKE) prepare
 	$(COPY_CLIENT_DEBUG)
 	$(COPY_CLIENT_DEBUG_2)
