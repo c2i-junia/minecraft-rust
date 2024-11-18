@@ -175,6 +175,11 @@ pub fn establish_authenticated_connection_to_server(
     }
     debug!("trying to connect... {:?}", target);
 
+    if target.username.is_none() {
+        let mut rng = rand::thread_rng();
+        let num: u64 = rng.gen();
+        target.username = Some(format!("Player-{}", num));
+    }
     let username = target.username.as_ref().unwrap();
 
     let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {

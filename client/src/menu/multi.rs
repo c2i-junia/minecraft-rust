@@ -22,7 +22,6 @@ use bevy_simple_text_input::{
     TextInputBundle, TextInputInactive, TextInputPlaceholder, TextInputSettings,
     TextInputTextStyle, TextInputValue,
 };
-use rand::Rng;
 use ron::{from_str, ser::PrettyConfig};
 use shared::world::get_game_folder;
 use std::{
@@ -487,12 +486,9 @@ pub fn multiplayer_action(
                 MultiplayerButtonAction::Connect(serv_entity) => {
                     if let Some(srv) = list.servers.get(&serv_entity) {
                         info!("Server : name={}, ip={}", srv.name, srv.ip);
-                        let mut rng = rand::thread_rng();
-                        let num: u64 = rng.gen();
 
                         // TODO : try to connect player with srv.ip provided
                         // TODO: Recover from another place
-                        target_server.username = Some(format!("Player-{}", num));
                         target_server.address = Some(srv.ip.parse().unwrap());
                         game_state.set(GameState::PreGameLoading);
                         menu_state.set(MenuState::Disabled);
