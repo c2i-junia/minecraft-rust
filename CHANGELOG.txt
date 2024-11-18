@@ -1,4 +1,14 @@
 ----------------------------------------------------------------------------------------------------
+Version: 0.6   
+Date: 18.11.2024    
+
+  Changes: 
+    - World generation is now entirely handled on the server. The client spawns the server in a separate thread, and the server is responsible for saving and loading worlds.
+    - Added a menu to choose which world save to load, or to specify a name for creating a new world.
+    - Added keybinding customization in the settings menu.
+    - Implemented multithreaded meshing and multithreaded world generation.
+
+----------------------------------------------------------------------------------------------------
 Version: 0.5   
 Date: 01.10.2024    
 
