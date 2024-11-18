@@ -28,8 +28,6 @@ pub fn setup_resources_and_events(app: &mut App) {
 }
 
 pub fn register_systems(app: &mut App) {
-    // app.add_systems(Startup, setup_world);
-
     app.add_systems(Update, server_update_system);
 
     app.add_systems(Update, chat::broadcast_chat_messages);
@@ -83,8 +81,6 @@ fn server_update_system(
     for client_id in server.clients_id() {
         while let Some(message) = server.receive_message(client_id, DefaultChannel::ReliableOrdered)
         {
-            //debug!("msg received {:?}", &message);
-
             let msg = bincode::options().deserialize::<ClientToServerMessage>(&message);
             let msg = match msg {
                 Ok(msg) => msg,

@@ -57,7 +57,6 @@ pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
 }
 
 pub fn init(socket: UdpSocket, world_name: String) {
-    info!("Starting server on {}", socket.local_addr().unwrap());
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -68,12 +67,15 @@ pub fn init(socket: UdpSocket, world_name: String) {
     app.add_plugins(RenetServerPlugin);
     app.add_plugins(FrameTimeDiagnosticsPlugin);
     app.add_plugins(LogDiagnosticsPlugin::default());
+    app.add_plugins(bevy::log::LogPlugin::default());
 
     app.insert_resource(Registry::<BlockData>::new())
         .insert_resource(Registry::<ItemData>::new())
         .add_systems(PreStartup, load_blocks_items);
 
     app.insert_resource(ServerLobby::default());
+
+    info!("Starting server on {}", socket.local_addr().unwrap());
 
     add_netcode_network(&mut app, socket);
 

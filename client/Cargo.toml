@@ -9,11 +9,11 @@ lazy_static = "1.5.0"
 rand = "0.8.5"              # to generate the seed
 noise = "0.9"               # to generate the map
 bevy_mod_raycast = "0.18"   # to get the block targeted by the mouse
-shared = { path = "../shared" }
 bevy_simple_text_input = "0.9"
 bevy_renet = "0.0.12"
 bincode = "1.3.3"
 serde = { version = "1.0", features = ["derive"] }
 ron = "0.6"
 bevy_atmosphere = "0.10.0"
+shared = { path = "../shared" }
 server = { path = "../server" }
