@@ -488,6 +488,8 @@ pub fn multiplayer_action(
                         info!("Server : name={}, ip={}", srv.name, srv.ip);
 
                         // TODO : try to connect player with srv.ip provided
+                        // TODO: Recover from another place
+                        target_server.username = Some("Player".into());
                         target_server.address = Some(srv.ip.parse().unwrap());
                         game_state.set(GameState::PreGameLoading);
                         menu_state.set(MenuState::Disabled);

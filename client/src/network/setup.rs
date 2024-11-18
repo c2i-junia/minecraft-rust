@@ -39,7 +39,7 @@ pub fn add_base_netcode(app: &mut App) {
     // TODO: change username
     app.insert_resource(TargetServer {
         address: None,
-        username: Some("Player".into()),
+        username: None,
         session_token: None,
     });
 }
@@ -169,7 +169,7 @@ pub fn establish_authenticated_connection_to_server(
         game_state.set(GameState::Game);
         return;
     }
-    debug!("trying to connect...");
+    debug!("trying to connect... {:?}", target);
 
     let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
         username: "Player".into(),

@@ -126,8 +126,9 @@ fn server_update_system(
                         info!("Server is going down...");
                         ev_app_exit.send(AppExit::Success);
                     } else {
-                        info!("Player {:?} disconnected", client_id)
-                        // TODO: handle disconnect
+                        server.disconnect(client_id);
+                        lobby.players.remove(&order.session_token);
+                        info!("Player {:?} disconnected", client_id);
                     }
                 }
                 ClientToServerMessage::PlayerInputs(inputs) => {
