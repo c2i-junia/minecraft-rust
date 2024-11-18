@@ -18,6 +18,15 @@ impl ItemId {
     pub fn get_max_stack(&self) -> u32 {
         64
     }
+
+    pub fn get_default_type(&self) -> ItemType {
+        match *self {
+            Self::Dirt => ItemType::Block(BlockId::Dirt),
+            Self::Bedrock => ItemType::Block(BlockId::Bedrock),
+            Self::Grass => ItemType::Block(BlockId::Grass),
+            Self::Stone => ItemType::Block(BlockId::Stone),
+        }
+    }
 }
 
 /// Data associated with a given `BlockId`

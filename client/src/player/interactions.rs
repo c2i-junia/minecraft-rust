@@ -72,7 +72,7 @@ pub fn handle_block_interactions(
                     for (item_id, nb) in block.id.get_drops(1) {
                         inventory.add_item_to_inventory(ItemStack {
                             item_id,
-                            item_type: ItemType::Block(block.id),
+                            item_type: item_id.get_default_type(),
                             nb,
                         });
                     }
