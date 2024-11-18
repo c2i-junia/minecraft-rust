@@ -6,12 +6,11 @@ def collect_rust_files(directory, output_file):
     with open(output_file, 'w') as outfile:
         for root, dirs, files in os.walk(directory):
             for file in files:
-                if file.endswith('.rs'):
-                    file_path = os.path.join(root, file)
-                    outfile.write(f"---- {file_path} ----\n\n") 
-                    with open(file_path, 'r') as infile:
-                        outfile.write(infile.read())
-                    outfile.write("\n\n") 
+                file_path = os.path.join(root, file)
+                outfile.write(f"---- {file_path} ----\n\n") 
+                with open(file_path, 'r') as infile:
+                    outfile.write(infile.read())
+                outfile.write("\n\n") 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Collect Rust source files from a directory.")
