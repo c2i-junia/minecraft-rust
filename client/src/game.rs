@@ -124,6 +124,7 @@ pub fn game_plugin(app: &mut App) {
         .add_systems(
             Update,
             (
+                render_distance_update_system,
                 build_atlas,
                 player_movement_system,
                 (handle_block_interactions, camera_control_system).chain(),
@@ -136,7 +137,6 @@ pub fn game_plugin(app: &mut App) {
                 toggle_wireframe_system,
                 handle_mouse_system,
                 update_celestial_bodies,
-                render_distance_update_system,
             )
                 .chain()
                 .run_if(in_state(GameState::Game)),
