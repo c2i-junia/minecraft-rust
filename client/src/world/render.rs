@@ -1,5 +1,5 @@
-use std::collections::HashMap;
-use std::time::Instant;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 use bevy::{
     asset::Assets,
@@ -24,7 +24,7 @@ use crate::world::ClientWorldMap;
 
 #[derive(Debug, Default, Resource)]
 pub struct QueuedMeshes {
-    pub meshes: Vec<Task<HashMap<IVec3, Mesh>>>,
+    pub meshes: Vec<Task<(IVec3, Mesh)>>,
 }
 
 fn update_chunk(
@@ -98,72 +98,56 @@ pub fn world_render_system(
     let pool = AsyncComputeTaskPool::get();
 
     let events = queued_events.events.clone();
-    let cloned_map = world_map.clone();
-    let cloned_blocks = r_blocks.clone();
+    let map_ptr = Arc::new(world_map.clone());
+    let registry_ptr = Arc::new(r_blocks.clone());
+    let mut chunks_to_reload: HashSet<IVec3> = HashSet::new();
 
     if !events.is_empty() {
-        let t = pool.spawn(async move {
-            let start = Instant::now();
-
-            let mut chunk_meshes: HashMap<IVec3, Mesh> = HashMap::new();
-            for event in &events {
-                //debug!("world_render_system event {:?}", event);
-
-                let target_chunk_pos = match event {
-                    WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
-                    WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
-                        // Temporary shortcut
-                        &global_block_to_chunk_pos(pos)
-                    }
-                };
-
-                let mut chunks_pos_to_reload = vec![*target_chunk_pos];
-                for offset in &SIX_OFFSETS {
-                    chunks_pos_to_reload.push(*target_chunk_pos + *offset);
+        // Using a set so same chunks are not reloaded multiple times
+        // Accumulate chunks to render
+        for event in &events {
+            let target_chunk_pos = match event {
+                WorldRenderRequestUpdateEvent::ChunkToReload(pos) => pos,
+                WorldRenderRequestUpdateEvent::BlockToReload(pos) => {
+                    // Temporary shortcut
+                    &global_block_to_chunk_pos(pos)
                 }
+            };
 
-                for pos in chunks_pos_to_reload.iter() {
-                    // If chunk has already been rendered, ignore it (concurrent updates may apply to the same chunk)
-                    if chunk_meshes.contains_key(pos) {
-                        continue;
-                    }
-
-                    if let Some(chunk) = cloned_map.map.get(pos) {
-                        // If chunk is empty, ignore it
-                        if chunk.map.is_empty() {
-                            continue;
-                        }
-
-                        chunk_meshes.insert(
-                            *pos,
-                            world::meshing::generate_chunk_mesh(
-                                &cloned_map,
-                                chunk,
-                                pos,
-                                &cloned_blocks,
-                            ),
-                        );
-                    }
-                }
+            chunks_to_reload.insert(*target_chunk_pos);
+            for offset in &SIX_OFFSETS {
+                chunks_to_reload.insert(*target_chunk_pos + *offset);
             }
+        }
 
-            trace!("Meshing done in {:?} ", Instant::now() - start);
-            chunk_meshes
-        });
+        for pos in chunks_to_reload {
+            if let Some(chunk) = world_map.map.get(&pos) {
+                // If chunk is empty, ignore it
+                if chunk.map.is_empty() {
+                    continue;
+                }
 
-        queued_meshes.meshes.push(t);
+                // Define variables to move to the thread
+                let map_clone = Arc::clone(&map_ptr);
+                let registry_clone = Arc::clone(&registry_ptr);
+                let ch = chunk.clone();
+                let t = pool.spawn(async move {
+                    (
+                        pos,
+                        world::meshing::generate_chunk_mesh(&map_clone, &ch, &pos, &registry_clone),
+                    )
+                });
+                queued_meshes.meshes.push(t);
+            }
+        }
     }
 
     // Iterate through queued meshes to see if they are completed
     queued_meshes.meshes.retain_mut(|task| {
         // If completed, then use the mesh to update the chunk and delete it from the meshing queue
-        if let Some(mut chunk_meshes) = block_on(future::poll_once(task)) {
-            // Update all the chunks by draining the meshes
-            for (chunk_pos, new_mesh) in chunk_meshes.drain() {
-                if !world_map.map.contains_key(&chunk_pos) {
-                    continue;
-                }
-
+        if let Some((chunk_pos, new_mesh)) = block_on(future::poll_once(task)) {
+            // Update the corresponding chunk
+            if world_map.map.contains_key(&chunk_pos) {
                 update_chunk(
                     &chunk_pos,
                     &material_resource,
