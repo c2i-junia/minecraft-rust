@@ -17,6 +17,7 @@ rand = "0.8.5"
 noise = "0.9.0"
 ron = "0.6"
 clap = { version = "4.5.19", features = ["derive"] }
+log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
 
 # Define the library target
 [lib]
