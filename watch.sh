@@ -13,4 +13,4 @@ cargo watch \
     --watch client/src \
     --watch server/src \
     --watch shared/src \
-    -- bash -c "make && ./run-client-1.sh"
+    -- bash -c "make && ./run1.sh"
