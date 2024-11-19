@@ -16,11 +16,12 @@ use crate::world::ClientWorldMap;
 use bevy::{
     prelude::*,
     render::{
-        render_resource::WgpuFeatures,
-        settings::{RenderCreation, WgpuSettings},
+        settings::{RenderCreation, WgpuFeatures, WgpuSettings},
         RenderPlugin,
     },
 };
+use bevy_egui::EguiPlugin;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
@@ -71,6 +72,8 @@ fn main() {
                 ..Default::default()
             }),
     );
+    app.add_plugins(EguiPlugin);
+    app.add_plugins(WorldInspectorPlugin::new());
     app.add_event::<LoadWorldEvent>();
     network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
