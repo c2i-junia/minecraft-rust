@@ -1,4 +1,4 @@
-use crate::network::TargetServer;
+use crate::network::{TargetServer, TargetServerState};
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetClient};
 use bincode::Options;
@@ -18,4 +18,5 @@ pub fn terminate_server_connection(
     target.address = None;
     target.username = None;
     target.session_token = None;
+    target.state = TargetServerState::Initial;
 }

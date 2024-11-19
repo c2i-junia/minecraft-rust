@@ -67,6 +67,7 @@ pub fn send_world_update(
             }))
             .unwrap();
 
+        debug!("Broadcasting world state of size: {} bytes", payload.len());
         server.send_message(event.client, DefaultChannel::ReliableUnordered, payload);
     }
 }

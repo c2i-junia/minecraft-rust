@@ -21,11 +21,19 @@ use std::{net::UdpSocket, thread, time::SystemTime};
 
 use crate::world::ClientWorldMap;
 
+#[derive(Debug, Clone, PartialEq)]
+pub enum TargetServerState {
+    Initial,
+    Establising,
+    Established,
+}
+
 #[derive(Resource, Debug, Clone)]
 pub struct TargetServer {
     pub address: Option<SocketAddr>,
     pub username: Option<String>,
     pub session_token: Option<u128>,
+    pub state: TargetServerState,
 }
 
 pub fn add_base_netcode(app: &mut App) {
@@ -42,6 +50,7 @@ pub fn add_base_netcode(app: &mut App) {
         address: None,
         username: None,
         session_token: None,
+        state: TargetServerState::Initial,
     });
 }
 
@@ -173,20 +182,23 @@ pub fn establish_authenticated_connection_to_server(
         game_state.set(GameState::Game);
         return;
     }
-    debug!("trying to connect... {:?}", target);
 
-    if target.username.is_none() {
-        let mut rng = rand::thread_rng();
-        let num: u64 = rng.gen();
-        target.username = Some(format!("Player-{}", num));
+    if target.state == TargetServerState::Initial {
+        if target.username.is_none() {
+            let mut rng = rand::thread_rng();
+            let num: u64 = rng.gen();
+            target.username = Some(format!("Player-{}", num));
+        }
+
+        let username = target.username.as_ref().unwrap();
+
+        let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
+            username: username.clone(),
+        });
+        let auth_msg_encoded = bincode::options().serialize(&auth_msg).unwrap();
+        client.send_message(DefaultChannel::ReliableOrdered, auth_msg_encoded);
+        target.state = TargetServerState::Establising;
     }
-    let username = target.username.as_ref().unwrap();
-
-    let auth_msg = ClientToServerMessage::AuthRegisterRequest(AuthRegisterRequest {
-        username: username.clone(),
-    });
-    let auth_msg_encoded = bincode::options().serialize(&auth_msg).unwrap();
-    client.send_message(DefaultChannel::ReliableOrdered, auth_msg_encoded);
 
     while let Some(message) = client.receive_message(DefaultChannel::ReliableOrdered) {
         let message =
@@ -194,6 +206,7 @@ pub fn establish_authenticated_connection_to_server(
         if let Ok(message) = message {
             target.username = Some(message.username);
             target.session_token = Some(message.session_token);
+            target.state = TargetServerState::Established;
             info!("Connected! {:?}", target);
         }
     }

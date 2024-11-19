@@ -1,6 +1,6 @@
 use super::{MenuButtonAction, MenuState, ScrollingList};
 use crate::constants::SERVER_LIST_SAVE_NAME;
-use crate::network::TargetServer;
+use crate::network::{TargetServer, TargetServerState};
 use crate::GameState;
 use bevy::prelude::*;
 use bevy::{
@@ -497,6 +497,7 @@ pub fn multiplayer_action(
                         // TODO : try to connect player with srv.ip provided
                         // TODO: Recover from another place
                         target_server.address = Some(srv.ip.parse().unwrap());
+                        target_server.state = TargetServerState::Initial;
                         game_state.set(GameState::PreGameLoading);
                         menu_state.set(MenuState::Disabled);
                     }
