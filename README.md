@@ -70,7 +70,9 @@ Minecraft game clone written in Rust, using the Bevy game engine.
 
 To run this project, you need to have the following installed:
 
-- **Rust** (Stable toolchain) (This can be installed in several ways depending on your setup, the most standard way is to use rustup.rs.)
+- **Rust**: The preferred way is to use [Rustup](rustup.rs).
+
+  > Note: for faster development builds, we use various unstable optimizations, please follow the [Bevy documentation](https://bevyengine.org/learn/quick-start/getting-started/setup/). You will need to install the Rust Nightly toolchain with the Cranelift backend as well as the Clang Mold linker.
 - **Make**
 
 
@@ -86,12 +88,20 @@ git clone https://github.com/c2i-junia/minecraft-rust
 
 # Navigate to the project directory
 cd minecraft-rust
+```
 
+Debug mode:
+```sh
+./run1.sh
+```
+
+Release mode:
+```sh
 # Build the project in debug or release mode
-make debug    # or `make release`
+make release
 
 # Run the executable
-./minecraft-rust/bin/minecraft-rust
+./minecraft-rust-client-1/bin/minecraft-rust
 ```
 
 <br>
@@ -102,12 +112,45 @@ Feel free to submit issues or open pull requests. If you want to know where to h
 
 ### Guidelines 
 
-1. Run `cargo fmt` before committing.
-2. **Commit Messages**:
-   - Use a capitalized first letter.
-   - Write commit messages in the present tense (e.g., "Add feature X" instead of "Added feature X").
-3. **Branches**:
-   - Use the naming convention `feature/<description>` for branches introducing new features.
-   - The `main` branch should always compile successfully and be free of warnings.
-   - Experimental branches are allowed to include code that does not build successfully.
-   - Prefer rebasing over merging.
+#### Format
+Run `cargo fmt` before committing.
+
+#### Commit messages:
+
+We follow the [Conventional Commit specification](https://www.conventionalcommits.org/en/v1.0.0/).
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Our commit types are inspired by the [Karma specification](http://karma-runner.github.io/6.4/dev/git-commit-msg.html)
+
+Allowed <type> values: 
+- **feat** for a new feature for the user, not a new feature for build script. Such commit will trigger a release bumping a MINOR version.
+- **fix** for a bug fix for the user, not a fix to a build script. Such commit will trigger a release bumping a PATCH version.
+- **perf** for performance improvements. Such commit will trigger a release bumping a PATCH version.
+- **docs** for changes to the documentation.
+- **style** for formatting changes, missing semicolons, etc.
+- **refactor** for refactoring production code, e.g. renaming a variable.
+- **test** for adding missing tests, refactoring tests; no production code change.
+- **build** for updating build configuration, development tools or other changes irrelevant to the user.
+
+Write commit messages in the present tense (e.g., "Add feature X" instead of "Added feature X").
+
+If a commit is co-authored by multiple people, do not hesitate to add a `Co-authored-by` field. See [GitHub documentation](https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/creating-a-commit-with-multiple-authors). For example: 
+```sh
+$ git commit -m "Refactor usability tests.
+>
+>
+Co-authored-by: NAME <NAME@EXAMPLE.COM>
+Co-authored-by: ANOTHER-NAME <ANOTHER-NAME@EXAMPLE.COM>"
+```
+
+#### Branches
+- Use the naming convention `<type>/<name>` for branches introducing new features. Only use lowercase letters, numbers, and dashes.
+- The `main` branch should always compile successfully and be free of warnings. Use `cargo check`.
+- Experimental branches are allowed to include code that does not build successfully.
+- Prefer rebasing over merging.
