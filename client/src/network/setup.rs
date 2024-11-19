@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 use rand::Rng;
-use shared::GameServerConfig;
+use shared::{get_shared_renet_config, GameServerConfig};
 
 use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
@@ -39,7 +39,7 @@ pub struct TargetServer {
 pub fn add_base_netcode(app: &mut App) {
     app.add_plugins(RenetClientPlugin);
 
-    let client = RenetClient::new(default());
+    let client = RenetClient::new(get_shared_renet_config());
     app.insert_resource(client);
 
     // Setup the transport layer
@@ -140,7 +140,7 @@ pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>)
         world.remove_resource::<NetcodeClientTransport>();
         world.remove_resource::<CachedChatConversation>();
 
-        let client = RenetClient::new(default());
+        let client = RenetClient::new(get_shared_renet_config());
         world.insert_resource(client);
 
         let authentication = ClientAuthentication::Unsecure {

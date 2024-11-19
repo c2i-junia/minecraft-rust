@@ -3,6 +3,7 @@ mod data;
 pub mod generation;
 pub mod load_from_file;
 pub mod save;
+mod utils;
 
 use bevy::prelude::Event;
 use bevy::prelude::EventReader;

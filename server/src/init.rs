@@ -6,7 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
-use shared::GameServerConfig;
+use shared::{get_shared_renet_config, GameServerConfig};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
@@ -36,7 +36,7 @@ pub fn acquire_socket_by_port(port: u16) -> UdpSocket {
 pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
     app.add_plugins(NetcodeServerPlugin);
 
-    let server = RenetServer::new(default());
+    let server = RenetServer::new(get_shared_renet_config());
 
     let granted_addr = &socket.local_addr().unwrap();
 

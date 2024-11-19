@@ -1,5 +1,6 @@
 use crate::init::TickCounter;
 use crate::world::generation::generate_chunk;
+use crate::world::utils::format_bytes;
 use bevy::math::IVec3;
 use bevy::prelude::*;
 use bevy_ecs::system::ResMut;
@@ -26,6 +27,7 @@ pub fn send_world_update(
     mut world_map: ResMut<ServerWorldMap>,
     mut ev_update: EventReader<WorldUpdateRequestEvent>,
 ) {
+    let mut chunks_to_update_count = 0;
     for event in ev_update.read() {
         let payload = bincode::options()
             .serialize(&ServerToClientMessage::WorldUpdate(WorldUpdate {
@@ -46,6 +48,7 @@ pub fn send_world_update(
                                     continue;
                                 }
 
+                                chunks_to_update_count += 1;
                                 map.insert(*c, chunk.clone());
                             } else {
                                 // If chunk does not exists, generate it before transmitting it
@@ -56,6 +59,7 @@ pub fn send_world_update(
                                     continue;
                                 }
 
+                                chunks_to_update_count += 1;
                                 map.insert(*c, chunk.clone());
                                 world_map.map.insert(*c, chunk);
                             }
@@ -67,7 +71,11 @@ pub fn send_world_update(
             }))
             .unwrap();
 
-        debug!("Broadcasting world state of size: {} bytes", payload.len());
+        debug!(
+            "Broadcasting world state, number of chunks = {}, payload size: {}",
+            chunks_to_update_count,
+            format_bytes(payload.len() as u64)
+        );
         server.send_message(event.client, DefaultChannel::ReliableUnordered, payload);
     }
 }
