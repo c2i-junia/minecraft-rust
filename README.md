@@ -64,17 +64,47 @@ Minecraft game clone written in Rust, using the Bevy game engine.
 
 <br>
 
+
+
 ## Building from source
 
 ### Prerequisites
 
-To run this project, you need to have the following installed:
+To build and run this project, you need the following tools and dependencies installed:
 
-- **Rust**: The preferred way is to use [Rustup](rustup.rs).
+#### 1. **Rust**
+- Install Rust using [Rustup](https://rustup.rs)
+- After installation, add the **Nightly toolchain** with the Cranelift backend:
+  ```bash
+  rustup install nightly
+  rustup component add rustc-codegen-cranelift-preview --toolchain nightly
+  ```
 
-  > Note: for faster development builds, we use various unstable optimizations, please follow the [Bevy documentation](https://bevyengine.org/learn/quick-start/getting-started/setup/). You will need to install the Rust Nightly toolchain with the Cranelift backend as well as the Clang Mold linker.
-- **Make**
+#### 2. **Make**
+- `make` is required to use the provided Makefile for building the project.
 
+
+#### 3. **Dependencies**
+
+Install the required dependencies based on your operating system:
+
+##### Arch Linux
+```bash
+sudo pacman -S base-devel mold clang vulkan-radeon vulkan-tools
+```
+- Replace `vulkan-radeon` with:   
+  - `vulkan-intel` for Intel GPUs.   
+  - `nvidia-utils` for NVIDIA GPUs.   
+
+##### Ubuntu/Debian
+```bash
+sudo apt update && sudo apt install -y \
+    build-essential mold clang mesa-vulkan-drivers vulkan-tools
+```
+- For NVIDIA GPUs, also install:
+    ```shell
+    sudo apt install -y nvidia-driver nvidia-vulkan-icd
+    ```
 
 ### Running the Project
 
