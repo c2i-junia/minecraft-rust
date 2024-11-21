@@ -101,11 +101,12 @@ pub fn setup_materials(
     // Load images of all blocks defined in the enum
 
     item_atlas_handles.handles = ItemId::iterate_enum()
-        .map(|block: ItemId| {
+        .map(|item: ItemId| {
+            debug!("Item loaded : {item:?}");
             (
                 asset_server
-                    .load(&(TEXTURE_PATH.to_owned() + "items/" + &format!("{block:?}") + ".png")),
-                block,
+                    .load(&(TEXTURE_PATH.to_owned() + "items/" + &format!("{item:?}") + ".png")),
+                item,
             )
         })
         .collect();

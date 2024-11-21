@@ -17,8 +17,8 @@ pub enum FaceDirection {
     Right,
     /// The face is at the left of the voxel. Won't render if the block at the left of this one is full
     Left,
-    /// The face is inside of the voxel. Will always render, except if the block is hidden on _all_ 6 sides
-    Inset,
+    // /// The face is inside of the voxel. Will always render, except if the block is hidden on _all_ 6 sides
+    // Inset,
 }
 
 /// Structure for cube voxel rendering

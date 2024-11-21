@@ -24,6 +24,9 @@ pub enum BlockId {
     // ! ----- LEAVE DIRT FIRST ----- !
     Grass,
     Stone,
+    OakLog,
+    OakPlanks,
+    Sand,
     // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
@@ -82,9 +85,16 @@ impl BlockId {
         let mut drops = HashMap::new();
         let table = self.get_drop_table();
 
+        let total = table
+            .clone()
+            .into_iter()
+            .reduce(|a, b| (a.0 + b.0, a.1))
+            .unwrap()
+            .0;
+
         // Choose drop items
         for _ in 0..nb_drops {
-            let mut nb = rand::thread_rng().gen_range(0.0..100.0);
+            let mut nb = rand::thread_rng().gen_range(0..total);
             for item in table.iter() {
                 if nb < item.0 {
                     drops.insert(item.1, 1);
@@ -96,10 +106,15 @@ impl BlockId {
         drops
     }
 
-    pub fn get_drop_table(&self) -> Vec<(f32, ItemId)> {
+    /// Specifies the drop table of a given block
+    /// Drops are specified this way : `(relative_chance, corresponding_item)`
+    pub fn get_drop_table(&self) -> Vec<(u32, ItemId)> {
         match *self {
-            BlockId::Dirt | BlockId::Grass => vec![(100., ItemId::Dirt)],
-            BlockId::Stone => vec![(100., ItemId::Stone)],
+            BlockId::Dirt | BlockId::Grass => vec![(1, ItemId::Dirt)],
+            BlockId::Stone => vec![(1, ItemId::Stone)],
+            BlockId::Sand => vec![(1, ItemId::Sand)],
+            BlockId::OakLog => vec![(1, ItemId::OakLog)],
+            BlockId::OakPlanks => vec![(1, ItemId::OakPlanks)],
             _ => vec![],
         }
     }

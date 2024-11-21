@@ -24,6 +24,9 @@ pub enum ItemId {
     // ! ----- LEAVE DIRT FIRST ----- !
     Grass,
     Stone,
+    OakLog,
+    OakPlanks,
+    Sand,
     // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
@@ -39,6 +42,9 @@ impl ItemId {
             Self::Bedrock => ItemType::Block(BlockId::Bedrock),
             Self::Grass => ItemType::Block(BlockId::Grass),
             Self::Stone => ItemType::Block(BlockId::Stone),
+            Self::OakLog => ItemType::Block(BlockId::OakLog),
+            Self::OakPlanks => ItemType::Block(BlockId::OakPlanks),
+            Self::Sand => ItemType::Block(BlockId::Sand),
         }
     }
 }

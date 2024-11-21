@@ -116,7 +116,7 @@ pub(crate) fn generate_chunk_mesh(
                 FaceDirection::Top => should_render_top_face(global_block_pos),
                 FaceDirection::Left => should_render_left_face(global_block_pos),
                 FaceDirection::Right => should_render_right_face(global_block_pos),
-                FaceDirection::Inset => true,
+                // FaceDirection::Inset => true,
             };
 
             if should_render {

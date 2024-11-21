@@ -1,7 +1,7 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
 use crate::{
-    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS},
+    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, TEXTURE_SIZE},
     ui::InventoryCell,
     world::MaterialResource,
     GameState,
@@ -21,8 +21,8 @@ pub fn setup_hotbar(
 
     let atlas_element = TextureAtlas {
         layout: layouts.add(TextureAtlasLayout::from_grid(
-            UVec2::splat(16),
-            4,
+            UVec2::splat(TEXTURE_SIZE),
+            materials_resource.items.uvs.len() as u32,
             1,
             None,
             None,
