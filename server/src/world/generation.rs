@@ -51,7 +51,7 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
 
                 chunk
                     .map
-                    .insert(IVec3::new(dx, dy, dz), BlockData::new(block));
+                    .insert(IVec3::new(dx, dy, dz), BlockData::new(block, false, BlockDirection::North));
             }
         }
     }

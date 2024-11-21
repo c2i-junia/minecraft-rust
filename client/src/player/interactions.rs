@@ -129,7 +129,7 @@ pub fn handle_block_interactions(
                     if let ItemType::Block(block_id) = item.item_type {
                         let block_pos =
                             IVec3::new(position.x as i32, position.y as i32, position.z as i32);
-                        let block = BlockData::new(block_id);
+                        let block = BlockData::new(block_id, false, shared::world::BlockDirection::North);
 
                         world_map.set_block(&block_pos, block);
 

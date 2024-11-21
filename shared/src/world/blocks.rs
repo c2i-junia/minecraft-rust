@@ -44,6 +44,13 @@ impl BlockId {
         }
     }
 
+    pub fn get_color(&self) -> [f32; 4] {
+        match *self {
+            Self::Grass => [0.1, 1.0, 0.25, 1.],
+            _ => [1., 1., 1., 1.]
+        }
+    }
+
     pub fn get_drops(&self, nb_drops: u32) -> HashMap<ItemId, u32> {
         let mut drops = HashMap::new();
         let table = self.get_drop_table();

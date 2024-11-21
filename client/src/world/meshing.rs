@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::f32::consts::PI;
 
 use crate::world::ClientChunk;
 use crate::world::ClientWorldMap;
@@ -8,6 +9,7 @@ use bevy::{
     render::mesh::{Indices, PrimitiveTopology},
 };
 use shared::world::to_global_pos;
+use shared::world::BlockDirection;
 use shared::world::BlockId;
 
 #[derive(Copy, Clone)]
@@ -38,6 +40,7 @@ pub(crate) fn generate_chunk_mesh(
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();
     let mut uvs = Vec::new();
+    let mut colors = Vec::new();
 
     let mut indices_offset = 0;
 
@@ -348,8 +351,21 @@ pub(crate) fn generate_chunk_mesh(
 
         let local_vertices: Vec<[f32; 3]> = local_vertices
             .iter()
-            .map(|v| [v[0] + x + 0.5, v[1] + y + 0.5, v[2] + z + 0.5])
+            .map(|v| {
+                let v = rotate_vertices(v, &block.direction);
+                [
+                    v[0] + x + 0.5,
+                    if block.flipped { 1. - v[1] } else { v[1] } + y + 0.5,
+                    v[2] + z + 0.5,
+                ]
+            })
             .collect();
+
+        // Temporary solution, assuming the whole block is colored
+        // Shall be refactored later
+        for _ in 0..local_vertices.len() {
+            colors.push(block.id.get_color());
+        }
 
         vertices.extend(local_vertices);
         indices.extend(local_indices);
@@ -361,6 +377,7 @@ pub(crate) fn generate_chunk_mesh(
     mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices.to_vec());
     mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
     mesh.insert_indices(Indices::U32(indices));
 
     mesh
@@ -383,4 +400,19 @@ pub(crate) fn is_block_surrounded(
     }
 
     true
+}
+
+pub fn rotate_vertices(v: &[f32; 3], direction: &BlockDirection) -> [f32; 3] {
+    let angle = match *direction {
+        BlockDirection::North => 0.,
+        BlockDirection::East => -PI / 2.,
+        BlockDirection::West => PI / 2.,
+        BlockDirection::South => PI,
+    };
+
+    [
+        angle.cos() * v[0] + angle.sin() * v[2],
+        v[1],
+        (-angle).sin() * v[0] + angle.cos() * v[2],
+    ]
 }

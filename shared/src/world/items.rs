@@ -5,8 +5,17 @@ use serde::{Deserialize, Serialize};
 use super::{BlockId, GameElementId};
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash,
-    Default
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+    Hash,
+    Default,
 )]
 #[repr(usize)]
 pub enum ItemId {
@@ -43,15 +52,29 @@ impl GameElementId for ItemId {
     }
 }
 
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BlockDirection {
+    North,
+    East,
+    South,
+    West,
+}
+
 /// Data associated with a given `BlockId`
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct BlockData {
     pub id: BlockId,
+    pub flipped: bool,
+    pub direction: BlockDirection,
 }
 
 impl BlockData {
-    pub fn new(id: BlockId) -> Self {
-        BlockData { id }
+    pub fn new(id: BlockId, flipped: bool, direction: BlockDirection) -> Self {
+        BlockData {
+            id,
+            flipped,
+            direction,
+        }
     }
 }
 
@@ -78,8 +101,6 @@ pub enum ArmorType {
 pub enum ItemType {
     Generic,
     Block(BlockId),
-    Tool {
-        durability: i16,
-    },
+    Tool { durability: i16 },
     Armor(ArmorType),
 }
