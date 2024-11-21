@@ -42,15 +42,22 @@ pub fn register_systems(app: &mut App) {
     app.add_systems(Update, world::handle_block_interactions);
 }
 
+#[allow(clippy::type_complexity)]
 fn server_update_system(
     mut server_events: EventReader<ServerEvent>,
-    resources: (
+    (mut server, mut chat_conversation, mut lobby, tick): (
         ResMut<RenetServer>,
         ResMut<ChatConversation>,
         ResMut<ServerLobby>,
         Res<TickCounter>,
     ),
-    event_writers: (
+    (
+        mut ev_chat,
+        mut ev_app_exit,
+        mut ev_world_update_request,
+        mut ev_save_request,
+        mut ev_block_interaction,
+    ): (
         EventWriter<ChatMessageEvent>,
         EventWriter<AppExit>,
         EventWriter<WorldUpdateRequestEvent>,
@@ -59,15 +66,6 @@ fn server_update_system(
     ),
     config: Res<GameServerConfig>,
 ) {
-    let (mut server, mut chat_conversation, mut lobby, tick) = resources;
-    let (
-        mut ev_chat,
-        mut ev_app_exit,
-        mut ev_world_update_request,
-        mut ev_save_request,
-        mut ev_block_interaction,
-    ) = event_writers;
-
     for event in server_events.read() {
         debug!("event received");
         match event {

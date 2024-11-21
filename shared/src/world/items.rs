@@ -1,17 +1,22 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, mem::transmute};
 
 use serde::{Deserialize, Serialize};
 
-use super::BlockId;
+use super::{BlockId, GameElementId};
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash,
+    Default
 )]
+#[repr(usize)]
 pub enum ItemId {
-    Bedrock,
+    #[default]
     Dirt,
+    // ! ----- LEAVE DIRT FIRST ----- !
     Grass,
     Stone,
+    // ! ----- LEAVE BEDROCK LAST ----- !
+    Bedrock,
 }
 
 impl ItemId {
@@ -26,6 +31,15 @@ impl ItemId {
             Self::Grass => ItemType::Block(BlockId::Grass),
             Self::Stone => ItemType::Block(BlockId::Stone),
         }
+    }
+}
+
+impl GameElementId for ItemId {
+    fn iterate_enum() -> impl Iterator<Item = ItemId> {
+        // Unsafe code needed for `transmute` function
+        // Transmute function needed to cast from `usize` to `ItemId`
+        // Still safe, because `ItemId` enum only contains numerical enum variants
+        unsafe { ((Self::Dirt as usize)..=(Self::Bedrock as usize)).map(|num| transmute(num)) }
     }
 }
 
@@ -50,13 +64,6 @@ pub struct TempBlock {
     pub uvs: [f32; 4],
 }
 
-/// Data associated with a given `ItemId`
-#[derive(Debug, Clone, Copy)]
-pub struct ItemData {
-    pub kind: ItemType,
-    pub stack: u8,
-}
-
 /// Type of armor piece
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 pub enum ArmorType {
@@ -69,16 +76,10 @@ pub enum ArmorType {
 /// Type of item
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 pub enum ItemType {
+    Generic,
     Block(BlockId),
-    Tool,
+    Tool {
+        durability: i16,
+    },
     Armor(ArmorType),
-}
-
-impl Default for ItemData {
-    fn default() -> Self {
-        Self {
-            kind: ItemType::Tool,
-            stack: 64,
-        }
-    }
 }

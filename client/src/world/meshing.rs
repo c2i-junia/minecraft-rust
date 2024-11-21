@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::world::ClientChunk;
 use crate::world::ClientWorldMap;
 use bevy::{
@@ -9,28 +11,28 @@ use shared::world::to_global_pos;
 use shared::world::BlockId;
 
 #[derive(Copy, Clone)]
-struct UvCoords {
+pub struct UvCoords {
     u0: f32,
     u1: f32,
     v0: f32,
     v1: f32,
 }
 
-fn get_uv_coords(block: &BlockId) -> UvCoords {
-    // should be refactored later
-    let res = block.get_uvs();
-    UvCoords {
-        u0: res[0],
-        u1: res[1],
-        v0: res[2],
-        v1: res[3],
+impl UvCoords {
+    pub fn new(u0: f32, u1: f32, v0: f32, v1: f32) -> Self {
+        Self { u0, u1, v0, v1 }
     }
+
+    // pub fn into_array(&self) -> [f32; 4] {
+    //     [self.u0, self.u1, self.v0, self.v1]
+    // }
 }
 
 pub(crate) fn generate_chunk_mesh(
     world_map: &ClientWorldMap,
     chunk: &ClientChunk,
     chunk_pos: &IVec3,
+    block_uvs: &HashMap<BlockId, UvCoords>,
 ) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -270,7 +272,13 @@ pub(crate) fn generate_chunk_mesh(
         let mut local_normals: Vec<[f32; 3]> = vec![];
         let mut local_uvs: Vec<[f32; 2]> = vec![];
 
-        let uv_coords = get_uv_coords(&block.id);
+        let uv_coords: UvCoords;
+
+        if let Some(uvs) = block_uvs.get(&block.id) {
+            uv_coords = *uvs;
+        } else {
+            continue;
+        }
 
         if should_render_front_face(global_block_pos) {
             render_front_face(

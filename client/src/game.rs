@@ -28,7 +28,7 @@ use crate::camera::*;
 use crate::input::*;
 use crate::player::*;
 use crate::ui::inventory::*;
-use shared::world::WorldSeed;
+use shared::world::{BlockId, ItemId, WorldSeed};
 
 use crate::menu::game_loading_screen::load_loading_screen;
 use crate::network::{
@@ -44,6 +44,12 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
     info!("Current Volume: {:?}", *volume);
 }
 
+#[derive(Resource)]
+pub struct PreLoadingCompletion {
+    pub connected: bool,
+    pub textures_loaded: bool
+}
+
 // This plugin will contain the game. In this case, it's just be a screen that will
 // display the current settings for 5 seconds before returning to the menu
 pub fn game_plugin(app: &mut App) {
@@ -57,6 +63,10 @@ pub fn game_plugin(app: &mut App) {
             color: Color::WHITE,
             brightness: 400.0,
         })
+        .insert_resource(PreLoadingCompletion {
+            connected: false,
+            textures_loaded: false
+        })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
         .insert_resource(WireframeConfig {
             // The global wireframe config enables drawing of wireframes on every mesh,
@@ -68,7 +78,8 @@ pub fn game_plugin(app: &mut App) {
             default_color: WHITE.into(),
         })
         .insert_resource(MaterialResource { ..default() })
-        .insert_resource(AtlasHandles { ..default() })
+        .insert_resource(AtlasHandles::<BlockId> { ..default() })
+        .insert_resource(AtlasHandles::<ItemId> { ..default() })
         .insert_resource(RenderDistance { ..default() })
         .insert_resource(UIMode::Closed)
         .insert_resource(ViewMode::FirstPerson)
@@ -81,18 +92,18 @@ pub fn game_plugin(app: &mut App) {
                 load_loading_screen,
                 launch_local_server_system,
                 init_server_connection,
+                setup_materials,
             )
                 .chain(),
         )
         .add_systems(
             Update,
-            establish_authenticated_connection_to_server
+            (establish_authenticated_connection_to_server, create_all_atlases, check_pre_loading_complete)
                 .run_if(in_state(GameState::PreGameLoading)),
         )
         .add_systems(
             OnEnter(GameState::Game),
             (
-                setup_materials,
                 spawn_player,
                 setup_main_lighting,
                 spawn_camera,
@@ -125,7 +136,6 @@ pub fn game_plugin(app: &mut App) {
             Update,
             (
                 render_distance_update_system,
-                build_atlas,
                 player_movement_system,
                 (handle_block_interactions, camera_control_system).chain(),
                 fps_text_update_system,
@@ -165,4 +175,10 @@ fn clear_resources(mut world_map: ResMut<ClientWorldMap>) {
     world_map.total_blocks_count = 0;
     world_map.total_chunks_count = 0;
     world_map.name = "".into();
+}
+
+fn check_pre_loading_complete(loading: Res<PreLoadingCompletion>, mut game_state: ResMut<NextState<GameState>>,) {
+    if loading.connected && loading.textures_loaded {
+        game_state.set(GameState::Game);
+    }
 }

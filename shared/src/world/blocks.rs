@@ -1,21 +1,36 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, mem::transmute};
 
-use super::ItemId;
+use super::{GameElementId, ItemId};
 use rand::Rng;
 
 #[derive(
     Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash,
+    Default
 )]
+#[repr(usize)]
 pub enum BlockId {
-    Bedrock,
+    #[default]
     Dirt,
+    // ! ----- LEAVE DIRT FIRST ----- !
     Grass,
+    Stone,
+    // ! ----- LEAVE BEDROCK LAST ----- !
+    Bedrock,
+}
+
+pub enum BlockTags {
+    Solid,
     Stone,
 }
 
 impl BlockId {
+    pub fn is_biome_colored() -> bool {
+        false
+    }
+
     pub fn get_break_time(&self) -> f32 {
         match *self {
+            Self::Bedrock => -1.,
             _ => 5.,
         }
     }
@@ -53,5 +68,21 @@ impl BlockId {
             BlockId::Stone => vec![(100., ItemId::Stone)],
             _ => vec![],
         }
+    }
+
+    pub fn get_tags(&self) -> Vec<BlockTags> {
+        match *self {
+            BlockId::Stone => vec![BlockTags::Stone, BlockTags::Solid],
+            _ => vec![BlockTags::Solid],
+        }
+    }
+}
+
+impl GameElementId for BlockId {
+    fn iterate_enum() -> impl Iterator<Item = BlockId> {
+        // Unsafe code needed for `transmute` function
+        // Transmute function needed to cast from `usize` to `BlockId`
+        // Still safe, because `BlockId` enum only contains numerical enum variants
+        unsafe { ((Self::Dirt as usize)..=(Self::Bedrock as usize)).map(|num| transmute(num)) }
     }
 }

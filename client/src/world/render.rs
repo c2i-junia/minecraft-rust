@@ -36,7 +36,7 @@ fn update_chunk(
     new_mesh: Mesh,
 ) {
     let chunk = world_map.map.get_mut(chunk_pos).unwrap();
-    let texture = material_resource.atlas_texture.clone().unwrap();
+    let texture = material_resource.blocks.material.clone().unwrap();
 
     if chunk.entity.is_some() {
         commands.entity(chunk.entity.unwrap()).despawn_recursive();
@@ -61,12 +61,6 @@ fn update_chunk(
                 },
                 RaycastMesh::<BlockRaycastSet>::default(),
             ))
-            // .with_children(|builder| {
-            //     builder.spawn(PbrBundle {
-            //         mesh: meshes.add(Mesh::from(Cuboid::new(2., 2., 2.))),
-            //         ..Default::default()
-            //     });
-            // })
             .id();
 
         let ch = world_map.map.get_mut(chunk_pos).unwrap();
@@ -89,7 +83,7 @@ pub fn world_render_system(
         queued_events.events.insert(*event);
     }
 
-    if material_resource.atlas_texture.is_none() {
+    if material_resource.blocks.material.is_none() {
         // Wait until the texture is ready
         return;
     }
@@ -97,10 +91,12 @@ pub fn world_render_system(
     let pool = AsyncComputeTaskPool::get();
 
     let events = queued_events.events.clone();
-    let map_ptr = Arc::new(world_map.clone());
-    let mut chunks_to_reload: HashSet<IVec3> = HashSet::new();
 
     if !events.is_empty() {
+        let map_ptr = Arc::new(world_map.clone());
+        let block_uvs = Arc::new(material_resource.blocks.uvs.clone());
+        let mut chunks_to_reload: HashSet<IVec3> = HashSet::new();
+
         // Using a set so same chunks are not reloaded multiple times
         // Accumulate chunks to render
         for event in &events {
@@ -127,11 +123,12 @@ pub fn world_render_system(
 
                 // Define variables to move to the thread
                 let map_clone = Arc::clone(&map_ptr);
+                let uvs_clone = Arc::clone(&block_uvs);
                 let ch = chunk.clone();
                 let t = pool.spawn(async move {
                     (
                         pos,
-                        world::meshing::generate_chunk_mesh(&map_clone, &ch, &pos),
+                        world::meshing::generate_chunk_mesh(&map_clone, &ch, &pos, &uvs_clone),
                     )
                 });
                 queued_meshes.meshes.push(t);

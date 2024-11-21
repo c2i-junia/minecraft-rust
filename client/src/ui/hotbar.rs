@@ -1,9 +1,7 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
 use crate::{
-    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS},
-    ui::InventoryCell,
-    GameState,
+    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS}, ui::InventoryCell, world::MaterialResource, GameState
 };
 
 #[derive(Component)]
@@ -11,7 +9,20 @@ pub struct Hotbar {
     pub selected: u32,
 }
 
-pub fn setup_hotbar(mut commands: Commands) {
+pub fn setup_hotbar(mut commands: Commands, mut layouts: ResMut<Assets<TextureAtlasLayout>>, materials_resource: Res<MaterialResource>) {
+    let img = materials_resource.items.texture.clone().unwrap();
+
+    let atlas_element = TextureAtlas {
+        layout: layouts.add(TextureAtlasLayout::from_grid(
+            UVec2::splat(16),
+            4,
+            1,
+            None,
+            None,
+        )),
+        index: 0,
+    };
+
     commands
         .spawn((
             Hotbar { selected: 0 },
@@ -67,18 +78,24 @@ pub fn setup_hotbar(mut commands: Commands) {
                         },
                         ..Default::default()
                     });
-                    btn.spawn(ImageBundle {
-                        z_index: ZIndex::Local(-1),
-                        style: Style {
-                            width: Val::Px(
-                                HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER),
-                            ),
-                            position_type: PositionType::Relative,
+                    btn.spawn((
+                        ImageBundle {
+                            z_index: ZIndex::Local(-1),
+                            style: Style {
+                                width: Val::Px(
+                                    HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER),
+                                ),
+                                position_type: PositionType::Relative,
+                                ..Default::default()
+                            },
+                            image: UiImage {
+                                texture: img.clone_weak(),
+                                ..default()
+                            },
                             ..Default::default()
                         },
-                        image: UiImage::default(),
-                        ..Default::default()
-                    });
+                        atlas_element.clone(),
+                    ));
                 });
             }
         });

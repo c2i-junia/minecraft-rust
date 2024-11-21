@@ -26,7 +26,7 @@ pub fn toggle_wireframe_system(
     {
         settings.is_enabled = true;
         config.global = true;
-        let handle = material_resource.atlas_texture.clone().unwrap();
+        let handle = material_resource.blocks.material.clone().unwrap();
         let material = materials.get_mut(&handle).unwrap();
         material.alpha_mode = AlphaMode::Blend;
         material.base_color.set_alpha(0.3);
@@ -40,7 +40,7 @@ pub fn toggle_wireframe_system(
     ) {
         settings.is_enabled = false;
         config.global = false;
-        let handle = material_resource.atlas_texture.clone().unwrap();
+        let handle = material_resource.blocks.material.clone().unwrap();
         let material = materials.get_mut(&handle).unwrap();
         material.alpha_mode = AlphaMode::Opaque;
         material.base_color.set_alpha(1.0);

@@ -1,23 +1,32 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
+use crate::game::PreLoadingCompletion;
 use crate::world::GlobalMaterial;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
-use shared::world::{BlockId, ItemId};
+use shared::world::{BlockId, GameElementId, ItemId};
 use std::collections::HashMap;
+
+use super::meshing::UvCoords;
 
 const TEXTURE_PATH: &str = "graphics/textures/";
 
-#[derive(Resource, Default)]
-pub struct MaterialResource {
-    pub block_materials: HashMap<BlockId, Handle<StandardMaterial>>,
-    pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
-    pub item_textures: HashMap<ItemId, Handle<Image>>,
-    pub atlas_texture: Option<Handle<StandardMaterial>>,
+#[derive(Default, Resource)]
+pub struct AtlasWrapper<T: GameElementId> {
+    pub uvs: HashMap<T, UvCoords>,
+    pub material: Option<Handle<StandardMaterial>>,
+    pub texture: Option<Handle<Image>>,
 }
 
 #[derive(Resource, Default)]
-pub struct AtlasHandles {
-    pub handles: Vec<Handle<Image>>,
+pub struct MaterialResource {
+    pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
+    pub items: AtlasWrapper<ItemId>,
+    pub blocks: AtlasWrapper<BlockId>,
+}
+
+#[derive(Resource, Default)]
+pub struct AtlasHandles<T> {
+    pub handles: Vec<(Handle<Image>, T)>,
     pub loaded: bool,
 }
 
@@ -25,7 +34,8 @@ pub fn setup_materials(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut material_resource: ResMut<MaterialResource>,
-    mut atlas_handles: ResMut<AtlasHandles>,
+    mut block_atlas_handles: ResMut<AtlasHandles<BlockId>>,
+    mut item_atlas_handles: ResMut<AtlasHandles<ItemId>>,
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -43,50 +53,18 @@ pub fn setup_materials(
         ..Default::default()
     });
 
-    // Root directory for asset server : /assets/
-    // TODO : atlas textures (currently only supports 1 texture per cube, for all 6 faces)
-    let grass_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "grass.png"))),
-        base_color: Color::srgb(0.2, 0.85, 0.3),
-        perceptual_roughness: BASE_ROUGHNESS,
-        reflectance: BASE_SPECULAR_HIGHLIGHT,
-        ..default()
-    });
-    // MC's grass texture is grey and tinted via a colormap according to biome
-    // Don't have the knowledge to do that atm so used constant "grass green" color instead
-    // Modifying color based on noise generation values could be interesting tho
-
-    let dirt_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "dirt.png"))),
-        perceptual_roughness: BASE_ROUGHNESS,
-        reflectance: BASE_SPECULAR_HIGHLIGHT,
-        ..default()
-    });
-    let stone_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "stone.png"))),
-        perceptual_roughness: BASE_ROUGHNESS,
-        reflectance: BASE_SPECULAR_HIGHLIGHT,
-        ..default()
-    });
-    let bedrock_material = materials.add(StandardMaterial {
-        base_color_texture: Some(asset_server.load(&(TEXTURE_PATH.to_owned() + "bedrock.png"))),
-        perceptual_roughness: BASE_ROUGHNESS,
-        reflectance: BASE_SPECULAR_HIGHLIGHT,
-        ..default()
-    });
-
-    material_resource
-        .block_materials
-        .insert(BlockId::Dirt, dirt_material);
-    material_resource
-        .block_materials
-        .insert(BlockId::Grass, grass_material);
-    material_resource
-        .block_materials
-        .insert(BlockId::Stone, stone_material);
-    material_resource
-        .block_materials
-        .insert(BlockId::Bedrock, bedrock_material);
+    // material_resource
+    //     .block_materials
+    //     .insert(BlockId::Dirt, dirt_material);
+    // material_resource
+    //     .block_materials
+    //     .insert(BlockId::Grass, grass_material);
+    // material_resource
+    //     .block_materials
+    //     .insert(BlockId::Stone, stone_material);
+    // material_resource
+    //     .block_materials
+    //     .insert(BlockId::Bedrock, bedrock_material);
 
     material_resource
         .global_materials
@@ -95,50 +73,101 @@ pub fn setup_materials(
         .global_materials
         .insert(GlobalMaterial::Moon, moon_material);
 
-    material_resource.item_textures.insert(
-        ItemId::Grass,
-        asset_server.load(&(TEXTURE_PATH.to_owned() + "grass.png")),
-    );
-    material_resource.item_textures.insert(
-        ItemId::Dirt,
-        asset_server.load(&(TEXTURE_PATH.to_owned() + "dirt.png")),
-    );
-    material_resource.item_textures.insert(
-        ItemId::Stone,
-        asset_server.load(&(TEXTURE_PATH.to_owned() + "stone.png")),
-    );
-    material_resource.item_textures.insert(
-        ItemId::Bedrock,
-        asset_server.load(&(TEXTURE_PATH.to_owned() + "bedrock.png")),
-    );
+    // material_resource.item_textures.insert(
+    //     ItemId::Grass,
+    //     asset_server.load(&(TEXTURE_PATH.to_owned() + "grass.png")),
+    // );
+    // material_resource.item_textures.insert(
+    //     ItemId::Dirt,
+    //     asset_server.load(&(TEXTURE_PATH.to_owned() + "dirt.png")),
+    // );
+    // material_resource.item_textures.insert(
+    //     ItemId::Stone,
+    //     asset_server.load(&(TEXTURE_PATH.to_owned() + "stone.png")),
+    // );
+    // material_resource.item_textures.insert(
+    //     ItemId::Bedrock,
+    //     asset_server.load(&(TEXTURE_PATH.to_owned() + "bedrock.png")),
+    // );
 
-    let image_paths = ["moss.png", "dirt.png", "stone.png", "bedrock.png"];
+    // let image_paths = ["moss.png", "dirt.png", "stone.png", "bedrock.png"];
 
     // Load the images asynchronously
-    let handles: Vec<Handle<Image>> = image_paths
-        .iter()
-        .map(|filename| asset_server.load(&(TEXTURE_PATH.to_owned() + filename)))
+    // let handles: Vec<Handle<Image>> = image_paths
+    //     .iter()
+    //     .map(|filename| asset_server.load(&(TEXTURE_PATH.to_owned() + filename)))
+    //     .collect();
+
+    // Load images of all blocks defined in the enum
+
+    item_atlas_handles.handles = ItemId::iterate_enum()
+        .map(|block: ItemId| {
+            (
+                asset_server
+                    .load(&(TEXTURE_PATH.to_owned() + "items/" + &format!("{block:?}") + ".png")),
+                block,
+            )
+        })
         .collect();
 
-    atlas_handles.handles = handles;
+    block_atlas_handles.handles = BlockId::iterate_enum()
+        .map(|block: BlockId| {
+            (
+                asset_server
+                    .load(&(TEXTURE_PATH.to_owned() + "blocks/" + &format!("{block:?}") + ".png")),
+                block,
+            )
+        })
+        .collect();
 }
 
-pub fn build_atlas(
-    mut atlas_handles: ResMut<AtlasHandles>,
+pub fn create_all_atlases(
+    mut atlases: (ResMut<AtlasHandles<BlockId>>, ResMut<AtlasHandles<ItemId>>),
     mut images: ResMut<Assets<Image>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut material_resource: ResMut<MaterialResource>,
+    mut loading: ResMut<PreLoadingCompletion>,
+) {
+    build_atlas(
+        &mut atlases.0,
+        &mut images,
+        &mut materials,
+        &mut material_resource.blocks,
+    );
+
+    build_atlas(
+        &mut atlases.1,
+        &mut images,
+        &mut materials,
+        &mut material_resource.items,
+    );
+
+    if material_resource.items.texture.is_some() && material_resource.items.texture.is_some() {
+        loading.textures_loaded = true;
+    }
+}
+
+fn build_atlas<T: GameElementId>(
+    atlas_handles: &mut AtlasHandles<T>,
+    images: &mut ResMut<Assets<Image>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    atlas: &mut AtlasWrapper<T>,
 ) {
     if atlas_handles.loaded {
         // should just refactor to remove the system later
         return;
     }
     // Check if all images have been loaded
-    let loaded_images: Vec<Image> = atlas_handles
+    let loaded_images: Vec<(&Image, &T)> = atlas_handles
         .handles
         .iter()
-        .filter_map(|handle| images.get(handle))
-        .cloned()
+        .filter_map(|(handle, block)| {
+            if let Some(image) = images.get(handle) {
+                Some((image, block))
+            } else {
+                None
+            }
+        })
         .collect();
 
     if loaded_images.len() != atlas_handles.handles.len() {
@@ -153,8 +182,17 @@ pub fn build_atlas(
     let mut atlas_data: Vec<u8> = vec![0u8; (atlas_width * atlas_height * 4) as usize]; // RGBA format
 
     // Copy the pixels of each image into the correct position in the atlas
-    for (i, image) in loaded_images.iter().enumerate() {
+    for (i, (image, id)) in loaded_images.iter().enumerate() {
         let offset_x = i * 16;
+        atlas.uvs.insert(
+            **id,
+            UvCoords::new(
+                offset_x as f32 / atlas_width as f32,
+                (offset_x + 16) as f32 / atlas_width as f32,
+                0.,
+                1.,
+            ),
+        );
         for y in 0..16 {
             for x in 0..16 {
                 let src_index = (y * 16 + x) * 4;
@@ -181,6 +219,8 @@ pub fn build_atlas(
     // Add the atlas texture as an asset
     let atlas_handle = images.add(atlas_texture);
 
+    atlas.texture = Some(atlas_handle.clone_weak());
+
     let atlas_material = materials.add(StandardMaterial {
         base_color_texture: Some(atlas_handle),
         perceptual_roughness: BASE_ROUGHNESS,
@@ -188,7 +228,7 @@ pub fn build_atlas(
         ..default()
     });
 
-    material_resource.atlas_texture = Some(atlas_material);
+    atlas.material = Some(atlas_material);
 
     atlas_handles.loaded = true;
 }

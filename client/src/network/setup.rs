@@ -3,12 +3,12 @@ use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 use rand::Rng;
 use shared::{get_shared_renet_config, GameServerConfig};
 
+use crate::game::PreLoadingCompletion;
 use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
 use crate::player::Player;
 use crate::world::{RenderDistance, WorldRenderRequestUpdateEvent};
-use crate::GameState;
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
 };
@@ -172,14 +172,14 @@ pub fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportErro
 pub fn establish_authenticated_connection_to_server(
     mut client: ResMut<RenetClient>,
     mut target: ResMut<TargetServer>,
-    mut game_state: ResMut<NextState<GameState>>,
+    mut loading: ResMut<PreLoadingCompletion>
 ) {
     if target.session_token.is_some() {
         info!(
             "Successfully acquired a session token as {}",
             &target.username.clone().unwrap()
         );
-        game_state.set(GameState::Game);
+        loading.connected = true;
         return;
     }
 

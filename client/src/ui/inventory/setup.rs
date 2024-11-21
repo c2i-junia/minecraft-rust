@@ -1,12 +1,26 @@
 use super::UiDialog;
 use crate::constants::{
-    HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS,
+    HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS, TEXTURE_SIZE,
 };
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
+use crate::world::MaterialResource;
 use crate::GameState;
 use bevy::{prelude::*, ui::FocusPolicy};
 
-pub fn setup_inventory(mut commands: Commands) {
+pub fn setup_inventory(mut commands: Commands, mut layouts: ResMut<Assets<TextureAtlasLayout>>, materials_resource: Res<MaterialResource>) {
+    let img = materials_resource.items.texture.clone().unwrap();
+
+    let atlas = TextureAtlas {
+        layout: layouts.add(TextureAtlasLayout::from_grid(
+            UVec2::splat(TEXTURE_SIZE),
+            materials_resource.items.uvs.len() as u32,
+            1,
+            None,
+            None,
+        )),
+        index: 0,
+    };
+
     // Inventory root : root container for the inventory
     let root = commands
         .spawn((
@@ -118,18 +132,24 @@ pub fn setup_inventory(mut commands: Commands) {
                             },
                             ..Default::default()
                         });
-                        btn.spawn(ImageBundle {
-                            z_index: ZIndex::Local(-1),
-                            style: Style {
-                                width: Val::Px(
-                                    HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER),
-                                ),
-                                position_type: PositionType::Relative,
+                        btn.spawn((
+                            ImageBundle {
+                                z_index: ZIndex::Local(-1),
+                                style: Style {
+                                    width: Val::Px(
+                                        HOTBAR_CELL_SIZE - 2. * (HOTBAR_PADDING + HOTBAR_BORDER),
+                                    ),
+                                    position_type: PositionType::Relative,
+                                    ..Default::default()
+                                },
+                                image: UiImage {
+                                    texture: img.clone_weak(),
+                                    ..default()
+                                },
                                 ..Default::default()
                             },
-                            image: UiImage::default(),
-                            ..Default::default()
-                        });
+                            atlas.clone()
+                        ));
                     });
             }
         })
@@ -157,18 +177,25 @@ pub fn setup_inventory(mut commands: Commands) {
                     ..Default::default()
                 },
             ));
-            btn.spawn(ImageBundle {
-                z_index: ZIndex::Local(-1),
-                style: Style {
-                    position_type: PositionType::Absolute,
-                    left: Val::Percent(0.),
-                    right: Val::Percent(0.),
-                    bottom: Val::Percent(0.),
-                    top: Val::Percent(0.),
+            btn.spawn((
+                ImageBundle {
+                    z_index: ZIndex::Local(-1),
+                    style: Style {
+                        position_type: PositionType::Absolute,
+                        left: Val::Percent(0.),
+                        right: Val::Percent(0.),
+                        bottom: Val::Percent(0.),
+                        top: Val::Percent(0.),
+                        ..Default::default()
+                    },
+                    image: UiImage {
+                        texture: img.clone_weak(),
+                        ..default()
+                    },
                     ..Default::default()
                 },
-                ..Default::default()
-            });
+                atlas.clone()
+            ));
         })
         .id();
 

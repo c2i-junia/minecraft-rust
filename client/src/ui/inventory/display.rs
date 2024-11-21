@@ -5,51 +5,44 @@ use crate::input::keyboard::is_action_just_pressed;
 use crate::player::inventory::Inventory;
 use crate::ui::hotbar::Hotbar;
 use crate::ui::{FloatingStack, InventoryCell, InventoryRoot};
-use crate::world::MaterialResource;
 use crate::KeyMap;
 use bevy::color::Color;
 use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, UiImage, Val, Visibility,
-    Window, With,
+    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, Val, Visibility, Window, With, Without
 };
-use bevy::render::texture::TRANSPARENT_IMAGE_HANDLE;
+use bevy::sprite::TextureAtlas;
 use bevy::ui::{BorderColor, Interaction};
 use bevy::window::PrimaryWindow;
 
 pub fn render_inventory_hotbar(
-    queries: (
+    (
+        mut text_query,
+        mut atlas_query,
+        mut floating_stack_query,
+        mut cursor_query,
+        mut visibility_query,
+        window_query,
+        mut hotbar_query,
+    ): (
         Query<&mut Text>,
-        Query<&mut UiImage>,
+        Query<(&mut TextureAtlas, &mut Visibility), Without<InventoryRoot>>,
         Query<(&mut Style, &mut FloatingStack, &Children), With<FloatingStack>>,
         Query<(&Interaction, &mut BorderColor, &InventoryCell, &Children), With<InventoryCell>>,
         Query<&mut Visibility, With<InventoryRoot>>,
         Query<&Window, With<PrimaryWindow>>,
         Query<&mut Hotbar>,
     ),
-    resources: (
+    (keyboard_input, mouse_input, key_map, mut inventory): (
         Res<ButtonInput<KeyCode>>,
         Res<ButtonInput<MouseButton>>,
-        Res<MaterialResource>,
         Res<KeyMap>,
         ResMut<Inventory>,
     ),
     mut scroll: EventReader<MouseWheel>,
 ) {
-    let (
-        mut text_query,
-        mut image_query,
-        mut floating_stack_query,
-        mut cursor_query,
-        mut visibility_query,
-        window_query,
-        mut hotbar_query,
-    ) = queries;
-
-    let (keyboard_input, mouse_input, material_resource, key_map, mut inventory) = resources;
-
     let mut vis = visibility_query.single_mut();
     if is_action_just_pressed(GameAction::ToggleInventory, &keyboard_input, &key_map) {
         *vis = match *vis {
@@ -60,7 +53,7 @@ pub fn render_inventory_hotbar(
 
     let (mut style, mut floating_stack, children) = floating_stack_query.single_mut();
     let mut txt = text_query.get_mut(children[0]).unwrap();
-    let mut img = image_query.get_mut(children[1]).unwrap();
+    let (mut stack_atlas, mut stack_vis) = atlas_query.get_mut(children[1]).unwrap();
 
     // Change selected stack via scrolling
     let mut stack_scrolling = hotbar_query.single().selected as i32;
@@ -78,19 +71,7 @@ pub fn render_inventory_hotbar(
     // Add scrolling
     hotbar_query.single_mut().selected = stack_scrolling.rem_euclid(MAX_HOTBAR_SLOTS as i32) as u32;
 
-    // Set content
-    if floating_stack.items.is_none() {
-        txt.sections[0].value = "".to_string();
-        img.texture = TRANSPARENT_IMAGE_HANDLE;
-    } else {
-        let fstack = floating_stack.items.unwrap();
-        txt.sections[0].value = format!("{:?}", fstack.nb);
-        img.texture = material_resource
-            .item_textures
-            .get(&fstack.item_id)
-            .unwrap()
-            .clone();
-    }
+    update_inventory_cell(&floating_stack.items, &mut txt, &mut stack_vis, &mut stack_atlas);
 
     if let Some(c_pos) = window_query.single().cursor_position() {
         style.top = Val::Px(c_pos.y);
@@ -103,23 +84,11 @@ pub fn render_inventory_hotbar(
             return;
         }
 
-        let stack = inventory.inner.get(&cell.id);
-        let mut txt = text_query.get_mut(children[0]).unwrap();
-        let mut img = image_query.get_mut(children[1]).unwrap();
+        let stack = inventory.inner.get(&cell.id).cloned();
+        let mut txt: bevy::prelude::Mut<'_, Text> = text_query.get_mut(children[0]).unwrap();
+        let (mut stack_atlas, mut stack_vis) = atlas_query.get_mut(children[1]).unwrap();
 
-        // Update visual content
-        if stack.is_none() {
-            txt.sections[0].value = "".to_string();
-            img.texture = TRANSPARENT_IMAGE_HANDLE;
-        } else {
-            let stack = stack.unwrap();
-            txt.sections[0].value = format!("{:?}", stack.nb);
-            img.texture = material_resource
-                .item_textures
-                .get(&stack.item_id)
-                .unwrap()
-                .clone();
-        }
+        update_inventory_cell(&stack, &mut txt, &mut stack_vis, &mut stack_atlas);
 
         // Show selected stack in hotbar
         if *vis != Visibility::Visible && hotbar_query.single().selected == cell.id {
@@ -149,7 +118,7 @@ pub fn render_inventory_hotbar(
                 && stack.unwrap().item_id == floating_items.unwrap().item_id
                 && stack.unwrap().nb < stack.unwrap().item_id.get_max_stack()
             {
-                let stack = *stack.unwrap();
+                let stack = stack.unwrap();
                 let floating_items = floating_items.unwrap();
                 inventory.add_item_to_stack(
                     cell.id,
@@ -163,7 +132,7 @@ pub fn render_inventory_hotbar(
             } else {
                 if stack_exists {
                     let stack = stack.unwrap();
-                    floating_stack.items = Some(*stack);
+                    floating_stack.items = Some(stack);
                     // If no exchange is made with floating stack, clear cell
                     if !floating_exists {
                         inventory.inner.remove(&cell.id);
@@ -218,7 +187,7 @@ pub fn render_inventory_hotbar(
             }
             // Else if hovering a stack : cut hovered stack in half (rounded up), and push it to floating stack
             else if stack_exists {
-                let stack = *stack.unwrap();
+                let stack = stack.unwrap();
                 let nb = (stack.nb + 1) / 2;
                 // Get removed nb of items removed from inventory -> adds them into the floating stack
                 add_item_floating_stack(
@@ -232,4 +201,27 @@ pub fn render_inventory_hotbar(
             border_color.0 = Color::WHITE;
         }
     }
+}
+
+pub fn update_inventory_cell(
+    stack: &Option<shared::world::ItemStack>,
+    txt: &mut Text,
+    visibility: &mut Visibility,
+    atlas: &mut TextureAtlas
+) {
+    // Set content
+    if let Some(fstack) = stack {
+        txt.sections[0].value = format!("{:?}", fstack.nb);
+        // img.texture = material_resource
+        //     .item_textures
+        //     .get(&fstack.item_id)
+        //     .unwrap()
+        //     .clone();
+        atlas.index = fstack.item_id as usize;
+        *visibility = Visibility::Inherited;
+    } else {
+        txt.sections[0].value = "".to_string();
+        // img.texture = TRANSPARENT_IMAGE_HANDLE;
+        *visibility = Visibility::Hidden;
+    };
 }

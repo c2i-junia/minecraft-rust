@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use shared::world::BlockData;
 use std::collections::HashSet;
+use std::hash::Hash;
 
 use bevy::math::IVec3;
 use bevy::prelude::Resource;
@@ -14,7 +15,7 @@ use std::collections::HashMap;
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {
     Sun,
-    Moon,
+    Moon
 }
 
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]

@@ -6,6 +6,7 @@ use bevy::math::IVec3;
 use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt::Debug;
 
 use super::BlockData;
 use super::ItemId;
@@ -86,4 +87,11 @@ impl ServerWorldMap {
 
         chunk.map.insert(IVec3::new(sub_x, sub_y, sub_z), block);
     }
+}
+
+/// Global trait for all numerical enums serving as unique IDs for certain
+/// types of elements in the game. Example : ItemId, BlockId...
+/// Used in texture atlases and such
+pub trait GameElementId: std::hash::Hash + Eq + PartialEq + Copy + Clone + Default + Debug {
+    fn iterate_enum() -> impl Iterator<Item = Self>;
 }
