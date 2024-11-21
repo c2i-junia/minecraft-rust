@@ -85,6 +85,10 @@ impl BlockId {
         let mut drops = HashMap::new();
         let table = self.get_drop_table();
 
+        if table.is_empty() {
+            return drops;
+        }
+
         let total = table
             .clone()
             .into_iter()
@@ -97,7 +101,7 @@ impl BlockId {
             let mut nb = rand::thread_rng().gen_range(0..total);
             for item in table.iter() {
                 if nb < item.0 {
-                    drops.insert(item.1, 1);
+                    drops.insert(item.1, *drops.get(&item.1).unwrap_or(&1));
                 } else {
                     nb -= item.0;
                 }
