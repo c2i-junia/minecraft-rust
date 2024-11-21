@@ -47,7 +47,7 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 #[derive(Resource)]
 pub struct PreLoadingCompletion {
     pub connected: bool,
-    pub textures_loaded: bool
+    pub textures_loaded: bool,
 }
 
 // This plugin will contain the game. In this case, it's just be a screen that will
@@ -65,7 +65,7 @@ pub fn game_plugin(app: &mut App) {
         })
         .insert_resource(PreLoadingCompletion {
             connected: false,
-            textures_loaded: false
+            textures_loaded: false,
         })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
         .insert_resource(WireframeConfig {
@@ -98,7 +98,11 @@ pub fn game_plugin(app: &mut App) {
         )
         .add_systems(
             Update,
-            (establish_authenticated_connection_to_server, create_all_atlases, check_pre_loading_complete)
+            (
+                establish_authenticated_connection_to_server,
+                create_all_atlases,
+                check_pre_loading_complete,
+            )
                 .run_if(in_state(GameState::PreGameLoading)),
         )
         .add_systems(
@@ -177,7 +181,10 @@ fn clear_resources(mut world_map: ResMut<ClientWorldMap>) {
     world_map.name = "".into();
 }
 
-fn check_pre_loading_complete(loading: Res<PreLoadingCompletion>, mut game_state: ResMut<NextState<GameState>>,) {
+fn check_pre_loading_complete(
+    loading: Res<PreLoadingCompletion>,
+    mut game_state: ResMut<NextState<GameState>>,
+) {
     if loading.connected && loading.textures_loaded {
         game_state.set(GameState::Game);
     }

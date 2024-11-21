@@ -49,9 +49,10 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                     BlockId::Grass
                 };
 
-                chunk
-                    .map
-                    .insert(IVec3::new(dx, dy, dz), BlockData::new(block, false, BlockDirection::North));
+                chunk.map.insert(
+                    IVec3::new(dx, dy, dz),
+                    BlockData::new(block, false, BlockDirection::Front),
+                );
             }
         }
     }

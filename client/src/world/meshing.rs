@@ -1,16 +1,15 @@
 use std::collections::HashMap;
 use std::f32::consts::PI;
 
-use crate::world::ClientChunk;
-use crate::world::ClientWorldMap;
+use crate::world::{ClientChunk, ClientWorldMap};
 use bevy::{
     math::IVec3,
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
 };
-use shared::world::to_global_pos;
-use shared::world::BlockDirection;
-use shared::world::BlockId;
+use shared::world::{to_global_pos, BlockDirection, BlockId};
+
+use super::voxel::{Face, FaceDirection, VoxelShape};
 
 #[derive(Copy, Clone)]
 pub struct UvCoords {
@@ -24,10 +23,6 @@ impl UvCoords {
     pub fn new(u0: f32, u1: f32, v0: f32, v1: f32) -> Self {
         Self { u0, u1, v0, v1 }
     }
-
-    // pub fn into_array(&self) -> [f32; 4] {
-    //     [self.u0, self.u1, self.v0, self.v1]
-    // }
 }
 
 pub(crate) fn generate_chunk_mesh(
@@ -51,72 +46,11 @@ pub(crate) fn generate_chunk_mesh(
             .is_none()
     };
 
-    let render_uvs = |local_uvs: &mut Vec<[f32; 2]>, uv_coords: UvCoords| {
-        let UvCoords { u0, u1, v0, v1 } = uv_coords;
-        local_uvs.extend(vec![[u0, v0], [u1, v0], [u1, v1], [u0, v1]])
-    };
-
-    let render_front_face = |local_vertices: &mut Vec<[f32; 3]>,
-                             local_indices: &mut Vec<u32>,
-                             local_normals: &mut Vec<[f32; 3]>,
-                             local_uvs: &mut Vec<[f32; 2]>,
-                             indices_offset: &mut u32,
-                             uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [-0.5, -0.5, -0.5], // A 00 Front [0]
-            [0.5, -0.5, -0.5],  // B 01 Front [1]
-            [0.5, 0.5, -0.5],   // C 02 Front [2]
-            [-0.5, 0.5, -0.5],  // D 03 Front [3]
-        ]);
-
-        // 0, 3, 2, 2, 1, 0,
-        local_indices.extend([0, 3, 2, 2, 1, 0].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Front face (-Z)
-            [0.0, 0.0, -1.0],
-            [0.0, 0.0, -1.0],
-            [0.0, 0.0, -1.0],
-            [0.0, 0.0, -1.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
-    };
-
     let should_render_back_face = |global_block_pos: &IVec3| -> bool {
         let offset = IVec3::new(0, 0, 1);
         world_map
             .get_block_by_coordinates(&(*global_block_pos + offset))
             .is_none()
-    };
-
-    let render_back_face = |local_vertices: &mut Vec<[f32; 3]>,
-                            local_indices: &mut Vec<u32>,
-                            local_normals: &mut Vec<[f32; 3]>,
-                            local_uvs: &mut Vec<[f32; 2]>,
-                            indices_offset: &mut u32,
-                            uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [-0.5, -0.5, 0.5], // E 04 Back [0]
-            [0.5, -0.5, 0.5],  // F 05 Back [1]
-            [0.5, 0.5, 0.5],   // G 06 Back [2]
-            [-0.5, 0.5, 0.5],  // H 07 Back [3]
-        ]);
-
-        // 4, 5, 6, 6, 7, 4,
-        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Back face (+Z)
-            [0.0, 0.0, 1.0],
-            [0.0, 0.0, 1.0],
-            [0.0, 0.0, 1.0],
-            [0.0, 0.0, 1.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
     };
 
     let should_render_left_face = |global_block_pos: &IVec3| -> bool {
@@ -126,67 +60,11 @@ pub(crate) fn generate_chunk_mesh(
             .is_none()
     };
 
-    let render_left_face = |local_vertices: &mut Vec<[f32; 3]>,
-                            local_indices: &mut Vec<u32>,
-                            local_normals: &mut Vec<[f32; 3]>,
-                            local_uvs: &mut Vec<[f32; 2]>,
-                            indices_offset: &mut u32,
-                            uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [-0.5, 0.5, -0.5],  // D 08 Left [0]
-            [-0.5, -0.5, -0.5], // A 09 Left [1]
-            [-0.5, -0.5, 0.5],  // E 10 Left [2]
-            [-0.5, 0.5, 0.5],   // H 11 Left [3]
-        ]);
-
-        // 11, 8, 9, 9, 10, 11,
-        local_indices.extend([3, 0, 1, 1, 2, 3].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Left face (-X)
-            [-1.0, 0.0, 0.0],
-            [-1.0, 0.0, 0.0],
-            [-1.0, 0.0, 0.0],
-            [-1.0, 0.0, 0.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
-    };
-
     let should_render_right_face = |global_block_pos: &IVec3| -> bool {
         let offset = IVec3::new(1, 0, 0);
         world_map
             .get_block_by_coordinates(&(*global_block_pos + offset))
             .is_none()
-    };
-
-    let render_right_face = |local_vertices: &mut Vec<[f32; 3]>,
-                             local_indices: &mut Vec<u32>,
-                             local_normals: &mut Vec<[f32; 3]>,
-                             local_uvs: &mut Vec<[f32; 2]>,
-                             indices_offset: &mut u32,
-                             uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [0.5, -0.5, -0.5], // B 12 Right [0]
-            [0.5, 0.5, -0.5],  // C 13 Right [1]
-            [0.5, 0.5, 0.5],   // G 14 Right [2]
-            [0.5, -0.5, 0.5],  // F 15 Right [3]
-        ]);
-
-        // 12, 13, 14, 14, 15, 12
-        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Right face (+X)
-            [1.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
     };
 
     let should_render_bottom_face = |global_block_pos: &IVec3| -> bool {
@@ -196,67 +74,11 @@ pub(crate) fn generate_chunk_mesh(
             .is_none()
     };
 
-    let render_bottom_face = |local_vertices: &mut Vec<[f32; 3]>,
-                              local_indices: &mut Vec<u32>,
-                              local_normals: &mut Vec<[f32; 3]>,
-                              local_uvs: &mut Vec<[f32; 2]>,
-                              indices_offset: &mut u32,
-                              uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [-0.5, -0.5, -0.5], // A 16 Bottom [0]
-            [0.5, -0.5, -0.5],  // B 17 Bottom [1]
-            [0.5, -0.5, 0.5],   // F 18 Bottom [2]
-            [-0.5, -0.5, 0.5],  // E 19 Bottom [3]
-        ]);
-
-        // 16, 17, 18, 18, 19, 16,
-        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Bottom face (-Y)
-            [0.0, -1.0, 0.0],
-            [0.0, -1.0, 0.0],
-            [0.0, -1.0, 0.0],
-            [0.0, -1.0, 0.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
-    };
-
     let should_render_top_face = |global_block_pos: &IVec3| -> bool {
         let offset = IVec3::new(0, 1, 0);
         world_map
             .get_block_by_coordinates(&(*global_block_pos + offset))
             .is_none()
-    };
-
-    let render_top_face = |local_vertices: &mut Vec<[f32; 3]>,
-                           local_indices: &mut Vec<u32>,
-                           local_normals: &mut Vec<[f32; 3]>,
-                           local_uvs: &mut Vec<[f32; 2]>,
-                           indices_offset: &mut u32,
-                           uv_coords: UvCoords| {
-        local_vertices.extend(vec![
-            [0.5, 0.5, -0.5],  // C 20 Top [0]
-            [-0.5, 0.5, -0.5], // D 21 Top [1]
-            [-0.5, 0.5, 0.5],  // H 22 Top [2]
-            [0.5, 0.5, 0.5],   // G 23 Top [3]
-        ]);
-
-        // 20, 21, 22, 22, 23, 20,
-        local_indices.extend([0, 1, 2, 2, 3, 0].iter().map(|x| x + *indices_offset));
-        *indices_offset += 4;
-
-        local_normals.extend(vec![
-            // Top face (+Y)
-            [0.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
-        ]);
-
-        render_uvs(local_uvs, uv_coords);
     };
 
     for (local_block_pos, block) in chunk.map.iter() {
@@ -274,6 +96,7 @@ pub(crate) fn generate_chunk_mesh(
         let mut local_indices: Vec<u32> = vec![];
         let mut local_normals: Vec<[f32; 3]> = vec![];
         let mut local_uvs: Vec<[f32; 2]> = vec![];
+        let mut local_colors: Vec<[f32; 4]> = vec![];
 
         let uv_coords: UvCoords;
 
@@ -283,70 +106,31 @@ pub(crate) fn generate_chunk_mesh(
             continue;
         }
 
-        if should_render_front_face(global_block_pos) {
-            render_front_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
-        }
+        let voxel = VoxelShape::create_from_block(block);
 
-        if should_render_back_face(global_block_pos) {
-            render_back_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
-        }
+        for face in voxel.faces.iter() {
+            let should_render = match face.direction {
+                FaceDirection::Back => should_render_back_face(global_block_pos),
+                FaceDirection::Front => should_render_front_face(global_block_pos),
+                FaceDirection::Bottom => should_render_bottom_face(global_block_pos),
+                FaceDirection::Top => should_render_top_face(global_block_pos),
+                FaceDirection::Left => should_render_left_face(global_block_pos),
+                FaceDirection::Right => should_render_right_face(global_block_pos),
+                FaceDirection::Inset => true,
+            };
 
-        if should_render_left_face(global_block_pos) {
-            render_left_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
-        }
-
-        if should_render_right_face(global_block_pos) {
-            render_right_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
-        }
-
-        if should_render_bottom_face(global_block_pos) {
-            render_bottom_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
-        }
-
-        if should_render_top_face(global_block_pos) {
-            render_top_face(
-                &mut local_vertices,
-                &mut local_indices,
-                &mut local_normals,
-                &mut local_uvs,
-                &mut indices_offset,
-                uv_coords,
-            );
+            if should_render {
+                render_face(
+                    &mut local_vertices,
+                    &mut local_indices,
+                    &mut local_normals,
+                    &mut local_uvs,
+                    &mut local_colors,
+                    &mut indices_offset,
+                    face,
+                    uv_coords,
+                );
+            }
         }
 
         let local_vertices: Vec<[f32; 3]> = local_vertices
@@ -354,23 +138,18 @@ pub(crate) fn generate_chunk_mesh(
             .map(|v| {
                 let v = rotate_vertices(v, &block.direction);
                 [
-                    v[0] + x + 0.5,
-                    if block.flipped { 1. - v[1] } else { v[1] } + y + 0.5,
-                    v[2] + z + 0.5,
+                    v[0] + x,
+                    if block.flipped { 1. - v[1] } else { v[1] } + y,
+                    v[2] + z,
                 ]
             })
             .collect();
-
-        // Temporary solution, assuming the whole block is colored
-        // Shall be refactored later
-        for _ in 0..local_vertices.len() {
-            colors.push(block.id.get_color());
-        }
 
         vertices.extend(local_vertices);
         indices.extend(local_indices);
         normals.extend(local_normals);
         uvs.extend(local_uvs);
+        colors.extend(local_colors);
     }
 
     let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, default());
@@ -404,10 +183,10 @@ pub(crate) fn is_block_surrounded(
 
 pub fn rotate_vertices(v: &[f32; 3], direction: &BlockDirection) -> [f32; 3] {
     let angle = match *direction {
-        BlockDirection::North => 0.,
-        BlockDirection::East => -PI / 2.,
-        BlockDirection::West => PI / 2.,
-        BlockDirection::South => PI,
+        BlockDirection::Front => 0.,
+        BlockDirection::Right => -PI / 2.,
+        BlockDirection::Left => PI / 2.,
+        BlockDirection::Back => PI,
     };
 
     [
@@ -415,4 +194,32 @@ pub fn rotate_vertices(v: &[f32; 3], direction: &BlockDirection) -> [f32; 3] {
         v[1],
         (-angle).sin() * v[0] + angle.cos() * v[2],
     ]
+}
+
+#[allow(clippy::too_many_arguments)]
+fn render_face(
+    local_vertices: &mut Vec<[f32; 3]>,
+    local_indices: &mut Vec<u32>,
+    local_normals: &mut Vec<[f32; 3]>,
+    local_uvs: &mut Vec<[f32; 2]>,
+    local_colors: &mut Vec<[f32; 4]>,
+    indices_offset: &mut u32,
+    face: &Face,
+    uv_coords: UvCoords,
+) {
+    local_vertices.extend(face.vertices.iter());
+
+    local_indices.extend(face.indices.iter().map(|x| x + *indices_offset));
+    *indices_offset += face.vertices.len() as u32;
+
+    local_normals.extend(face.normals.iter());
+
+    local_colors.extend(face.colors.iter());
+
+    local_uvs.extend(face.uvs.iter().map(|uv| {
+        [
+            (uv[0] + uv_coords.u0).min(uv_coords.u1),
+            (uv[1] + uv_coords.v0).min(uv_coords.v1),
+        ]
+    }));
 }

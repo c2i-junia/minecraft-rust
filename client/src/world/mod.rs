@@ -3,6 +3,7 @@ pub mod materials;
 mod meshing;
 pub mod render;
 mod render_distance;
+mod voxel;
 
 pub use data::*;
 // pub use load_from_file::*;

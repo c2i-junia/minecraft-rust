@@ -1,13 +1,18 @@
 use super::UiDialog;
 use crate::constants::{
-    HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS, TEXTURE_SIZE,
+    HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS, MAX_INVENTORY_SLOTS,
+    TEXTURE_SIZE,
 };
 use crate::ui::{FloatingStack, InventoryCell, InventoryDialog, InventoryRoot};
 use crate::world::MaterialResource;
 use crate::GameState;
 use bevy::{prelude::*, ui::FocusPolicy};
 
-pub fn setup_inventory(mut commands: Commands, mut layouts: ResMut<Assets<TextureAtlasLayout>>, materials_resource: Res<MaterialResource>) {
+pub fn setup_inventory(
+    mut commands: Commands,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
+    materials_resource: Res<MaterialResource>,
+) {
     let img = materials_resource.items.texture.clone().unwrap();
 
     let atlas = TextureAtlas {
@@ -148,7 +153,7 @@ pub fn setup_inventory(mut commands: Commands, mut layouts: ResMut<Assets<Textur
                                 },
                                 ..Default::default()
                             },
-                            atlas.clone()
+                            atlas.clone(),
                         ));
                     });
             }
@@ -194,7 +199,7 @@ pub fn setup_inventory(mut commands: Commands, mut layouts: ResMut<Assets<Textur
                     },
                     ..Default::default()
                 },
-                atlas.clone()
+                atlas.clone(),
             ));
         })
         .id();

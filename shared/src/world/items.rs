@@ -52,32 +52,6 @@ impl GameElementId for ItemId {
     }
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub enum BlockDirection {
-    North,
-    East,
-    South,
-    West,
-}
-
-/// Data associated with a given `BlockId`
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct BlockData {
-    pub id: BlockId,
-    pub flipped: bool,
-    pub direction: BlockDirection,
-}
-
-impl BlockData {
-    pub fn new(id: BlockId, flipped: bool, direction: BlockDirection) -> Self {
-        BlockData {
-            id,
-            flipped,
-            direction,
-        }
-    }
-}
-
 /// Temporary struct for deserialization purposes
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TempBlock {

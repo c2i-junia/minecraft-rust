@@ -172,7 +172,7 @@ pub fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportErro
 pub fn establish_authenticated_connection_to_server(
     mut client: ResMut<RenetClient>,
     mut target: ResMut<TargetServer>,
-    mut loading: ResMut<PreLoadingCompletion>
+    mut loading: ResMut<PreLoadingCompletion>,
 ) {
     if target.session_token.is_some() {
         info!(

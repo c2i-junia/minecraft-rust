@@ -2,10 +2,20 @@ use std::{collections::HashMap, mem::transmute};
 
 use super::{GameElementId, ItemId};
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize, Hash,
-    Default
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    serde::Serialize,
+    serde::Deserialize,
+    Hash,
+    Default,
 )]
 #[repr(usize)]
 pub enum BlockId {
@@ -16,6 +26,32 @@ pub enum BlockId {
     Stone,
     // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
+}
+
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum BlockDirection {
+    Front,
+    Right,
+    Back,
+    Left,
+}
+
+/// Data associated with a given `BlockId`
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct BlockData {
+    pub id: BlockId,
+    pub flipped: bool,
+    pub direction: BlockDirection,
+}
+
+impl BlockData {
+    pub fn new(id: BlockId, flipped: bool, direction: BlockDirection) -> Self {
+        BlockData {
+            id,
+            flipped,
+            direction,
+        }
+    }
 }
 
 pub enum BlockTags {
@@ -35,19 +71,10 @@ impl BlockId {
         }
     }
 
-    pub fn get_uvs(&self) -> [f32; 4] {
-        match *self {
-            BlockId::Bedrock => [0.75, 1.0, 0.0, 1.0],
-            BlockId::Dirt => [0.25, 0.5, 0.0, 1.0],
-            BlockId::Grass => [0.0, 0.25, 0.0, 1.0],
-            BlockId::Stone => [0.5, 0.75, 0.0, 1.0],
-        }
-    }
-
     pub fn get_color(&self) -> [f32; 4] {
         match *self {
             Self::Grass => [0.1, 1.0, 0.25, 1.],
-            _ => [1., 1., 1., 1.]
+            _ => [1., 1., 1., 1.],
         }
     }
 

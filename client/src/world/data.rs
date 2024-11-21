@@ -15,7 +15,7 @@ use std::collections::HashMap;
 #[derive(Debug, Hash, Eq, PartialEq, Clone, Copy)]
 pub enum GlobalMaterial {
     Sun,
-    Moon
+    Moon,
 }
 
 #[derive(Clone, Default, Serialize, Deserialize, Debug)]

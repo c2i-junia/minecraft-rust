@@ -1,7 +1,10 @@
 use bevy::{prelude::*, ui::FocusPolicy};
 
 use crate::{
-    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS}, ui::InventoryCell, world::MaterialResource, GameState
+    constants::{HOTBAR_BORDER, HOTBAR_CELL_SIZE, HOTBAR_PADDING, MAX_HOTBAR_SLOTS},
+    ui::InventoryCell,
+    world::MaterialResource,
+    GameState,
 };
 
 #[derive(Component)]
@@ -9,7 +12,11 @@ pub struct Hotbar {
     pub selected: u32,
 }
 
-pub fn setup_hotbar(mut commands: Commands, mut layouts: ResMut<Assets<TextureAtlasLayout>>, materials_resource: Res<MaterialResource>) {
+pub fn setup_hotbar(
+    mut commands: Commands,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
+    materials_resource: Res<MaterialResource>,
+) {
     let img = materials_resource.items.texture.clone().unwrap();
 
     let atlas_element = TextureAtlas {

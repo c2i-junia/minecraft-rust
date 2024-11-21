@@ -28,7 +28,7 @@ pub fn handle_block_interactions(
         match &event.block_type {
             Some(block) => {
                 // Ajouter un bloc
-                world_map.set_block(&event.position, block.clone());
+                world_map.set_block(&event.position, *block);
                 debug!("Block added at {:?}: {:?}", event.position, block);
             }
             None => {

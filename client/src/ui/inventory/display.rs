@@ -11,7 +11,8 @@ use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
 use bevy::prelude::{
-    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, Val, Visibility, Window, With, Without
+    EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, Val, Visibility, Window,
+    With, Without,
 };
 use bevy::sprite::TextureAtlas;
 use bevy::ui::{BorderColor, Interaction};
@@ -71,7 +72,12 @@ pub fn render_inventory_hotbar(
     // Add scrolling
     hotbar_query.single_mut().selected = stack_scrolling.rem_euclid(MAX_HOTBAR_SLOTS as i32) as u32;
 
-    update_inventory_cell(&floating_stack.items, &mut txt, &mut stack_vis, &mut stack_atlas);
+    update_inventory_cell(
+        &floating_stack.items,
+        &mut txt,
+        &mut stack_vis,
+        &mut stack_atlas,
+    );
 
     if let Some(c_pos) = window_query.single().cursor_position() {
         style.top = Val::Px(c_pos.y);
@@ -207,7 +213,7 @@ pub fn update_inventory_cell(
     stack: &Option<shared::world::ItemStack>,
     txt: &mut Text,
     visibility: &mut Visibility,
-    atlas: &mut TextureAtlas
+    atlas: &mut TextureAtlas,
 ) {
     // Set content
     if let Some(fstack) = stack {

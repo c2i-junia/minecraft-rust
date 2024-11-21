@@ -161,13 +161,7 @@ fn build_atlas<T: GameElementId>(
     let loaded_images: Vec<(&Image, &T)> = atlas_handles
         .handles
         .iter()
-        .filter_map(|(handle, block)| {
-            if let Some(image) = images.get(handle) {
-                Some((image, block))
-            } else {
-                None
-            }
-        })
+        .filter_map(|(handle, block)| images.get(handle).map(|image| (image, block)))
         .collect();
 
     if loaded_images.len() != atlas_handles.handles.len() {

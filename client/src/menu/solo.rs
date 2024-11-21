@@ -373,20 +373,21 @@ fn add_world_item(
 }
 
 pub fn solo_action(
-    queries: (
+    (interaction_query, mut name_query, mut list_query): (
         Query<(&Interaction, &MultiplayerButtonAction), (Changed<Interaction>, With<Button>)>,
         Query<&mut TextInputValue, With<WorldNameInput>>,
         Query<(Entity, &mut WorldList), With<WorldList>>,
     ),
+    (asset_server, mut menu_state, mut game_state, mut world_map, mut selected_world): (
+        Res<AssetServer>,
+        ResMut<NextState<MenuState>>,
+        ResMut<NextState<GameState>>,
+        ResMut<ClientWorldMap>,
+        ResMut<SelectedWorld>,
+    ),
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     mut load_event: EventWriter<LoadWorldEvent>,
-    mut menu_state: ResMut<NextState<MenuState>>,
-    mut game_state: ResMut<NextState<GameState>>,
-    mut world_map: ResMut<ClientWorldMap>,
-    mut selected_world: ResMut<SelectedWorld>,
 ) {
-    let (interaction_query, mut name_query, mut list_query) = queries;
     if list_query.is_empty() {
         return;
     }

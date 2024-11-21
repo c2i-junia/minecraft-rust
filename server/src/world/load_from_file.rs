@@ -26,8 +26,10 @@ pub fn load_world_map(
             "World map file not found: {}. Returning default world.",
             file_path
         );
-        let mut default_map = ServerWorldMap::default();
-        default_map.name = file_name.to_string(); // Toujours mettre le nom du monde
+        let default_map = ServerWorldMap {
+            name: file_name.to_string(), // Toujours mettre le nom du monde
+            ..default()
+        };
         return Ok(default_map);
     }
 
