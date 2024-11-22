@@ -10,7 +10,7 @@ pub fn terminate_server_connection(
 ) {
     info!("Terminating server connection");
     let order = ClientToServerMessage::Exit(ExitOrder {
-        session_token: target.session_token.unwrap(),
+        session_token: target.session_token.unwrap_or_default(),
     });
     let payload = bincode::options().serialize(&order).unwrap();
     client.send_message(DefaultChannel::ReliableOrdered, payload);
