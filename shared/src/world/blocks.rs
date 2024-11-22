@@ -27,6 +27,7 @@ pub enum BlockId {
     OakLog,
     OakPlanks,
     Sand,
+    Ice,
     // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
@@ -119,6 +120,7 @@ impl BlockId {
             BlockId::Sand => vec![(1, ItemId::Sand)],
             BlockId::OakLog => vec![(1, ItemId::OakLog)],
             BlockId::OakPlanks => vec![(1, ItemId::OakPlanks)],
+            BlockId::Ice => vec![(1, ItemId::Ice)],
             _ => vec![],
         }
     }

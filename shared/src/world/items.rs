@@ -27,6 +27,7 @@ pub enum ItemId {
     OakLog,
     OakPlanks,
     Sand,
+    Ice,
     // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
@@ -45,6 +46,7 @@ impl ItemId {
             Self::OakLog => ItemType::Block(BlockId::OakLog),
             Self::OakPlanks => ItemType::Block(BlockId::OakPlanks),
             Self::Sand => ItemType::Block(BlockId::Sand),
+            Self::Ice => ItemType::Block(BlockId::Ice),
         }
     }
 }
