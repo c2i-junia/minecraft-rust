@@ -42,7 +42,7 @@ pub fn render_inventory_hotbar(
         Res<ButtonInput<MouseButton>>,
         Res<KeyMap>,
         ResMut<Inventory>,
-        Res<MaterialResource>
+        Res<MaterialResource>,
     ),
     mut scroll: EventReader<MouseWheel>,
 ) {
@@ -79,7 +79,7 @@ pub fn render_inventory_hotbar(
         &mut txt,
         &mut stack_vis,
         &mut stack_atlas,
-        &materials
+        &materials,
     );
 
     if let Some(c_pos) = window_query.single().cursor_position() {
@@ -97,7 +97,13 @@ pub fn render_inventory_hotbar(
         let mut txt: bevy::prelude::Mut<'_, Text> = text_query.get_mut(children[0]).unwrap();
         let (mut stack_atlas, mut stack_vis) = atlas_query.get_mut(children[1]).unwrap();
 
-        update_inventory_cell(&stack, &mut txt, &mut stack_vis, &mut stack_atlas, &materials);
+        update_inventory_cell(
+            &stack,
+            &mut txt,
+            &mut stack_vis,
+            &mut stack_atlas,
+            &materials,
+        );
 
         // Show selected stack in hotbar
         if *vis != Visibility::Visible && hotbar_query.single().selected == cell.id {
@@ -217,7 +223,7 @@ pub fn update_inventory_cell(
     txt: &mut Text,
     visibility: &mut Visibility,
     atlas: &mut TextureAtlas,
-    materials: &MaterialResource
+    materials: &MaterialResource,
 ) {
     // Set content
     if let Some(fstack) = stack {
@@ -227,7 +233,12 @@ pub fn update_inventory_cell(
         //     .get(&fstack.item_id)
         //     .unwrap()
         //     .clone();
-        atlas.index = materials.items.uvs.keys().position(|k| *k == format!("{:?}", fstack.item_id)).unwrap();
+        atlas.index = materials
+            .items
+            .uvs
+            .keys()
+            .position(|k| *k == format!("{:?}", fstack.item_id))
+            .unwrap();
         *visibility = Visibility::Inherited;
     } else {
         txt.sections[0].value = "".to_string();
