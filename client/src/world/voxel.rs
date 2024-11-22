@@ -29,6 +29,7 @@ pub struct Face {
     pub normals: Vec<[f32; 3]>,
     pub colors: Vec<[f32; 4]>,
     pub uvs: Vec<[f32; 2]>,
+    pub texture: String,
 }
 
 /// Structure for voxel rendering
@@ -41,7 +42,7 @@ impl VoxelShape {
     pub fn create_from_block(block: &BlockData) -> VoxelShape {
         match block.id {
             BlockId::Grass => {
-                let mut shape = Self::full_cube();
+                let mut shape = Self::full_cube(&block);
                 for face in shape.faces.iter_mut() {
                     for col in face.colors.iter_mut() {
                         *col = GRASS_COLOR;
@@ -49,16 +50,33 @@ impl VoxelShape {
                 }
                 shape
             }
-            _ => Self::full_cube(),
+            BlockId::OakLog => {
+                let mut shape = Self::full_cube(&block);
+                shape.faces[0].texture += "Top";
+                shape.faces[1].texture += "Top";
+                shape
+            }
+            BlockId::Debug => {
+                let mut shape = Self::full_cube(&block);
+                shape.faces[0].texture = "Top".into();
+                shape.faces[1].texture = "Down".into();
+                shape.faces[2].texture = "Front".into();
+                shape.faces[3].texture = "Back".into();
+                shape.faces[4].texture = "Left".into();
+                shape.faces[5].texture = "Right".into();
+                shape
+            }
+            _ => Self::full_cube(block),
         }
     }
 
-    pub fn full_cube() -> Self {
+    pub fn full_cube(block: &BlockData) -> Self {
         VoxelShape {
             faces: vec![
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Top,
-                    vertices: vec![[1., 1., 0.], [0., 1., 0.], [0., 1., 1.], [1., 1., 1.]],
+                    vertices: vec![[0., 1., 1.], [1., 1., 1.], [1., 1., 0.], [0., 1., 0.]],
                     indices: vec![0, 1, 2, 2, 3, 0],
                     normals: vec![
                         [0.0, 1.0, 0.0],
@@ -75,6 +93,7 @@ impl VoxelShape {
                     uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
                 },
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Bottom,
                     vertices: vec![[0., 0., 0.], [1., 0., 0.], [1., 0., 1.], [0., 0., 1.]],
                     indices: vec![0, 1, 2, 2, 3, 0],
@@ -90,16 +109,12 @@ impl VoxelShape {
                         [1.0, 1.0, 1.0, 1.0],
                         [1.0, 1.0, 1.0, 1.0],
                     ],
-                    uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
+                    uvs: vec![[1., 0.], [0., 0.], [0., 1.], [1., 1.]],
                 },
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Front,
-                    vertices: vec![
-                        [0., 0., 0.], // A 00 Front [0]
-                        [1., 0., 0.], // B 01 Front [1]
-                        [1., 1., 0.], // C 02 Front [2]
-                        [0., 1., 0.],
-                    ],
+                    vertices: vec![[1., 1., 0.], [0., 1., 0.], [0., 0., 0.], [1., 0., 0.]],
                     indices: vec![0, 3, 2, 2, 1, 0],
                     normals: vec![
                         [0.0, 0.0, -1.0],
@@ -116,8 +131,9 @@ impl VoxelShape {
                     uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
                 },
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Back,
-                    vertices: vec![[0., 0., 1.], [1., 0., 1.], [1., 1., 1.], [0., 1., 1.]],
+                    vertices: vec![[1., 1., 1.], [0., 1., 1.], [0., 0., 1.], [1., 0., 1.]],
                     indices: vec![0, 1, 2, 2, 3, 0],
                     normals: vec![
                         [0.0, 0.0, 1.0],
@@ -131,11 +147,12 @@ impl VoxelShape {
                         [1.0, 1.0, 1.0, 1.0],
                         [1.0, 1.0, 1.0, 1.0],
                     ],
-                    uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
+                    uvs: vec![[1., 0.], [0., 0.], [0., 1.], [1., 1.]],
                 },
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Left,
-                    vertices: vec![[0., 1., 0.], [0., 0., 0.], [0., 0., 1.], [0., 1., 1.]],
+                    vertices: vec![[0., 1., 1.], [0., 1., 0.], [0., 0., 0.], [0., 0., 1.]],
                     indices: vec![3, 0, 1, 1, 2, 3],
                     normals: vec![
                         [-1.0, 0.0, 0.0],
@@ -149,11 +166,12 @@ impl VoxelShape {
                         [1.0, 1.0, 1.0, 1.0],
                         [1.0, 1.0, 1.0, 1.0],
                     ],
-                    uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
+                    uvs: vec![[1., 0.], [0., 0.], [0., 1.], [1., 1.]],
                 },
                 Face {
+                    texture: format!("{:?}", block.id),
                     direction: FaceDirection::Right,
-                    vertices: vec![[1., 0., 0.], [1., 1., 0.], [1., 1., 1.], [1., 0., 1.]],
+                    vertices: vec![[1., 1., 0.], [1., 1., 1.], [1., 0., 1.], [1., 0., 0.]],
                     indices: vec![0, 1, 2, 2, 3, 0],
                     normals: vec![
                         [1.0, 0.0, 0.0],
@@ -167,7 +185,7 @@ impl VoxelShape {
                         [1.0, 1.0, 1.0, 1.0],
                         [1.0, 1.0, 1.0, 1.0],
                     ],
-                    uvs: vec![[0., 0.], [1., 0.], [1., 1.], [0., 1.]],
+                    uvs: vec![[1., 0.], [0., 0.], [0., 1.], [1., 1.]],
                 },
             ],
         }

@@ -1,4 +1,4 @@
-use std::{fmt::Debug, mem::transmute};
+use std::fmt::Debug;
 
 use serde::{Deserialize, Serialize};
 
@@ -17,18 +17,15 @@ use super::{BlockId, GameElementId};
     Hash,
     Default,
 )]
-#[repr(usize)]
 pub enum ItemId {
     #[default]
     Dirt,
-    // ! ----- LEAVE DIRT FIRST ----- !
     Grass,
     Stone,
     OakLog,
     OakPlanks,
     Sand,
     Ice,
-    // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
 
@@ -51,14 +48,7 @@ impl ItemId {
     }
 }
 
-impl GameElementId for ItemId {
-    fn iterate_enum() -> impl Iterator<Item = ItemId> {
-        // Unsafe code needed for `transmute` function
-        // Transmute function needed to cast from `usize` to `ItemId`
-        // Still safe, because `ItemId` enum only contains numerical enum variants
-        unsafe { ((Self::Dirt as usize)..=(Self::Bedrock as usize)).map(|num| transmute(num)) }
-    }
-}
+impl GameElementId for ItemId {}
 
 /// Temporary struct for deserialization purposes
 #[derive(Debug, Serialize, Deserialize)]

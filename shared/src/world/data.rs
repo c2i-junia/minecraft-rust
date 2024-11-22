@@ -159,6 +159,4 @@ impl ServerWorldMap {
 /// Global trait for all numerical enums serving as unique IDs for certain
 /// types of elements in the game. Example : ItemId, BlockId...
 /// Used in texture atlases and such
-pub trait GameElementId: std::hash::Hash + Eq + PartialEq + Copy + Clone + Default + Debug {
-    fn iterate_enum() -> impl Iterator<Item = Self>;
-}
+pub trait GameElementId: std::hash::Hash + Eq + PartialEq + Copy + Clone + Default + Debug {}

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, mem::transmute};
+use std::collections::HashMap;
 
 use super::{GameElementId, ItemId};
 use rand::Rng;
@@ -17,18 +17,16 @@ use serde::{Deserialize, Serialize};
     Hash,
     Default,
 )]
-#[repr(usize)]
 pub enum BlockId {
     #[default]
     Dirt,
-    // ! ----- LEAVE DIRT FIRST ----- !
+    Debug,
     Grass,
     Stone,
     OakLog,
     OakPlanks,
     Sand,
     Ice,
-    // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
 
@@ -102,7 +100,7 @@ impl BlockId {
             let mut nb = rand::thread_rng().gen_range(0..total);
             for item in table.iter() {
                 if nb < item.0 {
-                    drops.insert(item.1, *drops.get(&item.1).unwrap_or(&1));
+                    drops.insert(item.1, *drops.get(&item.1).unwrap_or(&0) + 1);
                 } else {
                     nb -= item.0;
                 }
@@ -133,11 +131,4 @@ impl BlockId {
     }
 }
 
-impl GameElementId for BlockId {
-    fn iterate_enum() -> impl Iterator<Item = BlockId> {
-        // Unsafe code needed for `transmute` function
-        // Transmute function needed to cast from `usize` to `BlockId`
-        // Still safe, because `BlockId` enum only contains numerical enum variants
-        unsafe { ((Self::Dirt as usize)..=(Self::Bedrock as usize)).map(|num| transmute(num)) }
-    }
-}
+impl GameElementId for BlockId {}

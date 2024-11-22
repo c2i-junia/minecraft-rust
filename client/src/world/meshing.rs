@@ -7,7 +7,7 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
 };
-use shared::world::{to_global_pos, BlockDirection, BlockId};
+use shared::world::{to_global_pos, BlockDirection};
 
 use super::voxel::{Face, FaceDirection, VoxelShape};
 
@@ -29,7 +29,7 @@ pub(crate) fn generate_chunk_mesh(
     world_map: &ClientWorldMap,
     chunk: &ClientChunk,
     chunk_pos: &IVec3,
-    block_uvs: &HashMap<BlockId, UvCoords>,
+    block_uvs: &HashMap<String, UvCoords>,
 ) -> Mesh {
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
@@ -98,17 +98,17 @@ pub(crate) fn generate_chunk_mesh(
         let mut local_uvs: Vec<[f32; 2]> = vec![];
         let mut local_colors: Vec<[f32; 4]> = vec![];
 
-        let uv_coords: UvCoords;
-
-        if let Some(uvs) = block_uvs.get(&block.id) {
-            uv_coords = *uvs;
-        } else {
-            continue;
-        }
-
         let voxel = VoxelShape::create_from_block(block);
 
         for face in voxel.faces.iter() {
+            let uv_coords: &UvCoords;
+
+            if let Some(uvs) = block_uvs.get(&face.texture) {
+                uv_coords = uvs;
+            } else {
+                uv_coords = block_uvs.get("_Default").unwrap();
+            }
+
             let should_render = match face.direction {
                 FaceDirection::Back => should_render_back_face(global_block_pos),
                 FaceDirection::Front => should_render_front_face(global_block_pos),
@@ -205,7 +205,7 @@ fn render_face(
     local_colors: &mut Vec<[f32; 4]>,
     indices_offset: &mut u32,
     face: &Face,
-    uv_coords: UvCoords,
+    uv_coords: &UvCoords,
 ) {
     local_vertices.extend(face.vertices.iter());
 

@@ -3,16 +3,18 @@ use crate::game::PreLoadingCompletion;
 use crate::world::GlobalMaterial;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
-use shared::world::{BlockId, GameElementId, ItemId};
+use shared::world::{get_game_folder, BlockId, GameElementId, ItemId};
 use std::collections::HashMap;
+use std::fs;
+use std::marker::PhantomData;
 
 use super::meshing::UvCoords;
 
 const TEXTURE_PATH: &str = "graphics/textures/";
 
 #[derive(Default, Resource)]
-pub struct AtlasWrapper<T: GameElementId> {
-    pub uvs: HashMap<T, UvCoords>,
+pub struct AtlasWrapper {
+    pub uvs: HashMap<String, UvCoords>,
     pub material: Option<Handle<StandardMaterial>>,
     pub texture: Option<Handle<Image>>,
 }
@@ -20,14 +22,26 @@ pub struct AtlasWrapper<T: GameElementId> {
 #[derive(Resource, Default)]
 pub struct MaterialResource {
     pub global_materials: HashMap<GlobalMaterial, Handle<StandardMaterial>>,
-    pub items: AtlasWrapper<ItemId>,
-    pub blocks: AtlasWrapper<BlockId>,
+    pub items: AtlasWrapper,
+    pub blocks: AtlasWrapper,
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct AtlasHandles<T> {
-    pub handles: Vec<(Handle<Image>, T)>,
+    pub handles: Vec<(Handle<Image>, String)>,
     pub loaded: bool,
+    /// Phantom to allow multiple instances of the struct
+    _d: PhantomData<T>,
+}
+
+impl<T> Default for AtlasHandles<T> {
+    fn default() -> Self {
+        Self {
+            handles: Vec::new(),
+            loaded: false,
+            _d: PhantomData {},
+        }
+    }
 }
 
 pub fn setup_materials(
@@ -100,26 +114,46 @@ pub fn setup_materials(
 
     // Load images of all blocks defined in the enum
 
-    item_atlas_handles.handles = ItemId::iterate_enum()
-        .map(|item: ItemId| {
-            debug!("Item loaded : {item:?}");
-            (
-                asset_server
-                    .load(&(TEXTURE_PATH.to_owned() + "items/" + &format!("{item:?}") + ".png")),
-                item,
-            )
-        })
-        .collect();
+    let blocks_path = get_game_folder().join("data/".to_owned() + TEXTURE_PATH + "blocks/");
+    let items_path = get_game_folder().join("data/".to_owned() + TEXTURE_PATH + "items/");
 
-    block_atlas_handles.handles = BlockId::iterate_enum()
-        .map(|block: BlockId| {
-            (
-                asset_server
-                    .load(&(TEXTURE_PATH.to_owned() + "blocks/" + &format!("{block:?}") + ".png")),
-                block,
-            )
-        })
-        .collect();
+    if let Ok(dir) = fs::read_dir(blocks_path.clone()) {
+        block_atlas_handles.handles = dir
+            .map(|file| {
+                let binding = file.unwrap().path();
+                let filename = binding.file_stem().unwrap().to_str().unwrap();
+                (
+                    asset_server.load(&(TEXTURE_PATH.to_owned() + "blocks/" + filename + ".png")),
+                    filename.to_owned(),
+                )
+            })
+            .collect();
+        info!("Block textures loaded");
+    } else {
+        warn!(
+            "Block textures could not be loaded. This could crash the game : {:?}",
+            blocks_path.display()
+        );
+    }
+
+    if let Ok(dir) = fs::read_dir(items_path.clone()) {
+        item_atlas_handles.handles = dir
+            .map(|file| {
+                let binding = file.unwrap().path();
+                let filename = binding.file_stem().unwrap().to_str().unwrap();
+                (
+                    asset_server.load(&(TEXTURE_PATH.to_owned() + "items/" + filename + ".png")),
+                    filename.to_owned(),
+                )
+            })
+            .collect();
+        info!("Block textures loaded");
+    } else {
+        warn!(
+            "Block textures could not be loaded. This could crash the game : {:?}",
+            items_path.display()
+        );
+    }
 }
 
 pub fn create_all_atlases(
@@ -152,14 +186,14 @@ fn build_atlas<T: GameElementId>(
     atlas_handles: &mut AtlasHandles<T>,
     images: &mut ResMut<Assets<Image>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
-    atlas: &mut AtlasWrapper<T>,
+    atlas: &mut AtlasWrapper,
 ) {
     if atlas_handles.loaded {
-        // should just refactor to remove the system later
+        // Blocks if this atlas is loaded but game setup phase is not done yet
         return;
     }
     // Check if all images have been loaded
-    let loaded_images: Vec<(&Image, &T)> = atlas_handles
+    let loaded_images: Vec<(&Image, &String)> = atlas_handles
         .handles
         .iter()
         .filter_map(|(handle, block)| images.get(handle).map(|image| (image, block)))
@@ -169,6 +203,8 @@ fn build_atlas<T: GameElementId>(
         // Not all images are loaded yet
         return;
     }
+
+    println!("Debug handle : {:?}", atlas_handles.handles[0]);
 
     // Assuming each image is 16x16 and there are `n` images
     let image_count: usize = loaded_images.len();
@@ -180,7 +216,7 @@ fn build_atlas<T: GameElementId>(
     for (i, (image, id)) in loaded_images.iter().enumerate() {
         let offset_x = i * 16;
         atlas.uvs.insert(
-            **id,
+            (*id).clone(),
             UvCoords::new(
                 offset_x as f32 / atlas_width as f32,
                 (offset_x + 16) as f32 / atlas_width as f32,

@@ -78,8 +78,8 @@ pub fn game_plugin(app: &mut App) {
             default_color: WHITE.into(),
         })
         .insert_resource(MaterialResource { ..default() })
-        .insert_resource(AtlasHandles::<BlockId> { ..default() })
-        .insert_resource(AtlasHandles::<ItemId> { ..default() })
+        .insert_resource(AtlasHandles::<BlockId>::default())
+        .insert_resource(AtlasHandles::<ItemId>::default())
         .insert_resource(RenderDistance { ..default() })
         .insert_resource(UIMode::Closed)
         .insert_resource(ViewMode::FirstPerson)

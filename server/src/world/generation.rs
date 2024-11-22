@@ -154,6 +154,8 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                     BlockId::Bedrock
                 } else if y < terrain_height - 4 {
                     BlockId::Stone
+                } else if y < terrain_height - 1 {
+                    BlockId::OakLog
                 } else if y < terrain_height {
                     biome.sub_surface_block
                 } else if y == terrain_height {
