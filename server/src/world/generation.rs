@@ -3,13 +3,107 @@ use noise::{NoiseFn, Perlin};
 use shared::{world::*, CHUNK_SIZE};
 use std::collections::HashMap;
 
+pub fn determine_biome(temperature: f64, humidity: f64) -> BiomeType {
+    if temperature > 0.7 {
+        if humidity > 0.5 {
+            BiomeType::Forest
+        } else {
+            BiomeType::Desert
+        }
+    } else if temperature > 0.4 {
+        if humidity > 0.5 {
+            BiomeType::Plains
+        } else {
+            BiomeType::MediumMountain
+        }
+    } else if temperature >= 0.0 {
+        if humidity > 0.5 {
+            BiomeType::IcePlain
+        } else {
+            BiomeType::HighMountain
+        }
+    } else {
+        panic!("aasdfsdfa");
+    }
+}
+
+fn interpolated_height(
+    x: i32,
+    z: i32,
+    biome_scale: f64,
+    perlin: &Perlin,
+    temp_perlin: &Perlin,
+    humidity_perlin: &Perlin,
+    scale: f64,
+) -> i32 {
+    // get the properties of the main biome at (x, z)
+    let temperature =
+        (temp_perlin.get([x as f64 * biome_scale, z as f64 * biome_scale]) + 1.0) / 2.0;
+    let humidity =
+        (humidity_perlin.get([x as f64 * biome_scale, z as f64 * biome_scale]) + 1.0) / 2.0;
+    let biome_type = determine_biome(temperature, humidity);
+    let biome = get_biome_data(biome_type);
+
+    // initialize weighted values
+    let mut weighted_base_height = biome.base_height as f64;
+    let mut weighted_variation = biome.height_variation as f64;
+    let mut total_weight = 1.0;
+
+    // loop through neighboring blocks to get influences
+    for &offset_x in &[-4, 0, 4] {
+        for &offset_z in &[-4, 0, 4] {
+            if offset_x == 0 && offset_z == 0 {
+                continue; // ignore the central position
+            }
+
+            let neighbor_x = x + offset_x;
+            let neighbor_z = z + offset_z;
+
+            // calculate the temperature and humidity of the neighboring block
+            let neighbor_temp = (temp_perlin.get([
+                neighbor_x as f64 * biome_scale,
+                neighbor_z as f64 * biome_scale,
+            ]) + 1.0)
+                / 2.0;
+            let neighbor_humidity = (humidity_perlin.get([
+                neighbor_x as f64 * biome_scale,
+                neighbor_z as f64 * biome_scale,
+            ]) + 1.0)
+                / 2.0;
+
+            // determine the biome of the neighboring block
+            let neighbor_biome_type = determine_biome(neighbor_temp, neighbor_humidity);
+            let neighbor_biome = get_biome_data(neighbor_biome_type);
+
+            // weight by distance (the farther a neighbor is, the less influence it has)
+            let distance = ((offset_x.pow(2) + offset_z.pow(2)) as f64).sqrt();
+            let weight = 1.0 / (distance + 1.0); // distance +1 to avoid division by zero
+
+            // update weighted values
+            weighted_base_height += neighbor_biome.base_height as f64 * weight;
+            weighted_variation += neighbor_biome.height_variation as f64 * weight;
+            total_weight += weight;
+        }
+    }
+
+    // normalize weighted values
+    weighted_base_height /= total_weight;
+    weighted_variation /= total_weight;
+
+    // final calculation of height with perlin noise
+    let terrain_noise = perlin.get([x as f64 * scale, z as f64 * scale]);
+    let interpolated_height = weighted_base_height + (weighted_variation * terrain_noise);
+
+    interpolated_height.round() as i32
+}
+
 pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
     let perlin = Perlin::new(seed);
+    let temp_perlin = Perlin::new(seed + 1);
+    let humidity_perlin = Perlin::new(seed + 2);
 
     let scale = 0.1;
-    let max_perlin_height_variation = 5.0;
-    let base_height = 32; // should be 64
-
+    let biome_scale = 0.02;
     let cx = chunk_pos.x;
     let cy = chunk_pos.y;
     let cz = chunk_pos.z;
@@ -27,11 +121,28 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
             let x = CHUNK_SIZE * cx + dx;
             let z = CHUNK_SIZE * cz + dz;
 
-            let perlin_height = (perlin.get([x as f64 * scale, z as f64 * scale]) - 0.5)
-                * max_perlin_height_variation;
+            // calculate temperature and humidity
+            let temperature =
+                (temp_perlin.get([x as f64 * biome_scale, z as f64 * biome_scale]) + 1.0) / 2.0;
+            let humidity =
+                (humidity_perlin.get([x as f64 * biome_scale, z as f64 * biome_scale]) + 1.0) / 2.0;
 
-            let terrain_height = base_height + perlin_height.round() as i32;
+            // get biome regarding the two values
+            let biome_type = determine_biome(temperature, humidity);
+            let biome = get_biome_data(biome_type);
 
+            // get terrain height
+            let terrain_height = interpolated_height(
+                x,
+                z,
+                biome_scale,
+                &perlin,
+                &temp_perlin,
+                &humidity_perlin,
+                scale,
+            );
+
+            // generate blocs
             for dy in 0..CHUNK_SIZE {
                 let y = CHUNK_SIZE * cy + dy;
 
@@ -41,12 +152,14 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
 
                 let block = if y == 0 {
                     BlockId::Bedrock
-                } else if y < terrain_height - 2 {
+                } else if y < terrain_height - 4 {
                     BlockId::Stone
                 } else if y < terrain_height {
-                    BlockId::Dirt
+                    biome.sub_surface_block
+                } else if y == terrain_height {
+                    biome.surface_block
                 } else {
-                    BlockId::Grass
+                    panic!();
                 };
 
                 chunk.map.insert(
@@ -58,27 +171,3 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
     }
     chunk
 }
-
-// pub fn setup_world(
-//     mut commands: Commands,
-//     mut world_map: ResMut<ServerWorldMap>,
-//     r_blocks: Res<Registry<BlockData>>,
-// ) {
-//     debug!("Registry : {:?}", r_blocks);
-//     let seed = random::<u32>();
-//     commands.insert_resource(WorldSeed(seed));
-//
-//     debug!("Generating a new world with seed: {}", seed);
-//
-//     for x in -1..=1 {
-//         for y in 0..=8 {
-//             for z in -1..=1 {
-//                 let pos = IVec3::new(x, y, z);
-//
-//                 let chunk = generate_chunk(pos, seed, &r_blocks);
-//                 world_map.map.insert(pos, chunk);
-//                 world_map.chunks_to_update.push(pos);
-//             }
-//         }
-//     }
-// }

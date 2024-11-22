@@ -1,6 +1,7 @@
 use crate::world::block_to_chunk_coord;
 use crate::world::global_block_to_chunk_pos;
 use crate::world::to_local_pos;
+use crate::world::BlockId;
 use crate::CHUNK_SIZE;
 use bevy::math::IVec3;
 use bevy::prelude::Resource;
@@ -34,6 +35,72 @@ pub struct ItemStack {
     pub item_id: ItemId,
     pub item_type: ItemType,
     pub nb: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BiomeType {
+    Plains,
+    Forest,
+    MediumMountain,
+    HighMountain,
+    Desert,
+    IcePlain,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Biome {
+    pub biome_type: BiomeType,
+    pub base_height: i32,
+    pub height_variation: i32,
+    pub surface_block: BlockId,
+    pub sub_surface_block: BlockId,
+}
+
+pub fn get_biome_data(biome_type: BiomeType) -> Biome {
+    match biome_type {
+        BiomeType::Plains => Biome {
+            biome_type: BiomeType::Plains,
+            base_height: 64,
+            height_variation: 1,
+            surface_block: BlockId::Grass,
+            sub_surface_block: BlockId::Dirt,
+        },
+        BiomeType::Forest => Biome {
+            biome_type: BiomeType::Forest,
+            base_height: 64,
+            height_variation: 2,
+            surface_block: BlockId::Grass,
+            sub_surface_block: BlockId::Dirt,
+        },
+        BiomeType::MediumMountain => Biome {
+            biome_type: BiomeType::MediumMountain,
+            base_height: 70,
+            height_variation: 4,
+            surface_block: BlockId::Dirt,
+            sub_surface_block: BlockId::Dirt,
+        },
+        BiomeType::HighMountain => Biome {
+            biome_type: BiomeType::HighMountain,
+            base_height: 80,
+            height_variation: 7,
+            surface_block: BlockId::Stone,
+            sub_surface_block: BlockId::Stone,
+        },
+        BiomeType::Desert => Biome {
+            biome_type: BiomeType::Desert,
+            base_height: 64,
+            height_variation: 1,
+            surface_block: BlockId::Sand,
+            sub_surface_block: BlockId::Sand,
+        },
+        BiomeType::IcePlain => Biome {
+            biome_type: BiomeType::IcePlain,
+            base_height: 64,
+            height_variation: 1,
+            surface_block: BlockId::Ice,
+            sub_surface_block: BlockId::Ice,
+        },
+    }
 }
 
 impl ServerWorldMap {
