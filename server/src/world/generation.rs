@@ -3,6 +3,34 @@ use noise::{NoiseFn, Perlin};
 use shared::{world::*, CHUNK_SIZE};
 use std::collections::HashMap;
 
+fn generate_tree(chunk: &mut ServerChunk, x: i32, y: i32, z: i32) {
+    // create trunk
+    let trunk_height = 3 + rand::random::<u8>() % 3; // random height between 3 and 5
+    for dy in 0..trunk_height {
+        chunk.map.insert(
+            IVec3::new(x, y + dy as i32, z),
+            BlockData::new(BlockId::OakLog, false, BlockDirection::Front),
+        );
+    }
+
+    // place the leaves
+    let leaf_start_y = y + trunk_height as i32 - 1;
+    for offset_x in -1..=1 {
+        for offset_z in -1..=1 {
+            if offset_x == 0 || offset_z == 0 {
+                chunk.map.insert(
+                    IVec3::new(x + offset_x, leaf_start_y, z + offset_z),
+                    BlockData::new(BlockId::Leaf, false, BlockDirection::Front),
+                );
+            }
+        }
+    }
+    chunk.map.insert(
+        IVec3::new(x, leaf_start_y + 1, z),
+        BlockData::new(BlockId::Leaf, false, BlockDirection::Front),
+    );
+}
+
 pub fn determine_biome(temperature: f64, humidity: f64) -> BiomeType {
     if temperature > 0.7 {
         if humidity > 0.5 {
@@ -23,7 +51,7 @@ pub fn determine_biome(temperature: f64, humidity: f64) -> BiomeType {
             BiomeType::HighMountain
         }
     } else {
-        panic!("aasdfsdfa");
+        panic!();
     }
 }
 
@@ -166,6 +194,20 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                     IVec3::new(dx, dy, dz),
                     BlockData::new(block, false, BlockDirection::Front),
                 );
+
+                // add trees in Forest biome only
+                if y == terrain_height {
+                    if biome_type == BiomeType::Forest && terrain_height >= 1 {
+                        let tree_chance = rand::random::<f32>();
+                        if tree_chance < 0.05 {
+                            // ensure the area above is clear before generating the tree
+                            let above_surface_pos = IVec3::new(dx, terrain_height + 1, dz);
+                            if !chunk.map.contains_key(&above_surface_pos) {
+                                generate_tree(&mut chunk, dx, dy + 1, dz);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

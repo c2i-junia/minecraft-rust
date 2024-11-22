@@ -27,6 +27,8 @@ pub enum BlockId {
     OakPlanks,
     Sand,
     Ice,
+    Leaf,
+    // ! ----- LEAVE BEDROCK LAST ----- !
     Bedrock,
 }
 
