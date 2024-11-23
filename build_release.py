@@ -24,7 +24,7 @@ def main():
         sys.exit(1)
 
     version = sys.argv[1]
-    build_dir = "minecraft-rust"
+    build_dir = "minecraft-rust-client-1"
     versioned_dir = ""
 
     # Step 1: Run `make remove-game-folder`
