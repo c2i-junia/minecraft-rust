@@ -13,10 +13,10 @@ use super::voxel::{Face, FaceDirection, VoxelShape};
 
 #[derive(Copy, Clone)]
 pub struct UvCoords {
-    u0: f32,
-    u1: f32,
-    v0: f32,
-    v1: f32,
+    pub u0: f32,
+    pub u1: f32,
+    pub v0: f32,
+    pub v1: f32,
 }
 
 impl UvCoords {

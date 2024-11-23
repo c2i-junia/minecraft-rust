@@ -228,21 +228,10 @@ pub fn update_inventory_cell(
     // Set content
     if let Some(fstack) = stack {
         txt.sections[0].value = format!("{:?}", fstack.nb);
-        // img.texture = material_resource
-        //     .item_textures
-        //     .get(&fstack.item_id)
-        //     .unwrap()
-        //     .clone();
-        atlas.index = materials
-            .items
-            .uvs
-            .keys()
-            .position(|k| *k == format!("{:?}", fstack.item_id))
-            .unwrap();
+        atlas.index = (materials.items.uvs.get(&format!("{:?}", fstack.item_id)).unwrap().u0 * materials.items.uvs.len() as f32) as usize;
         *visibility = Visibility::Inherited;
     } else {
         txt.sections[0].value = "".to_string();
-        // img.texture = TRANSPARENT_IMAGE_HANDLE;
         *visibility = Visibility::Hidden;
     };
 }
