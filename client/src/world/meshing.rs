@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Instant};
 use std::f32::consts::PI;
 
 use crate::world::{ClientChunk, ClientWorldMap};
@@ -31,6 +31,8 @@ pub(crate) fn generate_chunk_mesh(
     chunk_pos: &IVec3,
     block_uvs: &HashMap<String, UvCoords>,
 ) -> Mesh {
+    let start = Instant::now();
+
     let mut vertices: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
     let mut normals = Vec::new();
@@ -158,6 +160,8 @@ pub(crate) fn generate_chunk_mesh(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
     mesh.insert_indices(Indices::U32(indices));
+
+    debug!("Render time : {:?}", Instant::now() - start);
 
     mesh
 }

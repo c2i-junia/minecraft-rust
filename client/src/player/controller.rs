@@ -6,7 +6,7 @@ use crate::network::request_world_update;
 use crate::player::{Player, ViewMode};
 use crate::ui::debug::DebugOptions;
 use crate::ui::UIMode;
-use crate::world::ClientWorldMap;
+use crate::world::{ClientWorldMap, WorldRenderRequestUpdateEvent};
 use crate::world::RenderDistance;
 use crate::KeyMap;
 use bevy::prelude::*;
@@ -87,6 +87,7 @@ pub fn player_movement_system(
     ),
     mut previous_player_chunk: Local<IVec3>,
     mut commands: Commands,
+    mut ev_writer: EventWriter<WorldRenderRequestUpdateEvent>,
 ) {
     let (mut player_query, camera_query) = queries;
     let (
@@ -120,13 +121,7 @@ pub fn player_movement_system(
         }
     }
 
-    let force_chunk_reload =
-        if is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map) {
-            debug!("Forced chunk reload");
-            true
-        } else {
-            false
-        };
+    let force_chunk_reload = is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map);
 
     // Render chunks around player
     let player_chunk = IVec3::new(
@@ -136,8 +131,7 @@ pub fn player_movement_system(
     );
 
     // If player changed chunks between this frame and the previous
-    // Or a full chunk reload has been requested
-    if force_chunk_reload || player_chunk != *previous_player_chunk {
+    if player_chunk != *previous_player_chunk {
         let r = render_distance.distance as i32;
         let mut requested_chunks: Vec<IVec3> = Vec::new();
 
@@ -147,7 +141,7 @@ pub fn player_movement_system(
                     let chunk_pos = IVec3::new(player_chunk.x + x, y, player_chunk.z + z);
                     let chunk = world_map.map.get(&chunk_pos);
 
-                    if force_chunk_reload || chunk.is_none() {
+                    if chunk.is_none() {
                         requested_chunks.push(chunk_pos);
                     }
                 }
@@ -157,11 +151,12 @@ pub fn player_movement_system(
         // Only retain chunks in the render radius
         world_map.map.retain(|pos, chunk| {
             // If chunk is empty, or not in render radius
-            if force_chunk_reload || !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty()
+            if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty()
             {
                 // Remove chunk, and delete its associated entity if it exists
                 if let Some(entity) = chunk.entity {
                     commands.entity(entity).despawn_recursive();
+                    chunk.entity = None;
                 }
                 false
             } else {
@@ -179,6 +174,20 @@ pub fn player_movement_system(
 
         // Update player chunk position
         *previous_player_chunk = player_chunk;
+    }
+
+    // If a re-render has been requested by the player
+    if force_chunk_reload {
+        // Send an event to re-render all chunks loaded
+        for (pos, chunk) in world_map.map.iter_mut() {
+            // Despawn the chunk's entity
+            if let Some(e) = chunk.entity {
+                commands.entity(e).despawn_recursive();
+                chunk.entity = None;
+            }
+            // Request a render for this chunk
+            ev_writer.send(WorldRenderRequestUpdateEvent::ChunkToReload(*pos));
+        }
     }
 
     let material_handle = &*material_handle_mut_ref;
