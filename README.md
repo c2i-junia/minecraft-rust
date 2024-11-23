@@ -77,6 +77,7 @@ To build and run this project, you need the following tools and dependencies ins
 - After installation, add the **Nightly toolchain** with the Cranelift backend:
   ```bash
   rustup install nightly
+  rustup default nightly
   rustup component add rustc-codegen-cranelift-preview --toolchain nightly
   ```
 
