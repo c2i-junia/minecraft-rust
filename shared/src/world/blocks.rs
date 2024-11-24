@@ -25,10 +25,10 @@ pub enum BlockId {
     Stone,
     OakLog,
     OakPlanks,
+    OakLeaves,
     Sand,
     Ice,
-    Leaf,
-    // ! ----- LEAVE BEDROCK LAST ----- !
+    Glass,
     Bedrock,
 }
 
@@ -61,6 +61,14 @@ impl BlockData {
 pub enum BlockTags {
     Solid,
     Stone,
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum BlockTransparency {
+    Transparent,
+    Liquid,
+    Solid,
+    Decoration
 }
 
 impl BlockId {
@@ -129,6 +137,13 @@ impl BlockId {
         match *self {
             BlockId::Stone => vec![BlockTags::Stone, BlockTags::Solid],
             _ => vec![BlockTags::Solid],
+        }
+    }
+
+    pub fn get_visibility(&self) -> BlockTransparency {
+        match *self {
+            Self::Glass => BlockTransparency::Transparent,
+            _ => BlockTransparency::Solid
         }
     }
 }

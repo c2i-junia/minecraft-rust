@@ -11,6 +11,7 @@ use bevy::color::Color;
 use bevy::hierarchy::Children;
 use bevy::input::mouse::{MouseScrollUnit, MouseWheel};
 use bevy::input::ButtonInput;
+use bevy::log::debug;
 use bevy::prelude::{
     EventReader, KeyCode, MouseButton, Query, Res, ResMut, Style, Text, Val, Visibility, Window,
     With, Without,
@@ -18,6 +19,7 @@ use bevy::prelude::{
 use bevy::sprite::TextureAtlas;
 use bevy::ui::{BorderColor, Interaction};
 use bevy::window::PrimaryWindow;
+use shared::world::{ItemId, ItemStack};
 
 pub fn render_inventory_hotbar(
     (
@@ -52,6 +54,15 @@ pub fn render_inventory_hotbar(
             Visibility::Hidden => Visibility::Visible,
             _ => Visibility::Hidden,
         };
+    }
+
+    if is_action_just_pressed(GameAction::DebugGetBlock, &keyboard_input, &key_map) {
+        debug!("Blocks given to user");
+        inventory.add_item_to_inventory(ItemStack {
+            item_id: ItemId::Glass,
+            item_type: ItemId::Glass.get_default_type(),
+            nb: 64
+        });
     }
 
     let (mut style, mut floating_stack, children) = floating_stack_query.single_mut();

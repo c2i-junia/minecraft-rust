@@ -256,6 +256,7 @@ fn build_atlas<T: GameElementId>(
         base_color_texture: Some(atlas_handle),
         perceptual_roughness: BASE_ROUGHNESS,
         reflectance: BASE_SPECULAR_HIGHLIGHT,
+        alpha_mode: AlphaMode::Mask(0.5),
         ..default()
     });
 

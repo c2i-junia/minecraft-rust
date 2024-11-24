@@ -15,8 +15,6 @@ pub fn setup_inventory(
 ) {
     let img = materials_resource.items.texture.clone().unwrap();
 
-    debug!("---------------------------------------------\n NUMBER OF ITEM TEXTURES : {:?}\n--------------------------------------", materials_resource.items.uvs.len() as u32,);
-
     let atlas = TextureAtlas {
         layout: layouts.add(TextureAtlasLayout::from_grid(
             UVec2::splat(TEXTURE_SIZE),

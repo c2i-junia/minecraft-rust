@@ -1,5 +1,5 @@
-use std::{collections::HashMap, time::Instant};
 use std::f32::consts::PI;
+use std::{collections::HashMap, time::Instant};
 
 use crate::world::{ClientChunk, ClientWorldMap};
 use bevy::{
@@ -7,7 +7,7 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, PrimitiveTopology},
 };
-use shared::world::{to_global_pos, BlockDirection};
+use shared::world::{to_global_pos, BlockDirection, BlockId, BlockTransparency};
 
 use super::voxel::{Face, FaceDirection, VoxelShape};
 
@@ -41,56 +41,15 @@ pub(crate) fn generate_chunk_mesh(
 
     let mut indices_offset = 0;
 
-    let should_render_front_face = |global_block_pos: &IVec3| -> bool {
-        let front_offset = IVec3::new(0, 0, -1);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + front_offset))
-            .is_none()
-    };
-
-    let should_render_back_face = |global_block_pos: &IVec3| -> bool {
-        let offset = IVec3::new(0, 0, 1);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + offset))
-            .is_none()
-    };
-
-    let should_render_left_face = |global_block_pos: &IVec3| -> bool {
-        let offset = IVec3::new(-1, 0, 0);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + offset))
-            .is_none()
-    };
-
-    let should_render_right_face = |global_block_pos: &IVec3| -> bool {
-        let offset = IVec3::new(1, 0, 0);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + offset))
-            .is_none()
-    };
-
-    let should_render_bottom_face = |global_block_pos: &IVec3| -> bool {
-        let offset = IVec3::new(0, -1, 0);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + offset))
-            .is_none()
-    };
-
-    let should_render_top_face = |global_block_pos: &IVec3| -> bool {
-        let offset = IVec3::new(0, 1, 0);
-        world_map
-            .get_block_by_coordinates(&(*global_block_pos + offset))
-            .is_none()
-    };
-
     for (local_block_pos, block) in chunk.map.iter() {
         let x = local_block_pos.x as f32;
         let y = local_block_pos.y as f32;
         let z = local_block_pos.z as f32;
 
         let global_block_pos = &to_global_pos(chunk_pos, local_block_pos);
+        let visibility = block.id.get_visibility();
 
-        if is_block_surrounded(world_map, chunk_pos, local_block_pos) {
+        if is_block_surrounded(world_map, global_block_pos, &visibility, &block.id) {
             continue;
         }
 
@@ -111,17 +70,7 @@ pub(crate) fn generate_chunk_mesh(
                 uv_coords = block_uvs.get("_Default").unwrap();
             }
 
-            let should_render = match face.direction {
-                FaceDirection::Back => should_render_back_face(global_block_pos),
-                FaceDirection::Front => should_render_front_face(global_block_pos),
-                FaceDirection::Bottom => should_render_bottom_face(global_block_pos),
-                FaceDirection::Top => should_render_top_face(global_block_pos),
-                FaceDirection::Left => should_render_left_face(global_block_pos),
-                FaceDirection::Right => should_render_right_face(global_block_pos),
-                // FaceDirection::Inset => true,
-            };
-
-            if should_render {
+            if should_render_face(world_map, global_block_pos, &face.direction, &visibility) {
                 render_face(
                     &mut local_vertices,
                     &mut local_indices,
@@ -168,16 +117,31 @@ pub(crate) fn generate_chunk_mesh(
 
 pub(crate) fn is_block_surrounded(
     world_map: &ClientWorldMap,
-    chunk_pos: &IVec3,
-    local_block_pos: &IVec3,
+    global_block_pos: &IVec3,
+    block_visibility: &BlockTransparency,
+    block_id: &BlockId
 ) -> bool {
-    let global_block_pos = to_global_pos(chunk_pos, local_block_pos);
-
     for offset in &shared::world::SIX_OFFSETS {
-        let neighbor_pos = global_block_pos + *offset;
+        let neighbor_pos = *global_block_pos + *offset;
 
         // Check if the block exists at the neighboring position
-        if world_map.get_block_by_coordinates(&neighbor_pos).is_none() {
+        if let Some(block) = world_map.get_block_by_coordinates(&neighbor_pos) {
+            let vis = block.id.get_visibility();
+            match vis {
+                BlockTransparency::Solid => {}
+                BlockTransparency::Decoration => return false,
+                BlockTransparency::Liquid => {
+                    if vis != *block_visibility {
+                        return false;
+                    }
+                }
+                BlockTransparency::Transparent => {
+                    if *block_id != block.id {
+                        return false;
+                    }
+                }
+            }
+        } else {
             return false;
         }
     }
@@ -226,4 +190,32 @@ fn render_face(
             (uv[1] + uv_coords.v0).min(uv_coords.v1),
         ]
     }));
+}
+
+fn should_render_face(
+    world_map: &ClientWorldMap,
+    global_block_pos: &IVec3,
+    direction: &FaceDirection,
+    block_visibility: &BlockTransparency,
+) -> bool {
+    let offset = match *direction {
+        FaceDirection::Front => IVec3::new(0, 0, -1),
+        FaceDirection::Back => IVec3::new(0, 0, 1),
+        FaceDirection::Top => IVec3::new(0, 1, 0),
+        FaceDirection::Bottom => IVec3::new(0, -1, 0),
+        FaceDirection::Left => IVec3::new(-1, 0, 0),
+        FaceDirection::Right => IVec3::new(1, 0, 0),
+        // FaceDirection::Inset => return true,
+    };
+
+    if let Some(block) = world_map.get_block_by_coordinates(&(*global_block_pos + offset)) {
+        let vis = block.id.get_visibility();
+        match vis {
+            BlockTransparency::Solid => false,
+            BlockTransparency::Decoration => true,
+            BlockTransparency::Transparent | BlockTransparency::Liquid => *block_visibility != vis,
+        }
+    } else {
+        true
+    }
 }

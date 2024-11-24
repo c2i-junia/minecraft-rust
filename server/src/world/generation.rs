@@ -20,14 +20,14 @@ fn generate_tree(chunk: &mut ServerChunk, x: i32, y: i32, z: i32) {
             if offset_x == 0 || offset_z == 0 {
                 chunk.map.insert(
                     IVec3::new(x + offset_x, leaf_start_y, z + offset_z),
-                    BlockData::new(BlockId::Leaf, false, BlockDirection::Front),
+                    BlockData::new(BlockId::OakLeaves, false, BlockDirection::Front),
                 );
             }
         }
     }
     chunk.map.insert(
         IVec3::new(x, leaf_start_y + 1, z),
-        BlockData::new(BlockId::Leaf, false, BlockDirection::Front),
+        BlockData::new(BlockId::OakLeaves, false, BlockDirection::Front),
     );
 }
 
