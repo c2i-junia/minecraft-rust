@@ -31,7 +31,11 @@ pub enum BlockId {
     Glass,
     Bedrock,
     Dandelion,
-    Poppy
+    Poppy,
+    Cobblestone,
+    Snow,
+    SpruceLeaves,
+    SpruceLog
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -103,7 +107,7 @@ impl BlockId {
         let total = table
             .clone()
             .into_iter()
-            .reduce(|a, b| (a.0 + b.0, a.1))
+            .reduce(|a, b| (a.0 + b.0, a.1, a.2))
             .unwrap()
             .0;
 
@@ -112,7 +116,7 @@ impl BlockId {
             let mut nb = rand::thread_rng().gen_range(0..total);
             for item in table.iter() {
                 if nb < item.0 {
-                    drops.insert(item.1, *drops.get(&item.1).unwrap_or(&0) + 1);
+                    drops.insert(item.1, *drops.get(&item.1).unwrap_or(&0) + item.2);
                 } else {
                     nb -= item.0;
                 }
@@ -122,15 +126,19 @@ impl BlockId {
     }
 
     /// Specifies the drop table of a given block
-    /// Drops are specified this way : `(relative_chance, corresponding_item)`
-    pub fn get_drop_table(&self) -> Vec<(u32, ItemId)> {
+    /// Drops are specified this way : `(relative_chance, corresponding_item, base_number)`
+    pub fn get_drop_table(&self) -> Vec<(u32, ItemId, u32)> {
         match *self {
-            BlockId::Dirt | BlockId::Grass => vec![(1, ItemId::Dirt)],
-            BlockId::Stone => vec![(1, ItemId::Stone)],
-            BlockId::Sand => vec![(1, ItemId::Sand)],
-            BlockId::OakLog => vec![(1, ItemId::OakLog)],
-            BlockId::OakPlanks => vec![(1, ItemId::OakPlanks)],
-            BlockId::Ice => vec![(1, ItemId::Ice)],
+            BlockId::Dirt | BlockId::Grass => vec![(1, ItemId::Dirt, 1)],
+            BlockId::Stone => vec![(1, ItemId::Cobblestone, 1)],
+            BlockId::Sand => vec![(1, ItemId::Sand, 1)],
+            BlockId::OakLog => vec![(1, ItemId::OakLog, 1)],
+            BlockId::OakPlanks => vec![(1, ItemId::OakPlanks, 1)],
+            BlockId::Ice => vec![(1, ItemId::Ice, 1)],
+            BlockId::Dandelion => vec![(1, ItemId::Dandelion, 1)],
+            BlockId::Poppy => vec![(1, ItemId::Dandelion, 1)],
+            BlockId::SpruceLog => vec![(1, ItemId::SpruceLog, 1)],
+            BlockId::Snow => vec![(1, ItemId::Snowball, 4)],
             _ => vec![],
         }
     }

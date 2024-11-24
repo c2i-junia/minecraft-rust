@@ -30,7 +30,11 @@ pub enum ItemId {
     Glass,
     Bedrock,
     Dandelion,
-    Poppy
+    Poppy,
+    Cobblestone,
+    Snow,
+    Snowball,
+    SpruceLog
 }
 
 impl ItemId {
@@ -51,7 +55,12 @@ impl ItemId {
             Self::OakLeaves => ItemType::Block(BlockId::OakLeaves),
             Self::Glass => ItemType::Block(BlockId::Glass),
             Self::Dandelion => ItemType::Block(BlockId::Dandelion),
-            Self::Poppy => ItemType::Block(BlockId::Poppy)
+            Self::Poppy => ItemType::Block(BlockId::Poppy),
+            Self::Cobblestone => ItemType::Block(BlockId::Cobblestone),
+            Self::Snow => ItemType::Block(BlockId::Snow),
+            Self::SpruceLog => ItemType::Block(BlockId::SpruceLog),
+            
+            Self::Snowball => ItemType::Generic
         }
     }
 }
