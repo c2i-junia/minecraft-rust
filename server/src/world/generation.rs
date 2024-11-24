@@ -215,7 +215,7 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                                         BlockId::OakLeaves,
                                     );
                                 }
-                            } else if tree_chance < 0.1 {
+                            } else if tree_chance < 0.075 {
                                 chunk.map.insert(
                                     block_pos.with_y(block_pos.y + 1),
                                     BlockData::new(
@@ -224,7 +224,7 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                                         BlockDirection::Front,
                                     ),
                                 );
-                            } else if tree_chance < 0.15 {
+                            } else if tree_chance < 0.1 {
                                 chunk.map.insert(
                                     block_pos.with_y(block_pos.y + 1),
                                     BlockData::new(BlockId::Poppy, false, BlockDirection::Front),
@@ -246,6 +246,24 @@ pub fn generate_chunk(chunk_pos: IVec3, seed: u32) -> ServerChunk {
                                         BlockId::SpruceLeaves,
                                     );
                                 }
+                            }
+                        }
+                        BiomeType::Plains => {
+                            let flower_chance = rand::random::<f32>();
+                            if flower_chance < 0.075 {
+                                chunk.map.insert(
+                                    block_pos.with_y(block_pos.y + 1),
+                                    BlockData::new(
+                                        BlockId::Dandelion,
+                                        false,
+                                        BlockDirection::Front,
+                                    ),
+                                );
+                            } else if flower_chance < 0.1 {
+                                chunk.map.insert(
+                                    block_pos.with_y(block_pos.y + 1),
+                                    BlockData::new(BlockId::Poppy, false, BlockDirection::Front),
+                                );
                             }
                         }
                         _ => {}
