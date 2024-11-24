@@ -97,7 +97,7 @@ pub fn get_biome_data(biome_type: BiomeType) -> Biome {
             biome_type: BiomeType::IcePlain,
             base_height: 64,
             height_variation: 1,
-            surface_block: BlockId::Ice,
+            surface_block: BlockId::Snow,
             sub_surface_block: BlockId::Ice,
         },
     }

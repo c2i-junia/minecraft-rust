@@ -153,7 +153,7 @@ impl BlockId {
     pub fn get_visibility(&self) -> BlockTransparency {
         match *self {
             Self::Dandelion | Self::Poppy => BlockTransparency::Decoration,
-            Self::Glass | Self::OakLeaves => BlockTransparency::Transparent,
+            Self::Glass | Self::OakLeaves | Self::SpruceLeaves => BlockTransparency::Transparent,
             _ => BlockTransparency::Solid
         }
     }
