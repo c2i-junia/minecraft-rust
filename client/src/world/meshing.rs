@@ -112,6 +112,9 @@ pub(crate) fn generate_chunk_mesh(
 
     debug!("Render time : {:?}", Instant::now() - start);
 
+    if let Err(e) = mesh.generate_tangents() {
+        warn!("Error while generating tangents for the mesh : {:?}", e);
+    }
     mesh
 }
 
@@ -205,7 +208,7 @@ fn should_render_face(
         FaceDirection::Bottom => IVec3::new(0, -1, 0),
         FaceDirection::Left => IVec3::new(-1, 0, 0),
         FaceDirection::Right => IVec3::new(1, 0, 0),
-        // FaceDirection::Inset => return true,
+        FaceDirection::Inset => return true,
     };
 
     if let Some(block) = world_map.get_block_by_coordinates(&(*global_block_pos + offset)) {

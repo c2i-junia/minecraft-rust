@@ -30,6 +30,8 @@ pub enum BlockId {
     Ice,
     Glass,
     Bedrock,
+    Dandelion,
+    Poppy
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -142,7 +144,8 @@ impl BlockId {
 
     pub fn get_visibility(&self) -> BlockTransparency {
         match *self {
-            Self::Glass => BlockTransparency::Transparent,
+            Self::Dandelion | Self::Poppy => BlockTransparency::Decoration,
+            Self::Glass | Self::OakLeaves => BlockTransparency::Transparent,
             _ => BlockTransparency::Solid
         }
     }

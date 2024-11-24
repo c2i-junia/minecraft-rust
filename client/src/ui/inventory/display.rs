@@ -63,6 +63,18 @@ pub fn render_inventory_hotbar(
             item_type: ItemId::Glass.get_default_type(),
             nb: 64
         });
+
+        inventory.add_item_to_inventory(ItemStack {
+            item_id: ItemId::Poppy,
+            item_type: ItemId::Poppy.get_default_type(),
+            nb: 64
+        });
+
+        inventory.add_item_to_inventory(ItemStack {
+            item_id: ItemId::Dandelion,
+            item_type: ItemId::Dandelion.get_default_type(),
+            nb: 64
+        });
     }
 
     let (mut style, mut floating_stack, children) = floating_stack_query.single_mut();

@@ -18,7 +18,7 @@ pub enum FaceDirection {
     /// The face is at the left of the voxel. Won't render if the block at the left of this one is full
     Left,
     // /// The face is inside of the voxel. Will always render, except if the block is hidden on _all_ 6 sides
-    // Inset,
+    Inset,
 }
 
 /// Structure for cube voxel rendering
@@ -41,7 +41,7 @@ impl VoxelShape {
     /// Creates a VoxelShape based on the given BlockData
     pub fn create_from_block(block: &BlockData) -> VoxelShape {
         match block.id {
-            BlockId::Grass => {
+            BlockId::Grass | BlockId::OakLeaves => {
                 let mut shape = Self::full_cube(&block);
                 for face in shape.faces.iter_mut() {
                     for col in face.colors.iter_mut() {
@@ -66,6 +66,7 @@ impl VoxelShape {
                 shape.faces[5].texture = "Right".into();
                 shape
             }
+            BlockId::Poppy | BlockId::Dandelion => Self::flora(block),
             _ => Self::full_cube(block),
         }
     }
@@ -188,6 +189,65 @@ impl VoxelShape {
                     uvs: vec![[1., 0.], [0., 0.], [0., 1.], [1., 1.]],
                 },
             ],
+        }
+    }
+
+    pub fn flora(block: &BlockData) -> VoxelShape {
+        VoxelShape {
+            faces: vec![Face {
+                direction: FaceDirection::Inset,
+                vertices: vec![
+                    [0., 0., 0.], // 0
+                    [0., 0., 1.], // 1
+                    [0., 1., 0.], // 2
+                    [0., 1., 1.], // 3
+                    [1., 0., 0.], // 4
+                    [1., 0., 1.], // 5
+                    [1., 1., 0.], // 6
+                    [1., 1., 1.], // 7
+                ],
+                indices: vec![
+                    0, 5, 7, // A1
+                    7, 5, 0, // B1
+                    0, 2, 7, // A2
+                    7, 2, 0, // B2
+                    1, 4, 6, // C1
+                    6, 4, 1, // C2
+                    1, 3, 6, // D1
+                    6, 3, 1, // D2
+                ],
+                normals: vec![
+                    [0.5, 1., 0.5],
+                    [0.5, 1., -0.5],
+                    [0.5, 0., 0.5],
+                    [0.5, 0., -0.5],
+                    [-0.5, 1., 0.5],
+                    [-0.5, 1., -0.5],
+                    [-0.5, 0., 0.5],
+                    [-0.5, 0., -0.5],
+                ],
+                colors: vec![
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                    [1., 1., 1., 1.],
+                ],
+                uvs: vec![
+                    [0., 1.],
+                    [0., 1.],
+                    [0., 0.],
+                    [0., 0.],
+                    [1., 1.],
+                    [1., 1.],
+                    [1., 0.],
+                    [1., 0.],
+                ],
+                texture: format!("{:?}", block.id),
+            }],
         }
     }
 }
