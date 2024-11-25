@@ -1,3 +1,12 @@
+This project is distributed under two different licenses:
+
+1. The code and all original assets created by the authors of this project are licensed under the MIT License.
+2. Some textures used in this project are derived from the resource pack "Pixel Perfection" by XSSheep. These textures are licensed under the Creative Commons Attribution-Share Alike 4.0 International License (CC BY-SA 4.0).
+
+Details for each license are provided below.
+
+---
+
 MIT License
 
 Copyright (c) 2024 C2I (Club Informatique ISEN)
@@ -19,3 +28,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Creative Commons Attribution-Share Alike 4.0 International License (CC BY-SA 4.0)
+
+Some textures used in this project are derived from the resource pack "Pixel Perfection" by XSSheep. These textures are licensed under the CC BY-SA 4.0 license.
+
+For more information, visit: https://creativecommons.org/licenses/by-sa/4.0/
