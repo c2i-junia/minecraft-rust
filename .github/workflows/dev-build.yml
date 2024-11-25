@@ -1,0 +1,117 @@
+name: Dev Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Linux dependencies
+      run: |
+        sudo rm -rf /var/lib/apt/lists/*
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          pkg-config \
+          libasound2-dev \
+          libudev-dev \
+          libx11-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libgl1-mesa-dev \
+          libegl1-mesa-dev \
+          libssl-dev \
+          libwayland-dev \
+          libdbus-1-dev \
+          cmake \
+          libfreetype6-dev \
+          libexpat1-dev \
+          zlib1g-dev \
+          mold
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+
+    - name: Add rustc-codegen-cranelift-preview
+      run: rustup component add rustc-codegen-cranelift-preview --toolchain nightly
+
+    - name: Install project dependencies
+      run: cargo fetch
+
+    - name: Generate release
+      run: |
+        SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+        python3 generate_release.py dev-${SHORT_SHA}
+      env:
+        PYTHONPATH: ${{ runner.workspace }}
+        GITHUB_SHA: ${{ github.sha }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: minecraft-rust-linux-x86_64
+        path: minecraft-rust-*-linux-x86_64.tar.gz
+        retention-days: 7
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install Windows dependencies
+      run: |
+        choco install -y llvm
+        choco install -y cmake
+        choco install -y python3
+        choco install -y mingw
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+
+    - name: Add rustc-codegen-cranelift-preview
+      run: rustup component add rustc-codegen-cranelift-preview --toolchain nightly
+
+    - name: Install project dependencies
+      run: cargo fetch
+
+    - name: Generate release
+      run: |
+        $SHORT_SHA = $env:GITHUB_SHA.Substring(0, 7)
+        python generate_release.py dev-$SHORT_SHA
+      env:
+        PYTHONPATH: ${{ runner.workspace }}
+        GITHUB_SHA: ${{ github.sha }}
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: minecraft-rust-windows-x86_64
+        path: minecraft-rust-*-windows-x86_64.zip
+        retention-days: 7
