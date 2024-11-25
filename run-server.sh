@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-sh make-if-needed.sh
+sh build-if-needed.sh
 
 PORT=${1:-8000}
 

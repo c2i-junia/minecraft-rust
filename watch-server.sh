@@ -6,4 +6,4 @@ cargo watch \
     --watch client/src \
     --watch server/src \
     --watch shared/src \
-    -- bash -c "make && ./run-server.sh"
+    -- bash -c "./build.py debug && ./run-server.sh"

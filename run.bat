@@ -1,7 +1,7 @@
 @echo off
 rem
 
-make debug
+python build.py debug
 if %ERRORLEVEL% NEQ 0 (
     echo Build failed. Exiting...
     exit /b %ERRORLEVEL%

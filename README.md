@@ -81,8 +81,8 @@ To build and run this project, you need the following tools and dependencies ins
   rustup component add rustc-codegen-cranelift-preview --toolchain nightly
   ```
 
-#### 2. **Make**
-- `make` is required to use the provided Makefile for building the project.
+#### 2. **Python**
+- `Python 3.7+` is required to use the provided build script for building the project.
 
 
 #### 3. **Dependencies**
@@ -129,7 +129,7 @@ Debug mode:
 Release mode:
 ```sh
 # Build the project in debug or release mode
-make release
+./build.py release
 
 # Run the executable
 ./minecraft-rust-client-1/bin/minecraft-rust

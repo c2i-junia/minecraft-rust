@@ -6,4 +6,4 @@ cargo watch \
     --watch client/src \
     --watch server/src \
     --watch shared/src \
-    -- bash -c "./make-if-needed.sh"
+    -- bash -c "./build-if-needed.sh"

@@ -32,12 +32,12 @@ fi
 
 # Compare current and previous checksums
 if [ "$CURRENT_CHECKSUMS" != "$PREVIOUS_CHECKSUMS" ]; then
-    echo "Changes detected in one or more src directories. Running 'make'..."
-    make
+    echo "Changes detected in one or more src directories. Running './build.py debug'..."
+    ./build.py debug
 
     # Update the stored checksum file
     echo -e "$CURRENT_CHECKSUMS" > "$CHECKSUM_FILE"
 else
-    echo "No changes detected in any src directory. Skipping 'make'."
+    echo "No changes detected in any src directory. Skipping './build.py debug'."
 fi
 

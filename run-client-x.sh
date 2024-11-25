@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-sh make-if-needed.sh
+sh build-if-needed.sh
 
 if [[ -z "$1" ]]; then
   echo "Error: First argument is required!" >&2
