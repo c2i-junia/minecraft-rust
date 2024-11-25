@@ -4,7 +4,7 @@ Minecraft game clone written in Rust, using the Bevy game engine.
 
 <details open>
   <summary>game preview :</summary>
-  <img src="https://github.com/eztaah/minecraft-rust/blob/main/docs/gameplay.gif" alt="Aperçu du projet" width="500">
+  <img src="https://github.com/eztaah/minecraft-rust/blob/main/docs/gameplay.gif" alt="Aperçu du projet" width="700">
 </details>
 
 <br>
