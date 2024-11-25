@@ -1,4 +1,17 @@
 ----------------------------------------------------------------------------------------------------
+Version: 0.7   
+Date: 25.11.2024    
+
+  Changes: 
+  - Added biomes with 6 types: Plains, Forest, Medium Mountain, High Mountain, Desert, and Ice Plain. Biomes are determined using Perlin noise (temperature and humidity).
+  - Added tree spawning in Forest biomes.
+  - Added flowers (poppies and dandelions) in Plains and Forest biomes.
+  - You can now connect to a server (multiplayer gameplay not functional yet).
+  - Added textures for items and blocks using an atlas system.
+  - Refactored the meshing system to support complex shapes (e.g., stairs and slabs).
+  - Added vertex coloring for grass blocks.
+
+----------------------------------------------------------------------------------------------------
 Version: 0.6   
 Date: 18.11.2024    
 
