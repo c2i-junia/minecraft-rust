@@ -61,19 +61,19 @@ pub fn render_inventory_hotbar(
         inventory.add_item_to_inventory(ItemStack {
             item_id: ItemId::Glass,
             item_type: ItemId::Glass.get_default_type(),
-            nb: 64
+            nb: 64,
         });
 
         inventory.add_item_to_inventory(ItemStack {
             item_id: ItemId::Poppy,
             item_type: ItemId::Poppy.get_default_type(),
-            nb: 64
+            nb: 64,
         });
 
         inventory.add_item_to_inventory(ItemStack {
             item_id: ItemId::Dandelion,
             item_type: ItemId::Dandelion.get_default_type(),
-            nb: 64
+            nb: 64,
         });
     }
 
@@ -251,7 +251,13 @@ pub fn update_inventory_cell(
     // Set content
     if let Some(fstack) = stack {
         txt.sections[0].value = format!("{:?}", fstack.nb);
-        atlas.index = (materials.items.uvs.get(&format!("{:?}", fstack.item_id)).unwrap().u0 * materials.items.uvs.len() as f32) as usize;
+        atlas.index = (materials
+            .items
+            .uvs
+            .get(&format!("{:?}", fstack.item_id))
+            .unwrap()
+            .u0
+            * materials.items.uvs.len() as f32) as usize;
         *visibility = Visibility::Inherited;
     } else {
         txt.sections[0].value = "".to_string();

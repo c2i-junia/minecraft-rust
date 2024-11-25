@@ -6,8 +6,8 @@ use crate::network::request_world_update;
 use crate::player::{Player, ViewMode};
 use crate::ui::debug::DebugOptions;
 use crate::ui::UIMode;
-use crate::world::{ClientWorldMap, WorldRenderRequestUpdateEvent};
 use crate::world::RenderDistance;
+use crate::world::{ClientWorldMap, WorldRenderRequestUpdateEvent};
 use crate::KeyMap;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
@@ -121,7 +121,8 @@ pub fn player_movement_system(
         }
     }
 
-    let force_chunk_reload = is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map);
+    let force_chunk_reload =
+        is_action_just_pressed(GameAction::ReloadChunks, &keyboard_input, &key_map);
 
     // Render chunks around player
     let player_chunk = IVec3::new(
@@ -151,8 +152,7 @@ pub fn player_movement_system(
         // Only retain chunks in the render radius
         world_map.map.retain(|pos, chunk| {
             // If chunk is empty, or not in render radius
-            if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty()
-            {
+            if !chunk_in_radius(&player_chunk, pos, r) || chunk.map.is_empty() {
                 // Remove chunk, and delete its associated entity if it exists
                 if let Some(entity) = chunk.entity {
                     commands.entity(entity).despawn_recursive();

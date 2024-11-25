@@ -17,7 +17,7 @@ fn generate_tree(chunk: &mut ServerChunk, x: i32, y: i32, z: i32, trunk: BlockId
     let leaf_start_y = y + trunk_height as i32 - 1;
     for offset_x in -1..=1 {
         for offset_z in -1..=1 {
-        if (offset_x != 0 || offset_z != 0) && (offset_x == 0 || offset_z == 0) {
+            if (offset_x != 0 || offset_z != 0) && (offset_x == 0 || offset_z == 0) {
                 chunk.map.insert(
                     IVec3::new(x + offset_x, leaf_start_y, z + offset_z),
                     BlockData::new(leaves, false, BlockDirection::Front),

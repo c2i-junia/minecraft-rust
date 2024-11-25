@@ -122,7 +122,7 @@ pub(crate) fn is_block_surrounded(
     world_map: &ClientWorldMap,
     global_block_pos: &IVec3,
     block_visibility: &BlockTransparency,
-    block_id: &BlockId
+    block_id: &BlockId,
 ) -> bool {
     for offset in &shared::world::SIX_OFFSETS {
         let neighbor_pos = *global_block_pos + *offset;

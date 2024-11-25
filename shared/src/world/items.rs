@@ -34,7 +34,7 @@ pub enum ItemId {
     Cobblestone,
     Snow,
     Snowball,
-    SpruceLog
+    SpruceLog,
 }
 
 impl ItemId {
@@ -59,8 +59,8 @@ impl ItemId {
             Self::Cobblestone => ItemType::Block(BlockId::Cobblestone),
             Self::Snow => ItemType::Block(BlockId::Snow),
             Self::SpruceLog => ItemType::Block(BlockId::SpruceLog),
-            
-            Self::Snowball => ItemType::Generic
+
+            Self::Snowball => ItemType::Generic,
         }
     }
 }

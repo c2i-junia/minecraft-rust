@@ -35,7 +35,7 @@ pub enum BlockId {
     Cobblestone,
     Snow,
     SpruceLeaves,
-    SpruceLog
+    SpruceLog,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -74,7 +74,7 @@ pub enum BlockTransparency {
     Transparent,
     Liquid,
     Solid,
-    Decoration
+    Decoration,
 }
 
 impl BlockId {
@@ -154,7 +154,7 @@ impl BlockId {
         match *self {
             Self::Dandelion | Self::Poppy => BlockTransparency::Decoration,
             Self::Glass | Self::OakLeaves | Self::SpruceLeaves => BlockTransparency::Transparent,
-            _ => BlockTransparency::Solid
+            _ => BlockTransparency::Solid,
         }
     }
 }
