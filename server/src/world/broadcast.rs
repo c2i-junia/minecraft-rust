@@ -97,6 +97,7 @@ pub fn broadcast_world_state(
         .unwrap();
     server.broadcast_message(DefaultChannel::ReliableUnordered, payload);
 }
+
 fn to_network(world_map: &mut ServerWorldMap, tick: u64) -> WorldUpdate {
     WorldUpdate {
         tick,

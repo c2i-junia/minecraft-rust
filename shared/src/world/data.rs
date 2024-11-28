@@ -128,6 +128,9 @@ impl ServerWorldMap {
         let kind: BlockData = *block;
 
         let chunk_pos: IVec3 = global_block_to_chunk_pos(global_block_pos);
+        let cx = chunk_pos.x;
+        let cy = chunk_pos.y;
+        let cz = chunk_pos.z;
 
         let chunk_map: &mut ServerChunk =
             self.map
@@ -136,6 +139,7 @@ impl ServerWorldMap {
         let local_block_pos: IVec3 = to_local_pos(global_block_pos);
 
         chunk_map.map.remove(&local_block_pos);
+        self.chunks_to_update.push(IVec3::new(cx, cy, cz));
 
         Some(kind)
     }
@@ -153,6 +157,7 @@ impl ServerWorldMap {
         let sub_z: i32 = ((z % CHUNK_SIZE) + CHUNK_SIZE) % CHUNK_SIZE;
 
         chunk.map.insert(IVec3::new(sub_x, sub_y, sub_z), block);
+        self.chunks_to_update.push(IVec3::new(cx, cy, cz));
     }
 }
 
