@@ -79,44 +79,21 @@ def copy_binaries(build_type="debug"):
 
 def build_cargo(build_type="debug"):
     """
-    Run the cargo build command with detailed output and colors.
+    Run the cargo build command.
     :param build_type: Either 'debug' or 'release'.
     """
     log(f"Running cargo build ({build_type})...")
-
-    # Prepare the command for the build type
     command = ["cargo", "build"]
     if build_type == "release":
         command.append("--release")
 
-    # Add the environment variable to force colors
-    env = os.environ.copy()
-    env["CARGO_TERM_COLOR"] = "always"
-
-    # Execute the command with real-time output
-    process = subprocess.Popen(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        env=env,
-        text=True
-    )
-
-    # Display stdout lines as they are produced
-    for line in process.stdout:
-        print(line, end="")  # Display each line of stdout
-
-    # Display stderr lines as they are produced
-    for line in process.stderr:
-        print(line, end="")  # Display each line of stderr
-
-    # Wait for the command to finish and get the return code
-    return_code = process.wait()
-    if return_code == 0:
+    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    if result.returncode == 0:
         log("Cargo build completed successfully.")
     else:
-        log(f"Cargo build failed with code {return_code}.")
-        raise RuntimeError(f"Cargo build failed with exit code {return_code}.")
+        log(f"Cargo build failed: {result.stderr}")
+        raise RuntimeError("Cargo build failed")
+
 
 def main():
     import argparse
