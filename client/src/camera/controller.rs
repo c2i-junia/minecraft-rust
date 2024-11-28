@@ -9,9 +9,9 @@ pub fn camera_control_system(
     mut mouse_motion_events: EventReader<MouseMotion>,
     mut camera_query: Query<
         (&mut Transform, &mut CameraController),
-        (With<Camera>, Without<Player>),
+        (With<Camera>, Without<CurrentPlayerMarker>),
     >,
-    player_query: Query<&Transform, With<Player>>,
+    player_query: Query<&Transform, With<CurrentPlayerMarker>>,
     view_mode: Res<ViewMode>,
     ui_mode: Res<UIMode>,
 ) {

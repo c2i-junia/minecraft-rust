@@ -13,6 +13,8 @@ use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use shared::world::{block_to_chunk_coord, chunk_in_radius};
 
+use super::CurrentPlayerMarker;
+
 fn is_block_at_position(position: Vec3, world_map: &ClientWorldMap) -> bool {
     world_map
         .get_block_by_coordinates(&IVec3::new(
@@ -70,7 +72,10 @@ fn check_player_collision(
 // System to move the player based on keyboard input
 pub fn player_movement_system(
     queries: (
-        Query<(&mut Transform, &mut Player, &mut Handle<StandardMaterial>)>,
+        Query<
+            (&mut Transform, &mut Player, &mut Handle<StandardMaterial>),
+            With<CurrentPlayerMarker>,
+        >,
         Query<&Transform, (With<Camera>, With<CameraController>, Without<Player>)>,
     ),
     resources: (

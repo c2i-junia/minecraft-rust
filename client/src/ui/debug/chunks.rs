@@ -1,4 +1,4 @@
-use crate::player::Player;
+use crate::player::CurrentPlayerMarker;
 use crate::GameState;
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -40,7 +40,7 @@ pub fn setup_chunk_ghost(
 
 pub fn chunk_ghost_update_system(
     mut ghost_query: Query<(&mut Transform, &mut Visibility), With<ChunkGhost>>,
-    player_query: Query<&Transform, (With<Player>, Without<ChunkGhost>)>,
+    player_query: Query<&Transform, (With<CurrentPlayerMarker>, Without<ChunkGhost>)>,
     debug_options: Res<DebugOptions>,
 ) {
     let mut ghost = ghost_query.single_mut();

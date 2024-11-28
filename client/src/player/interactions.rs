@@ -14,6 +14,8 @@ use bevy_mod_raycast::prelude::*;
 use bevy_renet::renet::RenetClient;
 use shared::world::{BlockData, ItemStack, ItemType};
 
+use super::CurrentPlayerMarker;
+
 // Helper function to snap a Vec3 position to the grid
 fn snap_to_grid(position: Vec3) -> Vec3 {
     Vec3::new(position.x.round(), position.y.round(), position.z.round())
@@ -22,8 +24,8 @@ fn snap_to_grid(position: Vec3) -> Vec3 {
 // Function to handle block placement and breaking
 pub fn handle_block_interactions(
     queries: (
-        Query<&Player>,
-        Query<&mut Transform, With<Player>>,
+        Query<&Player, With<CurrentPlayerMarker>>,
+        Query<&mut Transform, With<CurrentPlayerMarker>>,
         Query<&RaycastSource<BlockRaycastSet>>,
         Query<&Hotbar>,
     ),

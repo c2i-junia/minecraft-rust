@@ -1,9 +1,11 @@
+use crate::messages::PlayerId;
 use crate::world::block_to_chunk_coord;
 use crate::world::global_block_to_chunk_pos;
 use crate::world::to_local_pos;
 use crate::world::BlockId;
 use crate::CHUNK_SIZE;
 use bevy::math::IVec3;
+use bevy::math::Vec3;
 use bevy::prelude::Resource;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -25,6 +27,7 @@ pub struct ServerWorldMap {
     pub name: String,
     pub map: HashMap<IVec3, ServerChunk>,
     pub chunks_to_update: Vec<IVec3>,
+    pub player_positions: HashMap<PlayerId, Vec3>,
 }
 
 #[derive(Resource, Serialize, Deserialize)]

@@ -32,6 +32,7 @@ pub fn send_world_update(
         let payload = bincode::options()
             .serialize(&ServerToClientMessage::WorldUpdate(WorldUpdate {
                 tick: ticker.tick,
+                player_positions: world_map.player_positions.clone(),
                 new_map: {
                     let mut map: HashMap<IVec3, ServerChunk> = HashMap::new();
                     for c in event.chunks.iter() {
@@ -101,6 +102,7 @@ pub fn broadcast_world_state(
 fn to_network(world_map: &mut ServerWorldMap, tick: u64) -> WorldUpdate {
     WorldUpdate {
         tick,
+        player_positions: world_map.player_positions.clone(),
         new_map: {
             let mut m: HashMap<IVec3, ServerChunk> = HashMap::new();
             // Only send chunks that must be updated

@@ -1,4 +1,4 @@
-use crate::player::Player;
+use crate::player::CurrentPlayerMarker;
 use bevy::prelude::*;
 use shared::world::block_to_chunk_coord;
 
@@ -6,7 +6,7 @@ use shared::world::block_to_chunk_coord;
 pub struct CoordsText;
 
 pub fn coords_text_update_system(
-    player: Query<&Transform, With<Player>>,
+    player: Query<&Transform, With<CurrentPlayerMarker>>,
     mut query: Query<&mut Text, With<CoordsText>>,
 ) {
     for mut text in query.iter_mut() {

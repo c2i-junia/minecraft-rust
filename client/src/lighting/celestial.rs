@@ -1,8 +1,8 @@
+use crate::player::CurrentPlayerMarker;
 use crate::world::materials::MaterialResource;
 use crate::GameState;
 use crate::{
     constants::{CELESTIAL_DISTANCE, CELESTIAL_SIZE, DAY_DURATION},
-    player::Player,
     world::GlobalMaterial,
 };
 use bevy::{
@@ -27,7 +27,7 @@ pub fn setup_main_lighting(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     material_resource: Res<MaterialResource>,
-    player: Query<Entity, With<Player>>,
+    player: Query<Entity, With<CurrentPlayerMarker>>,
 ) {
     // No fancy stuff ; Only acts as an anchor to move celestial bodies easily
     let celestial_root = commands

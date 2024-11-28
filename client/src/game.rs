@@ -4,6 +4,7 @@ use crate::ui::chat::{render_chat, setup_chat};
 use bevy::prelude::*;
 use bevy_atmosphere::prelude::*;
 use inventory::Inventory;
+use shared::messages::PlayerSpawnEvent;
 
 use crate::world::ClientWorldMap;
 
@@ -34,7 +35,8 @@ use crate::menu::game_loading_screen::load_loading_screen;
 use crate::network::{
     establish_authenticated_connection_to_server, init_server_connection,
     launch_local_server_system, network_failure_handler, poll_network_messages,
-    terminate_server_connection, upload_player_inputs_system,
+    send_player_position_to_server, terminate_server_connection, upload_player_inputs_system,
+    CurrentPlayerProfile, TargetServer, TargetServerState,
 };
 use crate::{DisplayQuality, GameState, Volume};
 
@@ -46,7 +48,6 @@ fn print_settings(display_quality: Res<DisplayQuality>, volume: Res<Volume>) {
 
 #[derive(Resource)]
 pub struct PreLoadingCompletion {
-    pub connected: bool,
     pub textures_loaded: bool,
 }
 
@@ -64,7 +65,6 @@ pub fn game_plugin(app: &mut App) {
             brightness: 400.0,
         })
         .insert_resource(PreLoadingCompletion {
-            connected: false,
             textures_loaded: false,
         })
         .insert_resource(BlockDebugWireframeSettings { is_enabled: false })
@@ -85,7 +85,9 @@ pub fn game_plugin(app: &mut App) {
         .insert_resource(ViewMode::FirstPerson)
         .insert_resource(DebugOptions::default())
         .insert_resource(Inventory::new())
+        .insert_resource(CurrentPlayerProfile::new())
         .add_event::<WorldRenderRequestUpdateEvent>()
+        .add_event::<PlayerSpawnEvent>()
         .add_systems(
             OnEnter(GameState::PreGameLoading),
             (
@@ -102,13 +104,13 @@ pub fn game_plugin(app: &mut App) {
                 establish_authenticated_connection_to_server,
                 create_all_atlases,
                 check_pre_loading_complete,
+                spawn_player,
             )
                 .run_if(in_state(GameState::PreGameLoading)),
         )
         .add_systems(
             OnEnter(GameState::Game),
             (
-                spawn_player,
                 setup_main_lighting,
                 spawn_camera,
                 spawn_reticle,
@@ -165,6 +167,8 @@ pub fn game_plugin(app: &mut App) {
                 poll_network_messages,
                 network_failure_handler,
                 upload_player_inputs_system,
+                send_player_position_to_server,
+                spawn_player,
             )
                 .run_if(in_state(GameState::Game)),
         )
@@ -184,8 +188,9 @@ fn clear_resources(mut world_map: ResMut<ClientWorldMap>) {
 fn check_pre_loading_complete(
     loading: Res<PreLoadingCompletion>,
     mut game_state: ResMut<NextState<GameState>>,
+    target_server: Res<TargetServer>,
 ) {
-    if loading.connected && loading.textures_loaded {
+    if loading.textures_loaded && target_server.state == TargetServerState::FullyReady {
         game_state.set(GameState::Game);
     }
 }

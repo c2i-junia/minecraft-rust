@@ -3,11 +3,10 @@ use bevy_renet::{renet::RenetClient, RenetClientPlugin};
 use rand::Rng;
 use shared::{get_shared_renet_config, GameServerConfig};
 
-use crate::game::PreLoadingCompletion;
 use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
-use crate::player::Player;
+use crate::player::{CurrentPlayerMarker, Player};
 use crate::world::{RenderDistance, WorldRenderRequestUpdateEvent};
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
@@ -15,7 +14,9 @@ use bevy_renet::renet::transport::{
 use bevy_renet::renet::DefaultChannel;
 use bevy_renet::transport::NetcodeClientPlugin;
 use bincode::Options;
-use shared::messages::{AuthRegisterRequest, ChatConversation, ClientToServerMessage};
+use shared::messages::{
+    AuthRegisterRequest, ChatConversation, ClientToServerMessage, PlayerId, PlayerSpawnEvent,
+};
 use std::net::SocketAddr;
 use std::{net::UdpSocket, thread, time::SystemTime};
 
@@ -26,7 +27,25 @@ use shared::GameFolderPath;
 pub enum TargetServerState {
     Initial,
     Establising,
-    Established,
+    ConnectionEstablished,
+    FullyReady, // player has spawned
+}
+
+#[derive(Resource, Clone)]
+pub struct CurrentPlayerProfile {
+    pub id: PlayerId,
+    pub name: String,
+}
+
+impl CurrentPlayerProfile {
+    pub(crate) fn new() -> Self {
+        let mut rng = rand::thread_rng();
+        let id: u64 = rng.gen();
+        Self {
+            id,
+            name: format!("Player-{}", id),
+        }
+    }
 }
 
 #[derive(Resource, Debug, Clone)]
@@ -111,10 +130,20 @@ fn poll_reliable_unordered_messages(
     client: &mut ResMut<RenetClient>,
     world: &mut ResMut<ClientWorldMap>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
-    player_pos: Query<&Transform, With<Player>>,
+    players: &mut Query<(&mut Transform, &Player), With<Player>>,
+    current_player_entity: Query<Entity, With<CurrentPlayerMarker>>,
     render_distance: Res<RenderDistance>,
+    ev_spawn: &mut EventWriter<PlayerSpawnEvent>,
 ) {
-    update_world_from_network(client, world, ev_render, player_pos, render_distance);
+    update_world_from_network(
+        client,
+        world,
+        ev_render,
+        players,
+        current_player_entity,
+        render_distance,
+        ev_spawn,
+    );
 }
 
 pub fn poll_network_messages(
@@ -122,24 +151,30 @@ pub fn poll_network_messages(
     mut chat_state: ResMut<CachedChatConversation>,
     mut world: ResMut<ClientWorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
-    player_pos: Query<&Transform, With<Player>>,
+    mut players: Query<(&mut Transform, &Player), With<Player>>,
+    current_player_entity: Query<Entity, With<CurrentPlayerMarker>>,
     render_distance: Res<RenderDistance>,
+    mut ev_spawn: EventWriter<PlayerSpawnEvent>,
 ) {
     poll_reliable_ordered_messages(&mut client, &mut chat_state);
     poll_reliable_unordered_messages(
         &mut client,
         &mut world,
         &mut ev_render,
-        player_pos,
+        &mut players,
+        current_player_entity,
         render_distance,
+        &mut ev_spawn,
     );
 }
 
-pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>) {
-    let mut rng = rand::thread_rng();
-    let random_client_id: u64 = rng.gen();
-
+pub fn init_server_connection(
+    mut commands: Commands,
+    target: Res<TargetServer>,
+    current_player_id: Res<CurrentPlayerProfile>,
+) {
     let addr = target.address.unwrap();
+    let id = current_player_id.into_inner().id;
     commands.add(move |world: &mut World| {
         world.remove_resource::<RenetClient>();
         world.remove_resource::<NetcodeClientTransport>();
@@ -150,7 +185,7 @@ pub fn init_server_connection(mut commands: Commands, target: Res<TargetServer>)
 
         let authentication = ClientAuthentication::Unsecure {
             server_addr: addr,
-            client_id: random_client_id,
+            client_id: id,
             user_data: None,
             protocol_id: shared::PROTOCOL_ID,
         };
@@ -177,22 +212,20 @@ pub fn network_failure_handler(mut renet_error: EventReader<NetcodeTransportErro
 pub fn establish_authenticated_connection_to_server(
     mut client: ResMut<RenetClient>,
     mut target: ResMut<TargetServer>,
-    mut loading: ResMut<PreLoadingCompletion>,
+    current_profile: Res<CurrentPlayerProfile>,
+    mut ev_spawn: EventWriter<PlayerSpawnEvent>,
 ) {
     if target.session_token.is_some() {
         info!(
             "Successfully acquired a session token as {}",
             &target.username.clone().unwrap()
         );
-        loading.connected = true;
         return;
     }
 
     if target.state == TargetServerState::Initial {
         if target.username.is_none() {
-            let mut rng = rand::thread_rng();
-            let num: u64 = rng.gen();
-            target.username = Some(format!("Player-{}", num));
+            target.username = Some(current_profile.into_inner().name.clone());
         }
 
         let username = target.username.as_ref().unwrap();
@@ -211,7 +244,8 @@ pub fn establish_authenticated_connection_to_server(
         if let Ok(message) = message {
             target.username = Some(message.username);
             target.session_token = Some(message.session_token);
-            target.state = TargetServerState::Established;
+            target.state = TargetServerState::ConnectionEstablished;
+            ev_spawn.send(message.spawn_event);
             info!("Connected! {:?}", target);
         }
     }

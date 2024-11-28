@@ -8,8 +8,11 @@ use crate::{chat, world};
 use bevy::prelude::*;
 use bevy_renet::renet::{DefaultChannel, RenetServer, ServerEvent};
 use bincode::Options;
-use rand::random;
-use shared::messages::{AuthRegisterResponse, ChatConversation, ClientToServerMessage};
+use shared::messages::{
+    AuthRegisterResponse, ChatConversation, ClientToServerMessage, PlayerSpawnEvent,
+    ServerToClientMessage,
+};
+use shared::world::ServerWorldMap;
 use shared::GameServerConfig;
 
 #[derive(Resource)]
@@ -65,6 +68,7 @@ fn server_update_system(
         EventWriter<BlockInteractionEvent>,
     ),
     config: Res<GameServerConfig>,
+    mut world_map: ResMut<ServerWorldMap>,
 ) {
     for event in server_events.read() {
         debug!("event received");
@@ -99,18 +103,49 @@ fn server_update_system(
                         return;
                     }
 
-                    let new_session_token = generate_session_token();
+                    // let new_session_token = generate_session_token();
                     lobby
                         .players
-                        .insert(new_session_token, auth_req.username.clone());
+                        .insert(client_id.raw(), auth_req.username.clone());
                     debug!("New lobby : {:?}", lobby);
-                    // TODO: add cleanup system if no heartbeat
-                    let msg = &AuthRegisterResponse {
-                        username: auth_req.username,
-                        session_token: new_session_token,
+
+                    let spawn_message = PlayerSpawnEvent {
+                        id: client_id.raw(),
+                        name: auth_req.username,
+                        position: Vec3::new(0.0, 80.0, 0.0),
                     };
-                    let payload = bincode::options().serialize(msg).unwrap();
-                    server.send_message(client_id, DefaultChannel::ReliableOrdered, payload);
+
+                    // TODO: add cleanup system if no heartbeat
+                    let msg = &(AuthRegisterResponse {
+                        username: spawn_message.name.clone(),
+                        session_token: client_id.raw() as u128,
+                        spawn_event: spawn_message.clone(),
+                    });
+                    let auth_response_payload = bincode::options().serialize(msg).unwrap();
+
+                    server.send_message(
+                        client_id,
+                        DefaultChannel::ReliableOrdered,
+                        auth_response_payload,
+                    );
+
+                    for (id, name) in lobby.players.iter() {
+                        let spawn_message = PlayerSpawnEvent {
+                            id: *id,
+                            name: name.into(),
+                            position: Vec3::new(0.0, 80.0, 0.0),
+                        };
+
+                        let spawn_message_wrapped =
+                            &ServerToClientMessage::PlayerSpawn(spawn_message);
+
+                        let spawn_payload = bincode::options()
+                            .serialize(&spawn_message_wrapped.clone())
+                            .unwrap();
+
+                        server.broadcast_message(DefaultChannel::ReliableUnordered, spawn_payload);
+                        info!("Sending spawn order {:?}", spawn_message_wrapped);
+                    }
                 }
                 ClientToServerMessage::ChatMessage(chat_msg) => {
                     info!("Chat message received: {:?}", &chat_msg);
@@ -125,7 +160,7 @@ fn server_update_system(
                         ev_app_exit.send(AppExit::Success);
                     } else {
                         server.disconnect(client_id);
-                        lobby.players.remove(&order.session_token);
+                        lobby.players.remove(&(order.session_token as u64));
                         info!("Player {:?} disconnected", client_id);
                     }
                 }
@@ -173,12 +208,15 @@ fn server_update_system(
                         block_type,
                     });
                 }
+                ClientToServerMessage::SetPlayerPosition { position } => {
+                    world_map.player_positions.insert(client_id.raw(), position);
+                }
             }
         }
     }
 }
 
-fn generate_session_token() -> u128 {
-    let random_value: u128 = random();
-    random_value
-}
+// fn generate_session_token() -> u128 {
+//     let random_value: u128 = random();
+//     random_value
+// }

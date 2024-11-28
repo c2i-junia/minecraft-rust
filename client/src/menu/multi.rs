@@ -381,6 +381,15 @@ pub fn load_server_list(
         get_game_folder(Some(&game_folder_path)).join(SERVER_LIST_SAVE_NAME);
     let path: &Path = game_folder_path.as_path();
 
+    add_server_item(
+        "Default server".into(),
+        "127.0.0.1:8000".into(),
+        &mut commands,
+        &assets,
+        &mut list,
+        list_entity,
+    );
+
     // If no server list save, returns
     if !fs::exists(path).unwrap() {
         error!("No server list found at {:?}", path);
@@ -394,12 +403,12 @@ pub fn load_server_list(
     }
     let txt = txt.unwrap();
 
-    let servers = from_str::<Vec<ServerItem>>(&txt);
-    if servers.is_err() {
+    let maybe_servers = from_str::<Vec<ServerItem>>(&txt);
+    if maybe_servers.is_err() {
         error!("Failed to parse server list from {:?}", path);
         return;
     }
-    let servers = servers.unwrap();
+    let servers = maybe_servers.unwrap();
 
     for srv in servers {
         add_server_item(
