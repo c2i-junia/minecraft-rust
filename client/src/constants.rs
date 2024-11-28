@@ -25,3 +25,6 @@ pub const SERVER_LIST_SAVE_NAME: &str = "servers.ron";
 pub const BINDS_PATH: &str = "keybindings.ron";
 
 pub const GRASS_COLOR: [f32; 4] = [0.1, 1.0, 0.3, 1.0];
+
+pub const TEXTURE_PATH_BASE: &str = "graphics/base_textures/";
+pub const TEXTURE_PATH_CUSTOM: &str = "graphics/custom_textures/";

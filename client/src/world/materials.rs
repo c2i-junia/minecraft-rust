@@ -1,6 +1,7 @@
 use crate::constants::{BASE_ROUGHNESS, BASE_SPECULAR_HIGHLIGHT};
 use crate::game::PreLoadingCompletion;
 use crate::world::GlobalMaterial;
+use crate::TexturePath;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
 use shared::world::{get_game_folder, BlockId, GameElementId, ItemId};
@@ -9,8 +10,6 @@ use std::fs;
 use std::marker::PhantomData;
 
 use super::meshing::UvCoords;
-
-const TEXTURE_PATH: &str = "graphics/textures/";
 
 #[derive(Default, Resource)]
 pub struct AtlasWrapper {
@@ -50,6 +49,7 @@ pub fn setup_materials(
     mut material_resource: ResMut<MaterialResource>,
     mut block_atlas_handles: ResMut<AtlasHandles<BlockId>>,
     mut item_atlas_handles: ResMut<AtlasHandles<ItemId>>,
+    texture_path: Res<TexturePath>,
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -114,8 +114,14 @@ pub fn setup_materials(
 
     // Load images of all blocks defined in the enum
 
-    let blocks_path = get_game_folder().join("data/".to_owned() + TEXTURE_PATH + "blocks/");
-    let items_path = get_game_folder().join("data/".to_owned() + TEXTURE_PATH + "items/");
+    let blocks_path = get_game_folder()
+        .join("data/")
+        .join(&texture_path.path)
+        .join("blocks/");
+    let items_path = get_game_folder()
+        .join("data/")
+        .join(&texture_path.path)
+        .join("items/");
 
     if let Ok(dir) = fs::read_dir(blocks_path.clone()) {
         block_atlas_handles.handles = dir
@@ -123,7 +129,13 @@ pub fn setup_materials(
                 let binding = file.unwrap().path();
                 let filename = binding.file_stem().unwrap().to_str().unwrap();
                 (
-                    asset_server.load(&(TEXTURE_PATH.to_owned() + "blocks/" + filename + ".png")),
+                    asset_server.load(
+                        blocks_path
+                            .join(filename)
+                            .with_extension("png")
+                            .to_string_lossy()
+                            .into_owned(),
+                    ),
                     filename.to_owned(),
                 )
             })
@@ -142,7 +154,13 @@ pub fn setup_materials(
                 let binding = file.unwrap().path();
                 let filename = binding.file_stem().unwrap().to_str().unwrap();
                 (
-                    asset_server.load(&(TEXTURE_PATH.to_owned() + "items/" + filename + ".png")),
+                    asset_server.load(
+                        items_path
+                            .join(filename)
+                            .with_extension("png")
+                            .to_string_lossy()
+                            .into_owned(),
+                    ),
                     filename.to_owned(),
                 )
             })

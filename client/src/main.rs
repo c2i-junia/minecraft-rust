@@ -22,11 +22,21 @@ use bevy::{
 };
 use bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use clap::Parser;
+use constants::{TEXTURE_PATH_BASE, TEXTURE_PATH_CUSTOM};
 use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Flag to use custom textures
+    #[arg(long, help = "Use custom textures instead of base textures")]
+    use_custom_textures: bool,
+}
 
 #[derive(Component)]
 pub struct MenuCamera;
@@ -53,7 +63,31 @@ pub struct KeyMap {
     pub map: BTreeMap<GameAction, Vec<KeyCode>>,
 }
 
+#[derive(Resource, Debug)]
+pub struct TexturePath {
+    pub path: String,
+}
+
 fn main() {
+    // Parse command-line arguments
+    let args = Args::parse();
+
+    // Determine which texture path to use
+    let texture_path = if args.use_custom_textures {
+        TEXTURE_PATH_CUSTOM
+    } else {
+        TEXTURE_PATH_BASE
+    };
+
+    debug!(
+        "Using {} for textures",
+        if args.use_custom_textures {
+            "custom textures"
+        } else {
+            "base textures"
+        }
+    );
+
     let mut app = App::new();
     app.add_plugins(
         DefaultPlugins
@@ -82,6 +116,9 @@ fn main() {
         .insert_resource(SelectedWorld::default())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .insert_resource(ClientWorldMap { ..default() })
+        .insert_resource(TexturePath {
+            path: texture_path.to_string(),
+        })
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

@@ -1658,6 +1658,7 @@ dependencies = [
  "bevy_renet",
  "bevy_simple_text_input",
  "bincode",
+ "clap",
  "egui",
  "lazy_static",
  "log",
