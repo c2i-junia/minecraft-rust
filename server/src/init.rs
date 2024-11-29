@@ -6,6 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
+use shared::GameFolderPath;
 use shared::{get_shared_renet_config, GameServerConfig};
 use std::collections::HashMap;
 use std::fmt::Debug;
@@ -56,7 +57,7 @@ pub fn add_netcode_network(app: &mut App, socket: UdpSocket) {
     app.insert_resource(transport);
 }
 
-pub fn init(socket: UdpSocket, config: GameServerConfig) {
+pub fn init(socket: UdpSocket, config: GameServerConfig, game_folder_path: String) {
     let mut app = App::new();
     app.add_plugins(
         MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
@@ -70,6 +71,7 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
     app.add_plugins(bevy::log::LogPlugin::default());
 
     app.insert_resource(ServerLobby::default());
+    app.insert_resource(GameFolderPath(game_folder_path));
 
     let world_name = &config.world_name.clone();
 
@@ -82,7 +84,7 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
     dispatcher::setup_resources_and_events(&mut app);
 
     // Load world from files
-    let world_map = match load_world_map(world_name) {
+    let world_map = match load_world_map(world_name, &app) {
         Ok(world) => world,
         Err(e) => {
             error!("Error loading world: {}. Generating a new one.", e);
@@ -90,7 +92,7 @@ pub fn init(socket: UdpSocket, config: GameServerConfig) {
         }
     };
 
-    let world_seed = match load_world_seed(world_name) {
+    let world_seed = match load_world_seed(world_name, &app) {
         Ok(seed) => seed,
         Err(e) => {
             error!("Error loading seed: {}. Generating a new one.", e);

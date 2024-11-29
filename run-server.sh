@@ -1,7 +1,11 @@
 #!/usr/bin/env sh
 
-sh build-if-needed.sh
+just create-game-folders
 
-PORT=${1:-8000}
-
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(rustc --print sysroot)/lib:$PWD/target/debug/deps:$(rustc --print sysroot)/lib/rustlib/x86_64-unknown-linux-gnu/lib RUST_BACKTRACE=1 RUST_LOG=server=debug,shared=debug,warn ./minecraft-rust-server/bin/minecraft-rust-server --port $PORT
+# RUST_BACKTRACE=1 \
+RUST_LOG=server=debug,server=debug,shared=debug,warn \
+cargo run \
+--features=bevy/dynamic_linking \
+--bin server -- \
+    --port 8000 \
+    --game-folder-path ../../minecraft-rust-server

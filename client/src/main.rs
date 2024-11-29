@@ -28,6 +28,7 @@ use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
 use serde::{Deserialize, Serialize};
+use shared::GameFolderPath;
 use std::collections::BTreeMap;
 
 #[derive(Parser, Debug)]
@@ -36,6 +37,9 @@ struct Args {
     /// Flag to use custom textures
     #[arg(long, help = "Use custom textures instead of base textures")]
     use_custom_textures: bool,
+
+    #[arg(short, long, default_value = "../")]
+    game_folder_path: String,
 }
 
 #[derive(Component)]
@@ -79,6 +83,8 @@ fn main() {
         TEXTURE_PATH_BASE
     };
 
+    let game_folder_path = args.game_folder_path.clone();
+
     debug!(
         "Using {} for textures",
         if args.use_custom_textures {
@@ -112,13 +118,14 @@ fn main() {
     network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
-        .insert_resource(get_bindings())
+        .insert_resource(get_bindings(&game_folder_path))
         .insert_resource(SelectedWorld::default())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .insert_resource(ClientWorldMap { ..default() })
         .insert_resource(TexturePath {
             path: texture_path.to_string(),
         })
+        .insert_resource(GameFolderPath(game_folder_path))
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

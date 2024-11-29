@@ -1,9 +1,7 @@
 #!/usr/bin/env sh
 
-./install-cargo-watch-if-needed.sh
-
 cargo watch \
     --watch client/src \
     --watch server/src \
     --watch shared/src \
-    -- bash -c "./build-if-needed.sh"
+    -- bash -c "./run1.sh"

@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use ron::de::from_str;
 use shared::world::data::{ServerWorldMap, WorldSeed};
 use shared::world::get_game_folder;
+use shared::GameFolderPath;
 use std::fs;
 use std::path::Path;
 
@@ -13,10 +14,15 @@ pub fn load_world_map(
     // player: &mut Player,
     // player_pos: &mut Vec3,
     // r_items: &Registry<ItemData>,
+    app: &App,
 ) -> Result<ServerWorldMap, Box<dyn std::error::Error>> {
+    let game_folder_path = app.world().get_resource::<GameFolderPath>().unwrap();
+
     let file_path: String = format!(
         "{}{}_save.ron",
-        get_game_folder().join(SAVE_PATH).display(),
+        get_game_folder(Some(&game_folder_path))
+            .join(SAVE_PATH)
+            .display(),
         file_name
     );
     let path: &Path = Path::new(&file_path);
@@ -45,10 +51,16 @@ pub fn load_world_map(
     Ok(world_map)
 }
 
-pub fn load_world_seed(file_name: &str) -> Result<WorldSeed, Box<dyn std::error::Error>> {
+pub fn load_world_seed(
+    file_name: &str,
+    app: &App,
+) -> Result<WorldSeed, Box<dyn std::error::Error>> {
+    let game_folder_path = app.world().get_resource::<GameFolderPath>().unwrap();
     let file_path: String = format!(
         "{}{}_seed.ron",
-        get_game_folder().join(SAVE_PATH).display(),
+        get_game_folder(Some(&game_folder_path))
+            .join(SAVE_PATH)
+            .display(),
         file_name
     );
     let path: &Path = Path::new(&file_path);

@@ -24,6 +24,7 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 use shared::world::get_game_folder;
+use shared::GameFolderPath;
 use std::io;
 use std::{
     fs,
@@ -229,11 +230,12 @@ pub fn list_worlds(
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut WorldList, Entity)>,
     mut world_map: ResMut<ClientWorldMap>,
+    game_folder_path: Res<GameFolderPath>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
     // create save folder if it not exist
-    let save_path: PathBuf = get_game_folder().join(SAVE_PATH);
+    let save_path: PathBuf = get_game_folder(Some(&game_folder_path)).join(SAVE_PATH);
     let path: &Path = save_path.as_path();
     if !fs::exists(path).unwrap() && fs::create_dir_all(path).is_ok() {
         info!("Successfully created the saves folder : {}", path.display());
@@ -387,6 +389,7 @@ pub fn solo_action(
     ),
     mut commands: Commands,
     mut load_event: EventWriter<LoadWorldEvent>,
+    game_folder_path: Res<GameFolderPath>,
 ) {
     if list_query.is_empty() {
         return;
@@ -427,7 +430,7 @@ pub fn solo_action(
                 }
                 MultiplayerButtonAction::Delete(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
-                        if let Err(e) = delete_save_files(&world.name) {
+                        if let Err(e) = delete_save_files(&world.name, &game_folder_path) {
                             error!("Error while deleting save files: {}", e);
                         }
                         list.worlds.remove(&world_entity);
@@ -440,11 +443,16 @@ pub fn solo_action(
     }
 }
 
-pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
+pub fn delete_save_files(
+    world_name: &str,
+    game_folder_path: &Res<GameFolderPath>,
+) -> Result<(), io::Error> {
     // Delete `world_save.ron`
     match fs::remove_file(format!(
         "{}{}_save.ron",
-        get_game_folder().join(SAVE_PATH).display(),
+        get_game_folder(Some(&game_folder_path))
+            .join(SAVE_PATH)
+            .display(),
         world_name
     )) {
         Ok(_) => info!("Successfully deleted world_save.ron"),
@@ -457,7 +465,9 @@ pub fn delete_save_files(world_name: &str) -> Result<(), io::Error> {
     // Delete `world_seed.ron`
     match fs::remove_file(format!(
         "{}{}_seed.ron",
-        get_game_folder().join(SAVE_PATH).display(),
+        get_game_folder(Some(&game_folder_path))
+            .join(SAVE_PATH)
+            .display(),
         world_name
     )) {
         Ok(_) => info!("Successfully deleted world_seed.ron"),

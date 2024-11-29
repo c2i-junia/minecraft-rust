@@ -5,6 +5,7 @@ use crate::TexturePath;
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, Face, TextureDimension, TextureFormat};
 use shared::world::{get_game_folder, BlockId, GameElementId, ItemId};
+use shared::GameFolderPath;
 use std::collections::HashMap;
 use std::fs;
 use std::marker::PhantomData;
@@ -50,6 +51,7 @@ pub fn setup_materials(
     mut block_atlas_handles: ResMut<AtlasHandles<BlockId>>,
     mut item_atlas_handles: ResMut<AtlasHandles<ItemId>>,
     texture_path: Res<TexturePath>,
+    game_folder_path: Res<GameFolderPath>,
 ) {
     let sun_material = materials.add(StandardMaterial {
         base_color: Color::srgb(1., 0.95, 0.1),
@@ -114,11 +116,11 @@ pub fn setup_materials(
 
     // Load images of all blocks defined in the enum
 
-    let blocks_path = get_game_folder()
+    let blocks_path = get_game_folder(Some(&game_folder_path))
         .join("data/")
         .join(&texture_path.path)
         .join("blocks/");
-    let items_path = get_game_folder()
+    let items_path = get_game_folder(Some(&game_folder_path))
         .join("data/")
         .join(&texture_path.path)
         .join("items/");

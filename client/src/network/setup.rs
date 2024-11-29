@@ -20,6 +20,7 @@ use std::net::SocketAddr;
 use std::{net::UdpSocket, thread, time::SystemTime};
 
 use crate::world::ClientWorldMap;
+use shared::GameFolderPath;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TargetServerState {
@@ -57,6 +58,7 @@ pub fn add_base_netcode(app: &mut App) {
 pub fn launch_local_server_system(
     mut target: ResMut<TargetServer>,
     selected_world: Res<SelectedWorld>,
+    game_folder_path: Res<GameFolderPath>,
 ) {
     if target.address.is_some() {
         debug!("Skipping launch local server");
@@ -71,6 +73,8 @@ pub fn launch_local_server_system(
         debug!("Obtained UDP socket: {}", addr);
 
         let world_name_clone = world_name.clone();
+        let game_folder_path_clone = game_folder_path.0.clone();
+        //
         thread::spawn(move || {
             server::init(
                 socket,
@@ -78,6 +82,7 @@ pub fn launch_local_server_system(
                     world_name: world_name_clone,
                     is_solo: true,
                 },
+                game_folder_path_clone,
             );
         });
 

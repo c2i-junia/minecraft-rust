@@ -34,13 +34,10 @@ def main():
     working_dir = "./minecraft-rust"
     versioned_dir = ""
 
-    # Step 1: Run `build.py remove-game-folders`
-    run_python_script("build.py", "remove-game-folders")
+    # Step 1: Run `just release`
+    run_python_script("just", "release")
 
-    # Step 2: Run `build.py release`
-    run_python_script("build.py", "release")
-
-    # Step 3: Copy `minecraft-rust-client-1` to `./minecraft-rust`
+    # Step 2: Copy `minecraft-rust-client-1` to `./minecraft-rust`
     log(f"Copying '{original_dir}' to '{working_dir}'")
     shutil.copytree(original_dir, working_dir)
 
@@ -48,7 +45,7 @@ def main():
         log(f"Source directory '{original_dir}' does not exist.")
         sys.exit(1)
 
-    # Step 4: Copy CHANGELOG.txt and LICENSE.txt into the build directory
+    # Step 3: Copy CHANGELOG.txt and LICENSE.txt into the build directory
     changelog_path = os.path.join(working_dir, "CHANGELOG.txt")
     license_path = os.path.join(working_dir, "LICENSE.txt")
     shutil.copy("CHANGELOG.txt", changelog_path)
@@ -56,13 +53,13 @@ def main():
     shutil.copy("LICENSE.txt", license_path)
     log(f"Copied LICENSE.txt to {license_path}")
 
-    # Step 5: Create a `version.txt` file
+    # Step 4: Create a `version.txt` file
     version_file_path = os.path.join(working_dir, "version.txt")
     with open(version_file_path, "w") as version_file:
         version_file.write(version)
     log(f"Created version.txt with version: {version}")
 
-    # Step 6: Detect operating system
+    # Step 5: Detect operating system
     os_name = platform.system().lower()
 
     if os_name == "linux":

@@ -81,9 +81,12 @@ To build and run this project, you need the following tools and dependencies ins
   rustup component add rustc-codegen-cranelift-preview --toolchain nightly
   ```
 
-#### 2. **Python**
-- `Python 3.7+` is required to use the provided build script for building the project.
-
+#### 2. **Just**
+- **Just** is used in this project to manage build. Install it using Cargo:
+  ```bash
+  cargo install just
+  ```
+> Note: You can also install Just using your system's package manager.
 
 #### 3. **Dependencies**
 
@@ -107,6 +110,13 @@ sudo apt update && sudo apt install -y \
     sudo apt install -y nvidia-driver nvidia-vulkan-icd
     ```
 
+##### Windows
+- **Git Bash** is required to ensure the commands in the `Justfile` and scripts run correctly. Download and install [Git Bash](https://git-scm.com/).
+- After installation, make sure Git Bash is added to your system's `PATH`. You can verify it by running:
+  ```bash
+  bash --version
+  ```
+
 ### Running the Project
 
 To compile and run the game locally, use the following commands:
@@ -123,7 +133,8 @@ cd minecraft-rust
 
 Debug mode:
 ```sh
-./run1.sh
+./run-server.sh  # this will compile the project and run the server
+./run1.sh        # this will compile the project and run the client 
 ```
 
 Release mode:

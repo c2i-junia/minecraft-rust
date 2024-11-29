@@ -6,6 +6,9 @@ use bevy_renet::renet::{ChannelConfig, ConnectionConfig, SendType};
 pub mod messages;
 pub mod world;
 
+#[derive(Resource, Debug, Clone)]
+pub struct GameFolderPath(pub String);
+
 #[derive(Resource)]
 pub struct GameServerConfig {
     pub world_name: String,

@@ -24,6 +24,7 @@ use bevy_simple_text_input::{
 };
 use ron::{from_str, ser::PrettyConfig};
 use shared::world::get_game_folder;
+use shared::GameFolderPath;
 use std::{
     fs,
     io::Write,
@@ -372,10 +373,12 @@ pub fn load_server_list(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut ServerList, Entity)>,
+    game_folder_path: Res<GameFolderPath>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
-    let game_folder_path: PathBuf = get_game_folder().join(SERVER_LIST_SAVE_NAME);
+    let game_folder_path: PathBuf =
+        get_game_folder(Some(&game_folder_path)).join(SERVER_LIST_SAVE_NAME);
     let path: &Path = game_folder_path.as_path();
 
     // If no server list save, returns
@@ -410,7 +413,7 @@ pub fn load_server_list(
     }
 }
 
-pub fn save_server_list(list: Query<&ServerList>) {
+pub fn save_server_list(list: Query<&ServerList>, game_folder_path: Res<GameFolderPath>) {
     let list = list.get_single();
     let list = match list {
         Ok(v) => v,
@@ -421,7 +424,7 @@ pub fn save_server_list(list: Query<&ServerList>) {
     };
 
     // Chemin complet du fichier de sauvegarde
-    let save_path: PathBuf = get_game_folder().join(SERVER_LIST_SAVE_NAME);
+    let save_path: PathBuf = get_game_folder(Some(&game_folder_path)).join(SERVER_LIST_SAVE_NAME);
 
     // Config de sérialisation RON
     let pretty_config = PrettyConfig::new()

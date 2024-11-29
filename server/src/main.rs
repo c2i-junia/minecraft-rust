@@ -16,16 +16,23 @@ struct Args {
 
     #[arg(short, long, default_value = "default")]
     world: String,
+
+    #[arg(short, long, default_value = "../")]
+    game_folder_path: String,
 }
 
 fn main() {
     let args = Args::parse();
     let socket = acquire_socket_by_port(args.port);
+
+    let game_folder_path = args.game_folder_path.clone();
+
     init::init(
         socket,
         GameServerConfig {
             world_name: args.world,
             is_solo: false,
         },
+        game_folder_path,
     );
 }
