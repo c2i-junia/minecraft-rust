@@ -25,17 +25,18 @@ def run_python_script(script, args=""):
     run_command(command)
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python build_package.py <version>")
+    if len(sys.argv) < 2:
+        print("Usage: python build_package.py <version> [--no-compression]")
         sys.exit(1)
 
     version = sys.argv[1]
+    no_compression = "--no-compression" in sys.argv
     original_dir = "minecraft-rust-client-1"
     working_dir = "./minecraft-rust"
     versioned_dir = ""
 
     # Step 1: Run `just release`
-    run_python_script("just", "release")
+    run_command("just release")
 
     # Step 2: Copy `minecraft-rust-client-1` to `./minecraft-rust`
     log(f"Copying '{original_dir}' to '{working_dir}'")
@@ -66,16 +67,18 @@ def main():
         versioned_dir = f"{working_dir}-{version}-linux-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
-        tar_file = f"{versioned_dir}.tar.gz"
-        shutil.make_archive(versioned_dir, 'gztar', root_dir=versioned_dir)
-        log(f"Compressed {versioned_dir} into {tar_file}")
+        if not no_compression:
+            tar_file = f"{versioned_dir}.tar.gz"
+            shutil.make_archive(versioned_dir, 'gztar', root_dir=versioned_dir)
+            log(f"Compressed {versioned_dir} into {tar_file}")
     elif os_name == "windows":
         versioned_dir = f"{working_dir}-{version}-windows-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
-        zip_file = f"{versioned_dir}.zip"
-        shutil.make_archive(versioned_dir, 'zip', root_dir=versioned_dir)
-        log(f"Compressed {versioned_dir} into {zip_file}")
+        if not no_compression:
+            zip_file = f"{versioned_dir}.zip"
+            shutil.make_archive(versioned_dir, 'zip', root_dir=versioned_dir)
+            log(f"Compressed {versioned_dir} into {zip_file}")
     else:
         log("Unsupported operating system. Only Linux and Windows are supported.")
         sys.exit(1)
