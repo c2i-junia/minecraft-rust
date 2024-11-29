@@ -28,7 +28,7 @@ use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
 use serde::{Deserialize, Serialize};
-use shared::GameFolderPath;
+use shared::{AssetsFolderPath, GameFolderPath};
 use std::collections::BTreeMap;
 
 #[derive(Parser, Debug)]
@@ -40,6 +40,13 @@ struct Args {
 
     #[arg(short, long, default_value = "../")]
     game_folder_path: String,
+
+    #[arg(
+        short,
+        long,
+        help = "Allows overriding of the game folder path, defaults to <game_folder_path>/data"
+    )]
+    assets_folder_path: Option<String>,
 }
 
 #[derive(Component)]
@@ -85,13 +92,25 @@ fn main() {
 
     let game_folder_path = args.game_folder_path.clone();
 
-    debug!(
+    println!(
         "Using {} for textures",
         if args.use_custom_textures {
             "custom textures"
         } else {
             "base textures"
         }
+    );
+
+    println!(
+        "Starting application with game folder: {}",
+        game_folder_path
+    );
+
+    let assets_folder_path = args.assets_folder_path.clone();
+
+    println!(
+        "Starting application with assets folder: {:?}",
+        assets_folder_path
     );
 
     let mut app = App::new();
@@ -126,6 +145,7 @@ fn main() {
             path: texture_path.to_string(),
         })
         .insert_resource(GameFolderPath(game_folder_path))
+        .insert_resource(AssetsFolderPath(assets_folder_path))
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

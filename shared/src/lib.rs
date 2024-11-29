@@ -9,6 +9,9 @@ pub mod world;
 #[derive(Resource, Debug, Clone)]
 pub struct GameFolderPath(pub String);
 
+#[derive(Resource, Debug, Clone)]
+pub struct AssetsFolderPath(pub Option<String>);
+
 #[derive(Resource)]
 pub struct GameServerConfig {
     pub world_name: String,
