@@ -44,7 +44,7 @@ struct Args {
     #[arg(
         short,
         long,
-        help = "Allows overriding of the game folder path, defaults to <game_folder_path>/data"
+        help = "Allows overriding of the asset folder path, defaults to <game_folder_path>/data"
     )]
     assets_folder_path: Option<String>,
 }

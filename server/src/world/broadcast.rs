@@ -86,7 +86,7 @@ pub fn broadcast_world_state(
     ticker: Res<TickCounter>,
     mut world_map: ResMut<ServerWorldMap>,
 ) {
-    if ticker.tick % 60 != 0 {
+    if ticker.tick % 10 != 0 {
         return;
     }
     trace!("Broadcast world update");
