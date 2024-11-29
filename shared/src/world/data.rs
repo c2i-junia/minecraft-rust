@@ -76,15 +76,15 @@ pub fn get_biome_data(biome_type: BiomeType) -> Biome {
             biome_type: BiomeType::MediumMountain,
             base_height: 70,
             height_variation: 4,
-            surface_block: BlockId::Dirt,
+            surface_block: BlockId::Grass,
             sub_surface_block: BlockId::Dirt,
         },
         BiomeType::HighMountain => Biome {
             biome_type: BiomeType::HighMountain,
             base_height: 80,
             height_variation: 7,
-            surface_block: BlockId::Stone,
-            sub_surface_block: BlockId::Stone,
+            surface_block: BlockId::Grass,
+            sub_surface_block: BlockId::Dirt,
         },
         BiomeType::Desert => Biome {
             biome_type: BiomeType::Desert,
