@@ -29,7 +29,7 @@ pub fn acquire_local_ephemeral_udp_socket() -> UdpSocket {
 }
 
 pub fn acquire_socket_by_port(port: u16) -> UdpSocket {
-    let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
+    let addr: SocketAddr = format!("0.0.0.0:{}", port).parse().unwrap();
     UdpSocket::bind(addr).unwrap()
 }
 

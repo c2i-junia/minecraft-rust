@@ -189,7 +189,7 @@ pub fn init_server_connection(
             user_data: None,
             protocol_id: shared::PROTOCOL_ID,
         };
-        let socket = UdpSocket::bind("127.0.0.1:0".parse::<SocketAddr>().unwrap()).unwrap();
+        let socket = UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
         let current_time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();
