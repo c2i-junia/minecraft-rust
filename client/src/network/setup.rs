@@ -17,7 +17,7 @@ use bincode::Options;
 use shared::messages::{
     AuthRegisterRequest, ChatConversation, ClientToServerMessage, PlayerId, PlayerSpawnEvent,
 };
-use std::net::SocketAddr;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::{net::UdpSocket, thread, time::SystemTime};
 
 use crate::world::ClientWorldMap;
@@ -87,7 +87,8 @@ pub fn launch_local_server_system(
     if let Some(world_name) = &selected_world.name {
         info!("Launching local server with world: {}", world_name);
 
-        let socket = server::acquire_local_ephemeral_udp_socket();
+        let socket =
+            server::acquire_local_ephemeral_udp_socket(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
         let addr = socket.local_addr().unwrap();
         debug!("Obtained UDP socket: {}", addr);
 
@@ -183,13 +184,15 @@ pub fn init_server_connection(
         let client = RenetClient::new(get_shared_renet_config());
         world.insert_resource(client);
 
+        info!("Attempting to connect to: {}", addr);
+
         let authentication = ClientAuthentication::Unsecure {
             server_addr: addr,
             client_id: id,
             user_data: None,
             protocol_id: shared::PROTOCOL_ID,
         };
-        let socket = UdpSocket::bind("0.0.0.0:0".parse::<SocketAddr>().unwrap()).unwrap();
+        let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
         let current_time = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .unwrap();

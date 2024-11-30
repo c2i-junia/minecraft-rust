@@ -7,9 +7,9 @@ use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
 use shared::{get_shared_renet_config, messages::PlayerId, GameFolderPath, GameServerConfig};
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
+use std::{collections::HashMap, net::IpAddr};
 
 use crate::world::load_from_file::{load_world_map, load_world_seed};
 
@@ -24,12 +24,12 @@ pub struct ServerLobby {
 }
 
 #[allow(dead_code)]
-pub fn acquire_local_ephemeral_udp_socket() -> UdpSocket {
-    acquire_socket_by_port(0)
+pub fn acquire_local_ephemeral_udp_socket(ip: IpAddr) -> UdpSocket {
+    acquire_socket_by_port(ip, 0)
 }
 
-pub fn acquire_socket_by_port(port: u16) -> UdpSocket {
-    let addr: SocketAddr = format!("0.0.0.0:{}", port).parse().unwrap();
+pub fn acquire_socket_by_port(ip: IpAddr, port: u16) -> UdpSocket {
+    let addr = SocketAddr::new(ip, port);
     UdpSocket::bind(addr).unwrap()
 }
 

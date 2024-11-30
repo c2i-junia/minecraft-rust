@@ -1,3 +1,5 @@
+use std::net::Ipv4Addr;
+
 use crate::init::acquire_socket_by_port;
 use clap::Parser;
 use shared::GameServerConfig;
@@ -23,7 +25,7 @@ struct Args {
 
 fn main() {
     let args = Args::parse();
-    let socket = acquire_socket_by_port(args.port);
+    let socket = acquire_socket_by_port(std::net::IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), args.port);
 
     let game_folder_path = args.game_folder_path.clone();
 
