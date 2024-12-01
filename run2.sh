@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+just create-game-folders
+
 # RUST_BACKTRACE=1 \
 RUST_LOG=client=debug,server=debug,shared=debug,warn \
 cargo run \

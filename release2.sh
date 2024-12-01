@@ -7,5 +7,5 @@ cargo run \
 --release \
 --bin client \
 -- \
---game-folder-path $PWD/appdata/client-1 \
+--game-folder-path $PWD/appdata/client-2 \
 --assets-folder-path $PWD/data

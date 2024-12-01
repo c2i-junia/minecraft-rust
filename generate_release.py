@@ -31,40 +31,23 @@ def main():
 
     version = sys.argv[1]
     no_compression = "--no-compression" in sys.argv
-    original_dir = "minecraft-rust-client-1"
-    working_dir = "./minecraft-rust"
+    working_dir = "release"
     versioned_dir = ""
 
     # Step 1: Run `just release`
-    run_command("just release")
+    run_command("just generate-release-folder")
 
-    # Step 2: Copy `minecraft-rust-client-1` to `./minecraft-rust`
-    log(f"Copying '{original_dir}' to '{working_dir}'")
-    shutil.copytree(original_dir, working_dir)
-
-    if not os.path.exists(original_dir):
-        log(f"Source directory '{original_dir}' does not exist.")
-        sys.exit(1)
-
-    # Step 3: Copy CHANGELOG.txt and LICENSE.txt into the build directory
-    changelog_path = os.path.join(working_dir, "CHANGELOG.txt")
-    license_path = os.path.join(working_dir, "LICENSE.txt")
-    shutil.copy("CHANGELOG.txt", changelog_path)
-    log(f"Copied CHANGELOG.txt to {changelog_path}")
-    shutil.copy("LICENSE.txt", license_path)
-    log(f"Copied LICENSE.txt to {license_path}")
-
-    # Step 4: Create a `version.txt` file
+    # Step 2: Create a `version.txt` file
     version_file_path = os.path.join(working_dir, "version.txt")
     with open(version_file_path, "w") as version_file:
         version_file.write(version)
     log(f"Created version.txt with version: {version}")
 
-    # Step 5: Detect operating system
+    # Step 3: Detect operating system
     os_name = platform.system().lower()
 
     if os_name == "linux":
-        versioned_dir = f"{working_dir}-{version}-linux-x86_64"
+        versioned_dir = f"minecraft-rust-{version}-linux-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
         if not no_compression:
@@ -72,7 +55,7 @@ def main():
             shutil.make_archive(versioned_dir, 'gztar', root_dir=versioned_dir)
             log(f"Compressed {versioned_dir} into {tar_file}")
     elif os_name == "windows":
-        versioned_dir = f"{working_dir}-{version}-windows-x86_64"
+        versioned_dir = f"minecraft-rust-{version}-windows-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
         if not no_compression:
