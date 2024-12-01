@@ -143,10 +143,11 @@ Debug mode:
 Release mode:
 ```sh
 # Build the project in debug or release mode
-./build.py release
+just generate-release-folder
 
 # Run the executable
-./appdata/client-1/bin/minecraft-rust
+./release/bin/minecraft-rust         # run the client
+./release/bin/minecraft-rust-server  # run the server
 ```
 
 # Contributing
