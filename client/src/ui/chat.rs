@@ -6,6 +6,7 @@ use crate::KeyMap;
 use bevy::prelude::*;
 use bevy_renet::renet::RenetClient;
 use bevy_simple_text_input::*;
+use shared::GameFolderPaths;
 
 #[derive(Component)]
 pub struct ChatRoot;
@@ -29,7 +30,11 @@ const CHAT_MAX_MESSAGES: usize = 2;
 const ANIMATION_BEGIN_FADE: u64 = 5_000;
 const ANIMATION_HIDE: u64 = 2_000;
 
-pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn setup_chat(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    paths: Res<GameFolderPaths>,
+) {
     commands
         .spawn((
             Name::new("ChatRoot"),
@@ -97,7 +102,10 @@ pub fn setup_chat(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ..Default::default()
                     },
                     text_style: TextInputTextStyle(TextStyle {
-                        font: asset_server.load("fonts/gohu.ttf"),
+                        font: asset_server.load(format!(
+                            "{}/fonts/gohu.ttf",
+                            paths.assets_folder_path.clone()
+                        )),
                         font_size: 17.,
                         color: Color::WHITE,
                     }),
@@ -134,6 +142,7 @@ pub fn render_chat(
     mut last_render_ts: Local<u64>,
     mut event: EventReader<TextInputSubmitEvent>,
     mut commands: Commands,
+    paths: Res<GameFolderPaths>,
 ) {
     let (cached_conv, asset_server, mut client, keyboard_input, key_map) = resources;
     let (mut text_query, mut visibility_query, parent_query, mut animation_query) = queries;
@@ -206,7 +215,8 @@ pub fn render_chat(
                         text: Text::from_section(
                             format!("<{}> : {}", message.author_name, message.content),
                             TextStyle {
-                                font: asset_server.load("fonts/gohu.ttf"),
+                                font: asset_server
+                                    .load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path)),
                                 font_size: 17.,
                                 color: Color::WHITE,
                             }

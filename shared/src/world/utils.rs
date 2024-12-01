@@ -1,15 +1,15 @@
-use crate::GameFolderPath;
+use crate::GameFolderPaths;
 use bevy::math::{IVec3, Vec3};
 use std::{env, path::PathBuf};
 
 use crate::CHUNK_SIZE;
 
-pub fn get_game_folder(game_folder_path: Option<&GameFolderPath>) -> PathBuf {
+pub fn get_game_folder(game_folder_path: Option<&GameFolderPaths>) -> PathBuf {
     if let Some(folder_path) = game_folder_path {
         // Chemin custom, convertir en chemin absolu relatif à l'exécutable
         let mut exe_path = env::current_exe().expect("Failed to get executable path");
         exe_path.pop(); // Remove executable name
-        return exe_path.join(&folder_path.0); // Joindre le chemin relatif à l'exécutable
+        return exe_path.join(&folder_path.game_folder_path); // Joindre le chemin relatif à l'exécutable
     } else {
         panic!();
     }

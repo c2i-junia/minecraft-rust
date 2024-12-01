@@ -24,7 +24,7 @@ use bevy_simple_text_input::{
     TextInputTextStyle, TextInputValue,
 };
 use shared::world::get_game_folder;
-use shared::GameFolderPath;
+use shared::GameFolderPaths;
 use std::io;
 use std::{
     fs,
@@ -57,8 +57,12 @@ pub struct SelectedWorld {
 
 pub const BACKGROUND_COLOR: Color = Color::srgb(0.5, 0.5, 0.5);
 
-pub fn solo_menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
-    let font: Handle<Font> = assets.load("fonts/gohu.ttf");
+pub fn solo_menu_setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    paths: Res<GameFolderPaths>,
+) {
+    let font: Handle<Font> = assets.load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path));
     let txt_style = TextStyle {
         font: font.clone(),
         font_size: 20.,
@@ -230,12 +234,12 @@ pub fn list_worlds(
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut WorldList, Entity)>,
     mut world_map: ResMut<ClientWorldMap>,
-    game_folder_path: Res<GameFolderPath>,
+    game_paths: Res<GameFolderPaths>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
     // create save folder if it not exist
-    let save_path: PathBuf = get_game_folder(Some(&game_folder_path)).join(SAVE_PATH);
+    let save_path: PathBuf = get_game_folder(Some(&game_paths)).join(SAVE_PATH);
     let path: &Path = save_path.as_path();
     if !fs::exists(path).unwrap() && fs::create_dir_all(path).is_ok() {
         info!("Successfully created the saves folder : {}", path.display());
@@ -254,6 +258,7 @@ pub fn list_worlds(
                 &mut list,
                 list_entity,
                 &mut world_map,
+                &game_paths,
             );
         }
     }
@@ -266,11 +271,14 @@ fn add_world_item(
     list: &mut WorldList,
     list_entity: Entity,
     world_map: &mut ClientWorldMap,
+    paths: &Res<GameFolderPaths>,
 ) {
     info!(
         "Adding world to list : name = {:?}, entity={:?}",
         name, list_entity
     );
+
+    let base_path = &paths.assets_folder_path;
 
     // udpate the name of the world_map
     world_map.name = name.clone();
@@ -316,7 +324,7 @@ fn add_world_item(
             },
         ))
         .with_children(|btn| {
-            let icon = asset_server.load("./graphics/play.png");
+            let icon = asset_server.load(format!("{}/graphics/play.png", base_path));
             btn.spawn(ImageBundle {
                 image: UiImage::new(icon),
                 style: img_style.clone(),
@@ -334,7 +342,7 @@ fn add_world_item(
             },
         ))
         .with_children(|btn| {
-            let icon = asset_server.load("./graphics/trash.png");
+            let icon = asset_server.load(format!("{}/graphics/trash.png", base_path));
             btn.spawn(ImageBundle {
                 image: UiImage::new(icon),
                 style: img_style.clone(),
@@ -349,7 +357,8 @@ fn add_world_item(
                 sections: vec![TextSection {
                     value: name.clone() + "\n",
                     style: TextStyle {
-                        font: asset_server.load("fonts/gohu.ttf"),
+                        font: asset_server
+                            .load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path)),
                         font_size: 20.,
                         color: Color::WHITE,
                     },
@@ -389,7 +398,7 @@ pub fn solo_action(
     ),
     mut commands: Commands,
     mut load_event: EventWriter<LoadWorldEvent>,
-    game_folder_path: Res<GameFolderPath>,
+    paths: Res<GameFolderPaths>,
 ) {
     if list_query.is_empty() {
         return;
@@ -411,6 +420,7 @@ pub fn solo_action(
                             &mut list,
                             entity,
                             &mut world_map,
+                            &paths,
                         );
 
                         name.0 = "".into();
@@ -430,7 +440,7 @@ pub fn solo_action(
                 }
                 MultiplayerButtonAction::Delete(world_entity) => {
                     if let Some(world) = list.worlds.get(&world_entity) {
-                        if let Err(e) = delete_save_files(&world.name, &game_folder_path) {
+                        if let Err(e) = delete_save_files(&world.name, &paths) {
                             error!("Error while deleting save files: {}", e);
                         }
                         list.worlds.remove(&world_entity);
@@ -445,7 +455,7 @@ pub fn solo_action(
 
 pub fn delete_save_files(
     world_name: &str,
-    game_folder_path: &Res<GameFolderPath>,
+    game_folder_path: &Res<GameFolderPaths>,
 ) -> Result<(), io::Error> {
     // Delete `world_save.ron`
     match fs::remove_file(format!(

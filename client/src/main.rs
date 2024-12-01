@@ -28,7 +28,7 @@ use input::{data::GameAction, keyboard::get_bindings};
 use menu::settings::{DisplayQuality, Volume};
 use menu::solo::SelectedWorld;
 use serde::{Deserialize, Serialize};
-use shared::{AssetsFolderPath, GameFolderPath};
+use shared::GameFolderPaths;
 use std::collections::BTreeMap;
 
 #[derive(Parser, Debug)]
@@ -106,12 +106,20 @@ fn main() {
         game_folder_path
     );
 
-    let assets_folder_path = args.assets_folder_path.clone();
+    let assets_folder_path = args
+        .assets_folder_path
+        .clone()
+        .unwrap_or(format!("{}/data", game_folder_path));
 
     println!(
         "Starting application with assets folder: {:?}",
         assets_folder_path
     );
+
+    let game_folder_paths = GameFolderPaths {
+        game_folder_path: game_folder_path.clone(),
+        assets_folder_path,
+    };
 
     let mut app = App::new();
     app.add_plugins(
@@ -131,21 +139,21 @@ fn main() {
                 ..Default::default()
             }),
     );
+
     app.add_plugins(EguiPlugin);
     app.add_plugins(WorldInspectorPlugin::new());
     app.add_event::<LoadWorldEvent>();
     network::add_base_netcode(&mut app);
     app.insert_resource(DisplayQuality::Medium)
         .insert_resource(Volume(7))
-        .insert_resource(get_bindings(&game_folder_path))
+        .insert_resource(get_bindings(&game_folder_path.clone()))
         .insert_resource(SelectedWorld::default())
         // Declare the game state, whose starting value is determined by the `Default` trait
         .insert_resource(ClientWorldMap { ..default() })
         .insert_resource(TexturePath {
             path: texture_path.to_string(),
         })
-        .insert_resource(GameFolderPath(game_folder_path))
-        .insert_resource(AssetsFolderPath(assets_folder_path))
+        .insert_resource(game_folder_paths)
         .init_state::<GameState>()
         .enable_state_scoped_entities::<GameState>()
         // Adds the plugins for each state

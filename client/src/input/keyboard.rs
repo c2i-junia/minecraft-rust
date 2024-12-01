@@ -6,7 +6,7 @@ use bevy::{
 };
 use ron::{from_str, ser::PrettyConfig};
 use shared::world::get_game_folder;
-use shared::GameFolderPath;
+use shared::GameFolderPaths;
 use std::{
     collections::BTreeMap,
     fs::{self, File},
@@ -64,7 +64,10 @@ pub fn get_action_keys(action: GameAction, key_map: &KeyMap) -> Vec<KeyCode> {
 }
 
 pub fn get_bindings(game_folder_path: &String) -> KeyMap {
-    let game_folder_path_struct = GameFolderPath(game_folder_path.clone());
+    let game_folder_path_struct = GameFolderPaths {
+        game_folder_path: game_folder_path.clone(),
+        assets_folder_path: format!("{}/data", game_folder_path),
+    };
     let binds_path: PathBuf = get_game_folder(Some(&game_folder_path_struct)).join(BINDS_PATH);
 
     // Try to get & serialize existing binds
@@ -114,7 +117,7 @@ pub fn get_bindings(game_folder_path: &String) -> KeyMap {
     }
 }
 
-pub fn save_keybindings(key_map: Res<KeyMap>, game_folder_path: Res<GameFolderPath>) {
+pub fn save_keybindings(key_map: Res<KeyMap>, game_folder_path: Res<GameFolderPaths>) {
     let binds_path: PathBuf = get_game_folder(Some(&game_folder_path)).join(BINDS_PATH);
 
     let pretty_config = PrettyConfig::new()

@@ -7,10 +7,10 @@ pub mod messages;
 pub mod world;
 
 #[derive(Resource, Debug, Clone)]
-pub struct GameFolderPath(pub String);
-
-#[derive(Resource, Debug, Clone)]
-pub struct AssetsFolderPath(pub Option<String>);
+pub struct GameFolderPaths {
+    pub game_folder_path: String,
+    pub assets_folder_path: String,
+}
 
 #[derive(Resource)]
 pub struct GameServerConfig {

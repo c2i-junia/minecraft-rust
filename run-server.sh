@@ -6,6 +6,7 @@ just create-game-folders
 RUST_LOG=server=debug,server=debug,shared=debug,warn \
 cargo run \
 --features=bevy/dynamic_linking \
+--package server \
 --bin server \
 -- \
 --port 8000 \

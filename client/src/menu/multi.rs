@@ -24,7 +24,7 @@ use bevy_simple_text_input::{
 };
 use ron::{from_str, ser::PrettyConfig};
 use shared::world::get_game_folder;
-use shared::GameFolderPath;
+use shared::GameFolderPaths;
 use std::{
     fs,
     io::Write,
@@ -57,8 +57,12 @@ pub struct ServerNameInput;
 
 pub const BACKGROUND_COLOR: Color = Color::srgb(0.5, 0.5, 0.5);
 
-pub fn multiplayer_menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
-    let font: Handle<Font> = assets.load("fonts/gohu.ttf");
+pub fn multiplayer_menu_setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    paths: Res<GameFolderPaths>,
+) {
+    let font: Handle<Font> = assets.load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path));
     let txt_style = TextStyle {
         font: font.clone(),
         font_size: 20.,
@@ -251,6 +255,7 @@ pub fn add_server_item(
     asset_server: &Res<AssetServer>,
     list: &mut ServerList,
     list_entity: Entity,
+    paths: &Res<GameFolderPaths>,
 ) {
     info!("Adding server to list : name = {:?}, ip = {:?}", name, ip);
 
@@ -329,7 +334,8 @@ pub fn add_server_item(
                     TextSection {
                         value: name.clone() + "\n",
                         style: TextStyle {
-                            font: asset_server.load("fonts/gohu.ttf"),
+                            font: asset_server
+                                .load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path)),
                             font_size: 20.,
                             color: Color::WHITE,
                         },
@@ -337,7 +343,8 @@ pub fn add_server_item(
                     TextSection {
                         value: ip.clone(),
                         style: TextStyle {
-                            font: asset_server.load("fonts/gohu.ttf"),
+                            font: asset_server
+                                .load(format!("{}/fonts/gohu.ttf", paths.assets_folder_path)),
                             font_size: 15.,
                             color: Color::srgb(0.4, 0.4, 0.4),
                         },
@@ -373,12 +380,11 @@ pub fn load_server_list(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut list_query: Query<(&mut ServerList, Entity)>,
-    game_folder_path: Res<GameFolderPath>,
+    paths: Res<GameFolderPaths>,
 ) {
     let (mut list, list_entity) = list_query.single_mut();
 
-    let game_folder_path: PathBuf =
-        get_game_folder(Some(&game_folder_path)).join(SERVER_LIST_SAVE_NAME);
+    let game_folder_path: PathBuf = get_game_folder(Some(&paths)).join(SERVER_LIST_SAVE_NAME);
     let path: &Path = game_folder_path.as_path();
 
     add_server_item(
@@ -388,6 +394,7 @@ pub fn load_server_list(
         &assets,
         &mut list,
         list_entity,
+        &paths,
     );
 
     // If no server list save, returns
@@ -418,11 +425,12 @@ pub fn load_server_list(
             &assets,
             &mut list,
             list_entity,
+            &paths,
         );
     }
 }
 
-pub fn save_server_list(list: Query<&ServerList>, game_folder_path: Res<GameFolderPath>) {
+pub fn save_server_list(list: Query<&ServerList>, game_folder_path: Res<GameFolderPaths>) {
     let list = list.get_single();
     let list = match list {
         Ok(v) => v,
@@ -476,6 +484,7 @@ pub fn multiplayer_action(
     mut target_server: ResMut<TargetServer>,
     mut game_state: ResMut<NextState<GameState>>,
     mut menu_state: ResMut<NextState<MenuState>>,
+    paths: Res<GameFolderPaths>,
 ) {
     let (interaction_query, name_query, ip_query, mut list_query) = queries;
     if list_query.is_empty() {
@@ -499,6 +508,7 @@ pub fn multiplayer_action(
                             &asset_server,
                             &mut list,
                             entity,
+                            &paths,
                         );
                     }
                 }

@@ -4,7 +4,7 @@ use ron::ser::PrettyConfig;
 use shared::world::get_game_folder;
 use shared::world::ServerWorldMap;
 use shared::world::WorldSeed;
-use shared::GameFolderPath;
+use shared::GameFolderPaths;
 use std::{fs::File, io::Write, path::Path};
 
 #[derive(Event)]
@@ -18,7 +18,7 @@ pub fn save_world_system(
     world_seed: Res<WorldSeed>, // Add `WorldSeed` as a resource here
     // inventory: Res<Inventory>,
     // player_query: Query<&Transform>,
-    game_folder_path: Res<GameFolderPath>,
+    game_folder_path: Res<GameFolderPaths>,
     mut event: EventReader<SaveRequestEvent>,
 ) {
     let mut save_requested = false;

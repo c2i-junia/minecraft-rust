@@ -6,7 +6,7 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
-use shared::{get_shared_renet_config, messages::PlayerId, GameFolderPath, GameServerConfig};
+use shared::{get_shared_renet_config, messages::PlayerId, GameFolderPaths, GameServerConfig};
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 use std::{collections::HashMap, net::IpAddr};
@@ -70,7 +70,10 @@ pub fn init(socket: UdpSocket, config: GameServerConfig, game_folder_path: Strin
     app.add_plugins(bevy::log::LogPlugin::default());
 
     app.insert_resource(ServerLobby::default());
-    app.insert_resource(GameFolderPath(game_folder_path));
+    app.insert_resource(GameFolderPaths {
+        game_folder_path: game_folder_path.clone(),
+        assets_folder_path: format!("{}/data", game_folder_path),
+    });
 
     let world_name = &config.world_name.clone();
 

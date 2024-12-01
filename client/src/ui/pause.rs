@@ -15,6 +15,7 @@ use bevy::{
     },
 };
 use bevy_renet::renet::RenetClient;
+use shared::GameFolderPaths;
 
 use crate::{input::keyboard::is_action_just_pressed, GameState, KeyMap};
 
@@ -30,7 +31,11 @@ pub enum PauseButtonAction {
     Menu,
 }
 
-pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
+pub fn setup_pause_menu(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    paths: Res<GameFolderPaths>,
+) {
     commands
         .spawn((
             PauseMenu,
@@ -96,7 +101,10 @@ pub fn setup_pause_menu(mut commands: Commands, assets: Res<AssetServer>) {
                                 text: Text::from_section(
                                     msg,
                                     TextStyle {
-                                        font: assets.load("fonts/gohu.ttf"),
+                                        font: assets.load(format!(
+                                            "{}/fonts/gohu.ttf",
+                                            paths.assets_folder_path
+                                        )),
                                         font_size: 20.,
                                         color: Color::WHITE,
                                     },
