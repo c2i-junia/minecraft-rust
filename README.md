@@ -2,77 +2,80 @@
 
 Minecraft game clone written in Rust, using the Bevy game engine.
 
-<details open>
-  <summary>game preview :</summary>
-  <img src="https://github.com/eztaah/minecraft-rust/blob/main/docs/gameplay.gif" alt="Aperçu du projet" width="700">
-</details>
+![image](./docs/preview.png)
 
 <br>
 
-## Table of contents
+# Table of contents
 
+- [Features](#features)
+- [Download](#download)
 - [Controls](#controls)
-
-- [Building from source](#building-from-source)
-
+- [How to Build](#how-to-build)
+    - [Prerequisites](#prerequisites)
+    - [Running the Project](#running-the-project)
 - [Contributing](#contributing)
+    - [Guidelines](#guidelines)
 
-<br>
+# Features
+- Procedurally generated worlds with biomes (Plains, Forest, Mountains, Desert, Ice Plain), trees and flowers.
+- Multiplayer functionality.
+- Dynamic day/night cycle
+- Block breaking and placing mehanics.
+- Inventory system with a functional hotbar.
+- World saving and loading.
+- Customizable keybindings and dynamic render distance adjustment.
 
-## Controls
+# Download
 
-#### Movement
-| Action             | Key               |
-|--------------------|-------------------|
-| Jump               | `Space`           |
-| Strafe Left        | `A` / `Arrow Left`|
-| Strafe Right       | `D` / `Arrow Right` |
-| Walk Backward      | `S` / `Arrow Down` |
-| Walk Forward       | `W` / `Arrow Up`  |
-| Toggle Fly Mode    | `F`               |
-| Fly Up             | `Space`           |
-| Fly Down           | `Left Shift`      |
+You can download the game for **Windows** and **Linux** from the [Releases page](https://github.com/c2i-junia/minecraft-rust/releases) of the GitHub repository.
 
-#### Gameplay
-| Action             | Key               |
-|--------------------|-------------------|
-| Destroy Block      | `Left Mouse Button` |
-| Place Block        | `Right Mouse Button` |
+Once downloaded, extract the archive for your operating system. The executable will be located in the `/bin` folder of the extracted directory.
 
-#### Inventory
-| Action                        | Key/Mouse                        |
-|-------------------------------|-----------------------------------|
-| Open/Close Inventory          | `E`                              |
-| Pick up stack                 | `Left Click`                     |
-| Pick up half of stack         | `Right Click` (with empty mouse) |
-| Deposit 1 item                | `Right Click` (over valid stack) |
-| Deposit MAX items             | `Left Click` (over valid stack)  |
-| Exchange stacks               | `Left Click` (over a different stack or full valid stack) |
+# Controls
 
-> *A "valid stack" refers to a stack in the inventory that is either empty or contains the same items as the mouse cursor.*
+```
+Movement
+- Jump:             Space
+- Strafe Left:      A / Arrow Left
+- Strafe Right:     D / Arrow Right
+- Walk Backward:    S / Arrow Down
+- Walk Forward:     W / Arrow Up
+- Toggle Fly Mode:  F
+- Fly Up:           Space
+- Fly Down:         Left Shift
 
-#### Miscellaneous
-| Action                        | Key               |
-|-------------------------------|-------------------|
-| Toggle FPS Display            | `F3`             |
-| Toggle Perspective            | `F5`             |
-| Toggle Chunk Debug            | `F4`             |
-| Toggle Block Debug            | `F6`             |
-| Decrease Render Distance      | `O`              |
-| Increase Render Distance      | `P`              |
-| Exit Game                     | `Escape`         |
+Gameplay
+- Destroy Block:  Left Mouse Button
+- Place Block:    Right Mouse Button
 
-<br>
+Inventory
+- Open/Close Inventory:   E
+- Pick up stack:          Left Click
+- Pick up half of stack:  Right Click (with empty mouse)
+- Deposit 1 item:         Right Click (over valid stack)
+- Deposit MAX items:      Left Click (over valid stack)
+- Exchange stacks:        Left Click (over a different stack or full valid stack)
 
+> A "valid stack" refers to a stack in the inventory that is either empty or contains the same items as the mouse cursor.
 
+Miscellaneous
+- Toggle FPS Display:        F3
+- Toggle Perspective:        F5
+- Toggle Chunk Debug:        F4
+- Toggle Block Debug:        F6
+- Decrease Render Distance:  O
+- Increase Render Distance:  P
+- Exit Game:                 Escape
+```
 
-## Building from source
+# How to Build
 
-### Prerequisites
+## Prerequisites
 
 To build and run this project, you need the following tools and dependencies installed:
 
-#### 1. **Rust**
+### 1. **Rust**
 - Install Rust using [Rustup](https://rustup.rs)
 - After installation, add the **Nightly toolchain** with the Cranelift backend:
   ```bash
@@ -81,18 +84,18 @@ To build and run this project, you need the following tools and dependencies ins
   rustup component add rustc-codegen-cranelift-preview --toolchain nightly
   ```
 
-#### 2. **Just**
+### 2. **Just**
 - **Just** is used in this project to manage build. Install it using Cargo:
   ```bash
   cargo install just
   ```
 > Note: You can also install Just using your system's package manager.
 
-#### 3. **Dependencies**
+### 3. **Dependencies**
 
 Install the required dependencies based on your operating system:
 
-##### Arch Linux
+#### Arch Linux
 ```bash
 sudo pacman -S base-devel mold clang vulkan-radeon vulkan-tools
 ```
@@ -100,7 +103,7 @@ sudo pacman -S base-devel mold clang vulkan-radeon vulkan-tools
   - `vulkan-intel` for Intel GPUs.   
   - `nvidia-utils` for NVIDIA GPUs.   
 
-##### Ubuntu/Debian
+#### Ubuntu/Debian
 ```bash
 sudo apt update && sudo apt install -y \
     build-essential mold clang mesa-vulkan-drivers vulkan-tools
@@ -110,14 +113,14 @@ sudo apt update && sudo apt install -y \
     sudo apt install -y nvidia-driver nvidia-vulkan-icd
     ```
 
-##### Windows
+#### Windows
 - **Git Bash** is required to ensure the commands in the `Justfile` and scripts run correctly. Download and install [Git Bash](https://git-scm.com/).
 - After installation, make sure Git Bash is added to your system's `PATH`. You can verify it by running:
   ```bash
   bash --version
   ```
 
-### Running the Project
+## Running the Project
 
 To compile and run the game locally, use the following commands:
 
@@ -143,21 +146,19 @@ Release mode:
 ./build.py release
 
 # Run the executable
-./minecraft-rust-client-1/bin/minecraft-rust
+./appdata/client-1/bin/minecraft-rust
 ```
 
-<br>
-
-## Contributing
+# Contributing
 
 Feel free to submit issues or open pull requests. If you want to know where to help, refer to the existing issues.
 
-### Guidelines 
+## Guidelines 
 
-#### Format
+### Format
 Run `cargo fmt` before committing.
 
-#### Commit messages:
+### Commit messages:
 
 We follow the [Conventional Commit specification](https://www.conventionalcommits.org/en/v1.0.0/).
 ```
@@ -191,7 +192,7 @@ Co-authored-by: NAME <NAME@EXAMPLE.COM>
 Co-authored-by: ANOTHER-NAME <ANOTHER-NAME@EXAMPLE.COM>"
 ```
 
-#### Branches
+### Branches
 - Use the naming convention `<type>/<name>` for branches introducing new features. Only use lowercase letters, numbers, and dashes.
 - The `main` branch should always compile successfully and be free of warnings. Use `cargo check`.
 - Experimental branches are allowed to include code that does not build successfully.
