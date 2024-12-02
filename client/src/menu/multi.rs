@@ -387,16 +387,6 @@ pub fn load_server_list(
     let game_folder_path: PathBuf = get_game_folder(Some(&paths)).join(SERVER_LIST_SAVE_NAME);
     let path: &Path = game_folder_path.as_path();
 
-    add_server_item(
-        "Default server".into(),
-        "127.0.0.1:8000".into(),
-        &mut commands,
-        &assets,
-        &mut list,
-        list_entity,
-        &paths,
-    );
-
     // If no server list save, returns
     if !fs::exists(path).unwrap() {
         error!("No server list found at {:?}", path);
@@ -410,12 +400,41 @@ pub fn load_server_list(
     }
     let txt = txt.unwrap();
 
+    // Check if the file is empty
+    if txt.trim().is_empty() {
+        error!("Server list file is empty at {:?}", path);
+        add_server_item(
+            "localhost".into(),
+            "127.0.0.1:8000".into(),
+            &mut commands,
+            &assets,
+            &mut list,
+            list_entity,
+            &paths,
+        );
+        return;
+    }
+
     let maybe_servers = from_str::<Vec<ServerItem>>(&txt);
     if maybe_servers.is_err() {
         error!("Failed to parse server list from {:?}", path);
         return;
     }
     let servers = maybe_servers.unwrap();
+
+    // Check if localhost already exists, if not, create it
+    let localhost_exists = servers.iter().any(|srv| srv.ip == "127.0.0.1:8000");
+    if !localhost_exists {
+        add_server_item(
+            "localhost".into(),
+            "127.0.0.1:8000".into(),
+            &mut commands,
+            &assets,
+            &mut list,
+            list_entity,
+            &paths,
+        );
+    }
 
     for srv in servers {
         add_server_item(
@@ -435,6 +454,11 @@ pub fn save_server_list(list: Query<&ServerList>, game_folder_path: Res<GameFold
     let list = match list {
         Ok(v) => v,
         Err(_) => {
+            let count = list.iter().count();
+            if count > 1 {
+                warn!("save_server_list: Multiple ServerList components found ({})", count);
+                return;
+            }
             warn!("save_server_list: list is not single");
             return;
         }
