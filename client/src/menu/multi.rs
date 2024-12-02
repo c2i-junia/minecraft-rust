@@ -456,7 +456,10 @@ pub fn save_server_list(list: Query<&ServerList>, game_folder_path: Res<GameFold
         Err(_) => {
             let count = list.iter().count();
             if count > 1 {
-                warn!("save_server_list: Multiple ServerList components found ({})", count);
+                warn!(
+                    "save_server_list: Multiple ServerList components found ({})",
+                    count
+                );
                 return;
             }
             warn!("save_server_list: list is not single");
