@@ -1,6 +1,7 @@
 use crate::chat::{setup_chat_resources, ChatMessageEvent};
 use crate::init::{ServerLobby, TickCounter};
 use crate::player::handle_player_inputs;
+use crate::time::update_server_time;
 use crate::world::save::SaveRequestEvent;
 use crate::world::BlockInteractionEvent;
 use crate::world::WorldUpdateRequestEvent;
@@ -43,6 +44,8 @@ pub fn register_systems(app: &mut App) {
 
     app.add_systems(Update, world::save::save_world_system);
     app.add_systems(Update, world::handle_block_interactions);
+
+    app.add_systems(Update, update_server_time);
 }
 
 #[allow(clippy::type_complexity)]

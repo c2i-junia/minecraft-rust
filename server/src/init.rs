@@ -6,17 +6,21 @@ use bevy_app::ScheduleRunnerPlugin;
 use bevy_renet::renet::transport::NetcodeServerTransport;
 use bevy_renet::renet::RenetServer;
 use bevy_renet::RenetServerPlugin;
+use serde::{Deserialize, Serialize};
 use shared::{get_shared_renet_config, messages::PlayerId, GameFolderPaths, GameServerConfig};
 use std::fmt::Debug;
 use std::time::{Duration, SystemTime};
 use std::{collections::HashMap, net::IpAddr};
 
-use crate::world::load_from_file::{load_world_map, load_world_seed};
+use crate::world::load_from_file::{load_world_map, load_world_seed, load_world_time};
 
 use crate::dispatcher;
 use bevy_renet::renet::transport::{ServerAuthentication, ServerConfig};
 use bevy_renet::transport::NetcodeServerPlugin;
 use std::net::{SocketAddr, UdpSocket};
+
+#[derive(Resource, Serialize, Deserialize, Debug, Clone)]
+pub struct ServerTime(pub u64);
 
 #[derive(Debug, Default, Resource)]
 pub struct ServerLobby {
@@ -105,10 +109,18 @@ pub fn init(socket: UdpSocket, config: GameServerConfig, game_folder_path: Strin
         }
     };
 
-    // Insert world_map and seed into ressources
+    let server_time = match load_world_time(world_name, &app) {
+        Ok(time) => time,
+        Err(e) => {
+            error!("Error loading time: {}. Defaulting to 0.", e);
+            0
+        }
+    };
 
+    // Insert world_map and seed into ressources
     app.insert_resource(world_map);
     app.insert_resource(world_seed);
+    app.insert_resource(ServerTime(server_time));
 
     dispatcher::register_systems(&mut app);
 

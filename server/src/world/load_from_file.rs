@@ -13,6 +13,7 @@ use std::path::PathBuf;
 pub struct WorldData {
     pub seed: WorldSeed,
     pub map: ServerWorldMap,
+    pub time: u64,
 }
 
 /// Charge les données combinées (carte et graine) d'un fichier
@@ -40,7 +41,8 @@ pub fn load_world_data(
                 name: file_name.to_string(),
                 ..Default::default()
             },
-            seed: WorldSeed(rand::random::<u32>()), // Graine aléatoire par défaut
+            seed: WorldSeed(rand::random::<u32>()),
+            time: 0,
         });
     }
 
@@ -50,20 +52,23 @@ pub fn load_world_data(
     Ok(world_data)
 }
 
-/// Fonction pratique pour charger uniquement la carte depuis `WorldData`
 pub fn load_world_map(
     file_name: &str,
     app: &App,
 ) -> Result<ServerWorldMap, Box<dyn std::error::Error>> {
     let world_data = load_world_data(file_name, app)?;
-    Ok(world_data.map) // Retourner uniquement la carte
+    Ok(world_data.map)
 }
 
-/// Fonction pratique pour charger uniquement la graine depuis `WorldData`
+pub fn load_world_time(file_name: &str, app: &App) -> Result<u64, Box<dyn std::error::Error>> {
+    let world_data = load_world_data(file_name, app)?;
+    Ok(world_data.time)
+}
+
 pub fn load_world_seed(
     file_name: &str,
     app: &App,
 ) -> Result<WorldSeed, Box<dyn std::error::Error>> {
     let world_data = load_world_data(file_name, app)?;
-    Ok(world_data.seed) // Retourner uniquement la graine
+    Ok(world_data.seed)
 }

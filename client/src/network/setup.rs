@@ -7,6 +7,7 @@ use crate::menu::solo::SelectedWorld;
 use crate::network::world::update_world_from_network;
 use crate::network::{update_cached_chat_state, CachedChatConversation};
 use crate::player::{CurrentPlayerMarker, Player};
+use crate::world::time::ClientTime;
 use crate::world::{RenderDistance, WorldRenderRequestUpdateEvent};
 use bevy_renet::renet::transport::{
     ClientAuthentication, NetcodeClientTransport, NetcodeTransportError,
@@ -130,6 +131,7 @@ fn poll_reliable_ordered_messages(
 fn poll_reliable_unordered_messages(
     client: &mut ResMut<RenetClient>,
     world: &mut ResMut<ClientWorldMap>,
+    client_time: ResMut<ClientTime>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     players: &mut Query<(&mut Transform, &Player), With<Player>>,
     current_player_entity: Query<Entity, With<CurrentPlayerMarker>>,
@@ -139,6 +141,7 @@ fn poll_reliable_unordered_messages(
     update_world_from_network(
         client,
         world,
+        client_time,
         ev_render,
         players,
         current_player_entity,
@@ -150,6 +153,7 @@ fn poll_reliable_unordered_messages(
 pub fn poll_network_messages(
     mut client: ResMut<RenetClient>,
     mut chat_state: ResMut<CachedChatConversation>,
+    client_time: ResMut<ClientTime>,
     mut world: ResMut<ClientWorldMap>,
     mut ev_render: EventWriter<WorldRenderRequestUpdateEvent>,
     mut players: Query<(&mut Transform, &Player), With<Player>>,
@@ -161,6 +165,7 @@ pub fn poll_network_messages(
     poll_reliable_unordered_messages(
         &mut client,
         &mut world,
+        client_time,
         &mut ev_render,
         &mut players,
         current_player_entity,

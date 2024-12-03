@@ -6,6 +6,7 @@ use bevy_atmosphere::prelude::*;
 use inventory::Inventory;
 use shared::messages::PlayerSpawnEvent;
 
+use crate::world::time::ClientTime;
 use crate::world::ClientWorldMap;
 
 use crate::ui::debug::BlockDebugWireframeSettings;
@@ -60,6 +61,7 @@ pub fn game_plugin(app: &mut App) {
         .add_plugins(bevy_simple_text_input::TextInputPlugin)
         .add_plugins(AtmospherePlugin)
         .insert_resource(WorldSeed(0))
+        .insert_resource(ClientTime(0))
         .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 400.0,
@@ -148,6 +150,7 @@ pub fn game_plugin(app: &mut App) {
                 coords_text_update_system,
                 total_blocks_text_update_system,
                 block_text_update_system,
+                time_text_update_system,
                 toggle_hud_system,
                 chunk_ghost_update_system,
                 toggle_wireframe_system,

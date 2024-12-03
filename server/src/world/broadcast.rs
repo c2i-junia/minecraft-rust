@@ -1,3 +1,4 @@
+use crate::init::ServerTime;
 use crate::init::TickCounter;
 use crate::world::generation::generate_chunk;
 use crate::world::utils::format_bytes;
@@ -69,6 +70,7 @@ pub fn send_world_update(
                     trace!("Update event yippeee :D    len={}", map.len());
                     map
                 },
+                time: world_map.time,
             }))
             .unwrap();
 
@@ -85,10 +87,15 @@ pub fn broadcast_world_state(
     mut server: ResMut<RenetServer>,
     ticker: Res<TickCounter>,
     mut world_map: ResMut<ServerWorldMap>,
+    time: Res<ServerTime>,
 ) {
     if ticker.tick % 10 != 0 {
         return;
     }
+
+    // Update time value in the "ServerWorldMap" ressource
+    world_map.time = time.0;
+
     trace!("Broadcast world update");
     let payload = bincode::options()
         .serialize(&ServerToClientMessage::WorldUpdate(to_network(
@@ -113,5 +120,6 @@ fn to_network(world_map: &mut ServerWorldMap, tick: u64) -> WorldUpdate {
             world_map.chunks_to_update.clear();
             m
         },
+        time: world_map.time,
     }
 }

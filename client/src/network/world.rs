@@ -12,6 +12,7 @@ use shared::{
 
 use crate::world::ClientWorldMap;
 
+use crate::world::time::ClientTime;
 use crate::world::{RenderDistance, WorldRenderRequestUpdateEvent};
 
 use super::api::send_network_action;
@@ -19,6 +20,7 @@ use super::api::send_network_action;
 pub fn update_world_from_network(
     client: &mut ResMut<RenetClient>,
     world: &mut ResMut<ClientWorldMap>,
+    mut client_time: ResMut<ClientTime>,
     ev_render: &mut EventWriter<WorldRenderRequestUpdateEvent>,
     players: &mut Query<(&mut Transform, &Player), With<Player>>,
     current_player_entity: Query<Entity, With<CurrentPlayerMarker>>,
@@ -84,6 +86,9 @@ pub fn update_world_from_network(
                         debug!("Set transform {} => {:?}", player.id, new_transform);
                     }
                 }
+
+                // get current time
+                client_time.0 = world_update.time;
             }
             ServerToClientMessage::PlayerSpawn(spawn_event) => {
                 info!("Received SINGLE spawn event {:?}", spawn_event);

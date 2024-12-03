@@ -3,6 +3,7 @@ pub mod materials;
 mod meshing;
 pub mod render;
 mod render_distance;
+pub mod time;
 mod voxel;
 
 pub use data::*;

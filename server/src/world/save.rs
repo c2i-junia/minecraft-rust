@@ -1,3 +1,4 @@
+use crate::init::ServerTime;
 use bevy::prelude::*;
 use ron::ser::PrettyConfig;
 use shared::world::get_game_folder;
@@ -15,6 +16,7 @@ use crate::world::data::SAVE_PATH;
 pub struct WorldData {
     pub seed: WorldSeed,
     pub map: ServerWorldMap,
+    pub time: u64,
 }
 
 // System to save the world when "L" is pressed
@@ -22,6 +24,7 @@ pub fn save_world_system(
     world_map: ResMut<ServerWorldMap>,
     world_seed: Res<WorldSeed>,
     game_folder_path: Res<GameFolderPaths>,
+    time: Res<ServerTime>,
     mut event: EventReader<SaveRequestEvent>,
 ) {
     // Reads all events to prevent them from being queued forever and repeatedly request a save
@@ -35,6 +38,7 @@ pub fn save_world_system(
         let world_data = WorldData {
             map: world_map.clone(),
             seed: world_seed.clone(),
+            time: time.0,
         };
 
         // define save file path

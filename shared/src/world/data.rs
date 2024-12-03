@@ -28,6 +28,7 @@ pub struct ServerWorldMap {
     pub map: HashMap<IVec3, ServerChunk>,
     pub chunks_to_update: Vec<IVec3>,
     pub player_positions: HashMap<PlayerId, Vec3>,
+    pub time: u64,
 }
 
 #[derive(Resource, Clone, Serialize, Deserialize)]

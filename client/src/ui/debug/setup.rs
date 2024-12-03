@@ -1,3 +1,4 @@
+use super::loaded_stats::TimeText;
 use super::loaded_stats::{BlocksNumberText, ChunksNumberText};
 use super::targeted_block::BlockText;
 use super::{CoordsText, FpsText};
@@ -126,12 +127,30 @@ pub fn setup_hud(mut commands: Commands) {
         .spawn((ChunksNumberText, default_text_bundle()))
         .id();
 
+    let time_text = commands
+        .spawn((
+            TimeText,
+            TextBundle {
+                text: Text::from_sections([TextSection {
+                    value: "Time: N/A".into(),
+                    style: TextStyle {
+                        font_size: 16.0,
+                        color: Color::WHITE,
+                        ..default()
+                    },
+                }]),
+                ..Default::default()
+            },
+        ))
+        .id();
+
     commands.entity(root).push_children(&[
         text_fps,
         coords_text,
         blocks_number_text,
         chunks_number_text,
         block_text,
+        time_text,
     ]);
 }
 

@@ -11,4 +11,5 @@ pub struct WorldUpdate {
     pub tick: u64,
     pub new_map: HashMap<IVec3, ServerChunk>,
     pub player_positions: HashMap<PlayerId, Vec3>,
+    pub time: u64,
 }

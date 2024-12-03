@@ -1,8 +1,12 @@
+use crate::world::time::ClientTime;
 use crate::world::ClientWorldMap;
 use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct BlocksNumberText;
+
+#[derive(Component)]
+pub struct TimeText;
 
 #[derive(Component)]
 pub struct ChunksNumberText;
@@ -17,5 +21,14 @@ pub fn total_blocks_text_update_system(
     }
     for mut text in query_chunks.iter_mut() {
         text.sections[0].value = format!("Loaded chunks: {}", world_map.map.len());
+    }
+}
+
+pub fn time_text_update_system(
+    mut query: Query<&mut Text, With<TimeText>>,
+    time_resource: Res<ClientTime>,
+) {
+    for mut text in query.iter_mut() {
+        text.sections[0].value = format!("Time: {}", time_resource.0);
     }
 }
