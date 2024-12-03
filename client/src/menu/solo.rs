@@ -250,9 +250,9 @@ pub fn list_worlds(
     for path in paths {
         let path_str = path.unwrap().file_name().into_string().unwrap();
 
-        if path_str.ends_with("_save.ron") {
+        if path_str.ends_with(".ron") {
             add_world_item(
-                path_str.replace("_save.ron", ""),
+                path_str.replace(".ron", ""),
                 &mut commands,
                 &assets,
                 &mut list,
@@ -482,32 +482,17 @@ pub fn delete_save_files(
 ) -> Result<(), io::Error> {
     // Delete `world_save.ron`
     match fs::remove_file(format!(
-        "{}{}_save.ron",
+        "{}{}.ron",
         get_game_folder(Some(&game_folder_path))
             .join(SAVE_PATH)
             .display(),
         world_name
     )) {
-        Ok(_) => info!("Successfully deleted world_save.ron"),
+        Ok(_) => info!("Successfully deleted world"),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             error!("world_save.ron not found, skipping.")
         }
-        Err(e) => error!("Failed to delete world_save.ron: {}", e),
-    }
-
-    // Delete `world_seed.ron`
-    match fs::remove_file(format!(
-        "{}{}_seed.ron",
-        get_game_folder(Some(&game_folder_path))
-            .join(SAVE_PATH)
-            .display(),
-        world_name
-    )) {
-        Ok(_) => info!("Successfully deleted world_seed.ron"),
-        Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-            error!("world_seed.ron not found, skipping.")
-        }
-        Err(e) => error!("Failed to delete world_seed.ron: {}", e),
+        Err(e) => error!("Failed to delete world: {}", e),
     }
 
     Ok(())

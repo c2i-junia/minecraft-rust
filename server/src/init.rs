@@ -95,7 +95,10 @@ pub fn init(socket: UdpSocket, config: GameServerConfig, game_folder_path: Strin
     };
 
     let world_seed = match load_world_seed(world_name, &app) {
-        Ok(seed) => seed,
+        Ok(seed) => {
+            info!("World seed loaded successfully: {}", seed.0); // Affiche la seed chargée
+            seed
+        }
         Err(e) => {
             error!("Error loading seed: {}. Generating a new one.", e);
             panic!();

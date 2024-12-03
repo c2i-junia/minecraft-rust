@@ -30,7 +30,7 @@ pub struct ServerWorldMap {
     pub player_positions: HashMap<PlayerId, Vec3>,
 }
 
-#[derive(Resource, Serialize, Deserialize)]
+#[derive(Resource, Clone, Serialize, Deserialize)]
 pub struct WorldSeed(pub u32);
 
 #[derive(Debug, Clone, Serialize, Deserialize, Copy)]
