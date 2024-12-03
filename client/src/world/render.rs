@@ -1,3 +1,4 @@
+use crate::world::FirstChunkReceived;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -78,6 +79,7 @@ pub fn world_render_system(
     mut queued_meshes: Local<QueuedMeshes>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut commands: Commands,
+    mut first_chunk_received: ResMut<FirstChunkReceived>,
 ) {
     for event in ev_render.read() {
         queued_events.events.insert(*event);
@@ -134,6 +136,7 @@ pub fn world_render_system(
                 queued_meshes.meshes.push(t);
             }
         }
+        first_chunk_received.0 = true;
     }
 
     // Iterate through queued meshes to see if they are completed

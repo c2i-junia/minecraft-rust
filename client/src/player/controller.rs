@@ -14,6 +14,7 @@ use bevy_renet::renet::RenetClient;
 use shared::world::{block_to_chunk_coord, chunk_in_radius};
 
 use super::CurrentPlayerMarker;
+use crate::world::FirstChunkReceived;
 
 fn is_block_at_position(position: Vec3, world_map: &ClientWorldMap) -> bool {
     world_map
@@ -93,6 +94,7 @@ pub fn player_movement_system(
     mut previous_player_chunk: Local<IVec3>,
     mut commands: Commands,
     mut ev_writer: EventWriter<WorldRenderRequestUpdateEvent>,
+    mut first_chunk_received: ResMut<FirstChunkReceived>,
 ) {
     let (mut player_query, camera_query) = queries;
     let (
@@ -250,23 +252,25 @@ pub fn player_movement_system(
     }
 
     // Move the player (xy plane only), only if there are no blocks and UI is closed
-    if direction.length_squared() > 0.0 {
-        direction = direction.normalize();
+    if first_chunk_received.0 == true {
+        if direction.length_squared() > 0.0 {
+            direction = direction.normalize();
 
-        // Déplacement sur l'axe X
-        let new_pos_x = player_transform.translation
-            + Vec3::new(direction.x, 0.0, 0.0) * speed * time.delta_seconds();
+            // Déplacement sur l'axe X
+            let new_pos_x = player_transform.translation
+                + Vec3::new(direction.x, 0.0, 0.0) * speed * time.delta_seconds();
 
-        if player.is_flying || !check_player_collision(new_pos_x, &player, &world_map) {
-            player_transform.translation.x = new_pos_x.x;
-        }
+            if player.is_flying || !check_player_collision(new_pos_x, &player, &world_map) {
+                player_transform.translation.x = new_pos_x.x;
+            }
 
-        // Déplacement sur l'axe Z
-        let new_pos_z = player_transform.translation
-            + Vec3::new(0.0, 0.0, direction.z) * speed * time.delta_seconds();
+            // Déplacement sur l'axe Z
+            let new_pos_z = player_transform.translation
+                + Vec3::new(0.0, 0.0, direction.z) * speed * time.delta_seconds();
 
-        if player.is_flying || !check_player_collision(new_pos_z, &player, &world_map) {
-            player_transform.translation.z = new_pos_z.z;
+            if player.is_flying || !check_player_collision(new_pos_z, &player, &world_map) {
+                player_transform.translation.z = new_pos_z.z;
+            }
         }
     }
 
@@ -283,7 +287,10 @@ pub fn player_movement_system(
     }
 
     // apply gravity and verify vertical collisions
-    let new_y = player_transform.translation.y + player.vertical_velocity * time.delta_seconds();
+    let mut new_y = player_transform.translation.y;
+    if first_chunk_received.0 == true {
+        new_y = player_transform.translation.y + player.vertical_velocity * time.delta_seconds();
+    }
 
     // Vérifier uniquement les collisions verticales (sol et plafond)
     if check_player_collision(

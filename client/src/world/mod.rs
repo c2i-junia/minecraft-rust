@@ -11,3 +11,8 @@ pub use data::*;
 pub use materials::*;
 pub use render::*;
 pub use render_distance::*;
+
+use bevy::prelude::Resource;
+
+#[derive(Resource)]
+pub struct FirstChunkReceived(pub bool);

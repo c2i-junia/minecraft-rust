@@ -110,7 +110,7 @@ pub(crate) fn generate_chunk_mesh(
     mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
     mesh.insert_indices(Indices::U32(indices));
 
-    debug!("Render time : {:?}", Instant::now() - start);
+    trace!("Render time : {:?}", Instant::now() - start);
 
     if let Err(e) = mesh.generate_tangents() {
         warn!("Error while generating tangents for the mesh : {:?}", e);
