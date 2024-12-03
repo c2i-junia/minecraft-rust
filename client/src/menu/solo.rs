@@ -383,6 +383,22 @@ fn add_world_item(
     list.worlds.insert(world, WorldItem { name: name.clone() });
 }
 
+fn generate_new_world_name(world_list: &WorldList) -> String {
+    let mut index = 1;
+
+    loop {
+        let candidate = format!("new_world_{}", index);
+        if !world_list
+            .worlds
+            .values()
+            .any(|world| world.name == candidate)
+        {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
 pub fn solo_action(
     (interaction_query, mut name_query, mut list_query): (
         Query<(&Interaction, &MultiplayerButtonAction), (Changed<Interaction>, With<Button>)>,
@@ -413,8 +429,15 @@ pub fn solo_action(
                     if !name_query.is_empty() {
                         let mut name = name_query.single_mut();
 
+                        // if no name, create default one
+                        let new_name = if name.0.is_empty() {
+                            generate_new_world_name(&list)
+                        } else {
+                            name.0.clone()
+                        };
+
                         add_world_item(
-                            name.0.clone(),
+                            new_name,
                             &mut commands,
                             &asset_server,
                             &mut list,
