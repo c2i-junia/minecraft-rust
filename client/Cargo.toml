@@ -18,7 +18,4 @@ bevy_atmosphere = "0.10.0"
 shared = { path = "../shared" }
 server = { path = "../server" }
 log = { version = "*", features = ["max_level_debug", "release_max_level_warn"] }
-bevy_egui = "0.30.1"
-bevy-inspector-egui = "0.27.0"
-egui = "0.29.1"
 clap = { version = "4.5.19", features = ["derive"] }
