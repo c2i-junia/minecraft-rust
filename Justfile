@@ -43,3 +43,18 @@ generate-release-folder:
     cp target/release/client release/bin/minecraft-rust
     cp target/release/server release/bin/minecraft-rust-server
 
+generate-release-folder-server:
+    cargo build --release --bin server
+
+    # create folder
+    mkdir -p release
+    mkdir -p release release/bin
+
+    # add other files 
+    cp CHANGELOG.txt release/
+    cp LICENSE.txt release/
+    cp README.md release/
+
+    # copy paste binaries 
+    cp target/release/server release/bin/minecraft-rust-server
+

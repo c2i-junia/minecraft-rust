@@ -16,7 +16,7 @@ struct Args {
     #[arg(short, long, default_value_t = 0)]
     port: u16,
 
-    #[arg(short, long, default_value = "default")]
+    #[arg(short, long, default_value = "default_world")]
     world: String,
 
     #[arg(short, long, default_value = "../")]
