@@ -121,16 +121,16 @@ pub fn setup_main_lighting(
 
 pub fn update_celestial_bodies(
     mut query: Query<&mut Transform, With<CelestialRoot>>,
-    time: Res<Time>,            
-    client_time: Res<ClientTime>, 
+    time: Res<Time>,
+    client_time: Res<ClientTime>,
 ) {
-    static mut LOCAL_TIME: f32 = 0.0; 
-    static mut LAST_SYNC: f32 = 0.0; 
+    static mut LOCAL_TIME: f32 = 0.0;
+    static mut LAST_SYNC: f32 = 0.0;
 
     unsafe {
         // Unsafe is used here because we are working with static mutable variables (`LOCAL_TIME` and `LAST_SYNC`).
         // Static mutable variables are not inherently thread-safe, and Rust enforces safety guarantees
-        // to avoid potential data races. Since Bevy's systems run sequentially by default and this system 
+        // to avoid potential data races. Since Bevy's systems run sequentially by default and this system
         // does not share these static variables across multiple threads, we are assuming it's safe to use `unsafe` here.
         // However, this approach should be avoided if this system might ever run in parallel or be accessed
         // from multiple threads simultaneously.
