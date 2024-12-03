@@ -1,6 +1,6 @@
 appdata/
 release/
-/*minecraft-rust*/
+/*rustcraft*/
 *.tar.gz
 *.zip
 

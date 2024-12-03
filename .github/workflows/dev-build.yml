@@ -69,8 +69,8 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: minecraft-rust-linux-dev-${{ env.SHORT_SHA }}-x86_64
-        path: minecraft-rust-*-linux-x86_64/*
+        name: rustcraft-linux-dev-${{ env.SHORT_SHA }}-x86_64
+        path: rustcraft-*-linux-x86_64/*
         retention-days: 7
 
   build-windows:
@@ -122,6 +122,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: minecraft-rust-windows-dev-${{ env.SHORT_SHA }}-x86_64
-        path: minecraft-rust-*-windows-x86_64/*
+        name: rustcraft-windows-dev-${{ env.SHORT_SHA }}-x86_64
+        path: rustcraft-*-windows-x86_64/*
         retention-days: 7

@@ -40,8 +40,8 @@ generate-release-folder:
     cp README.md release/
 
     # copy paste binaries 
-    cp target/release/client release/bin/minecraft-rust
-    cp target/release/server release/bin/minecraft-rust-server
+    cp target/release/client release/bin/rustcraft
+    cp target/release/server release/bin/rustcraft-server
 
 generate-release-folder-server:
     cargo build --release --bin server
@@ -56,5 +56,5 @@ generate-release-folder-server:
     cp README.md release/
 
     # copy paste binaries 
-    cp target/release/server release/bin/minecraft-rust-server
+    cp target/release/server release/bin/rustcraft-server
 

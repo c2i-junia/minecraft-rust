@@ -1,4 +1,4 @@
-# minecraft-rust
+# rustcraft
 
 Minecraft game clone written in Rust, using the Bevy game engine.
 
@@ -146,8 +146,8 @@ Release mode:
 just generate-release-folder
 
 # Run the executable
-./release/bin/minecraft-rust         # run the client
-./release/bin/minecraft-rust-server  # run the server
+./release/bin/rustcraft         # run the client
+./release/bin/rustcraft-server  # run the server
 ```
 
 # Contributing

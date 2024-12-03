@@ -215,7 +215,7 @@ fn main_menu_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                     // Display the game name
                     parent.spawn(
                         TextBundle::from_section(
-                            "minecraft-rust",
+                            "rustcraft",
                             TextStyle {
                                 font_size: 67.0,
                                 color: TEXT_COLOR,

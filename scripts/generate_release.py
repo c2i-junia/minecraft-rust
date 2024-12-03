@@ -47,7 +47,7 @@ def main():
     os_name = platform.system().lower()
 
     if os_name == "linux":
-        versioned_dir = f"minecraft-rust-{version}-linux-x86_64"
+        versioned_dir = f"rustcraft-{version}-linux-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
         if not no_compression:
@@ -55,7 +55,7 @@ def main():
             shutil.make_archive(versioned_dir, 'gztar', root_dir=versioned_dir)
             log(f"Compressed {versioned_dir} into {tar_file}")
     elif os_name == "windows":
-        versioned_dir = f"minecraft-rust-{version}-windows-x86_64"
+        versioned_dir = f"rustcraft-{version}-windows-x86_64"
         shutil.move(working_dir, versioned_dir)
         log(f"Renamed {working_dir} to {versioned_dir}")
         if not no_compression:

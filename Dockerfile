@@ -54,8 +54,8 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/release ./minecraft-rust-server-folder
+COPY --from=builder /app/release ./rustcraft-server-folder
 
 EXPOSE 8000
 
-CMD ["./minecraft-rust-server-folder/bin/minecraft-rust-server", "--world", "new_world" "--port", "8000"]
+CMD ["./rustcraft-server-folder/bin/rustcraft-server", "--world", "new_world" "--port", "8000"]
