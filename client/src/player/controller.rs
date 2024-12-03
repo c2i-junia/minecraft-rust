@@ -94,7 +94,7 @@ pub fn player_movement_system(
     mut previous_player_chunk: Local<IVec3>,
     mut commands: Commands,
     mut ev_writer: EventWriter<WorldRenderRequestUpdateEvent>,
-    mut first_chunk_received: ResMut<FirstChunkReceived>,
+    first_chunk_received: ResMut<FirstChunkReceived>,
 ) {
     let (mut player_query, camera_query) = queries;
     let (
