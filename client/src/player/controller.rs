@@ -17,13 +17,15 @@ use super::CurrentPlayerMarker;
 use crate::world::FirstChunkReceived;
 
 fn is_block_at_position(position: Vec3, world_map: &ClientWorldMap) -> bool {
-    world_map
-        .get_block_by_coordinates(&IVec3::new(
-            position.x.floor() as i32,
-            position.y.floor() as i32,
-            position.z.floor() as i32,
-        ))
-        .is_some()
+    if let Some(block) = world_map.get_block_by_coordinates(&IVec3::new(
+        position.x.floor() as i32,
+        position.y.floor() as i32,
+        position.z.floor() as i32,
+    )) {
+        block.id.has_hitbox()
+    } else {
+        false
+    }
 }
 
 fn check_player_collision(
